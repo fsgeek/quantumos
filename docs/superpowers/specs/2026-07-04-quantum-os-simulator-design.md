@@ -437,3 +437,23 @@ Maintained in the repo as findings accumulate; initial entries:
    in the fabric — exponential, threshold, other?
 3. How does decoder latency couple to round success for SHYPS-class codes — hard
    deadline, soft degradation, or absorbable into the Pauli frame?
+
+## 19. Instrument kill condition (pre-committed)
+
+The instrument's value claim is comparative: it ranks the sensitivity of systems
+conclusions to physics parameters. That claim has its own falsifier, stated here
+before any run exists:
+
+**If, once M1 is complete, the sensitivity rankings are unstable under reasonable
+variation of the model-surface *shapes* — e.g. swapping the logistic
+`RoundSuccessModel` for a threshold form, or exponential decay for another
+plausible curve, scrambles the parameter ordering — then the instrument cannot yet
+rank, and no sensitivity conclusion ships until the unstable surface is constrained
+by physicist input or stabilizer-level spot-checks.**
+
+Ranking instability is itself a reportable finding ("the conclusions are hostage to
+the shape of surface X"), and by §1 it converts directly into a physicist question.
+What it is not is a license to pick the shape that yields the more interesting
+ranking. This criterion distinguishes "limited but informative" from "confidently
+uninformative"; it is evaluated at M1 and its evaluation is part of any relied-upon
+result.

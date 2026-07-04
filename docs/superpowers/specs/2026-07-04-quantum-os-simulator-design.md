@@ -1,7 +1,8 @@
 # Quantum OS Simulator — Design Spec
 
-**Date:** 2026-07-04 (revised same day after Codex review; see
-`2026-07-04-quantum-os-simulator-design-review.md`)
+**Date:** 2026-07-04 (revised same day after two review rounds; see
+`2026-07-04-quantum-os-simulator-design-review.md` (Codex) and
+`2026-07-04-quantum-os-simulator-design-gemini-review.md` (Antigravity/Gemini))
 **Status:** Draft for review
 **Companion document:** `docs/quantum_os_.md` (the constraint-first quantum OS position document; this simulator is its executable counterpart)
 
@@ -80,8 +81,15 @@ failures. Every transition publishes to the trace bus.
 Plain dataclasses mirroring the position document's object model, with explicit
 lifecycle state machines and no embedded decisions:
 
-- `QubitHandle` — location, role class (messenger/memory), coherence class,
-  calibration epoch.
+- `Module` / `PortId` — each module exposes a fixed set of optical ports,
+  identified as `(module_id, port_index)`. Ports are the unit of endpoint
+  exclusivity in §7; lease endpoints and switch reservations reference `PortId`s,
+  not bare modules.
+- `QubitHandle` — location (module), role class (messenger/memory), coherence
+  class, calibration epoch, and fidelity-tracking state: `state_held_since` plus
+  fidelity at that instant. Passive decay of held state is materialized lazily —
+  the engine evaluates the closed-form `DecayModel.retention` from these
+  timestamps at access and evaluation instants; nothing updates per tick.
 - `EntanglementLease` — endpoints, creation time, freshness bound, fidelity estimate,
   path identity, heralding metadata, retry policy. Lifecycle:
   requested → heralded → (consumed | expired | cancelled), exactly one terminal state.
@@ -93,8 +101,19 @@ lifecycle state machines and no embedded decisions:
 - `PauliFrameToken` — deferred-correction marker (v1: counted, not semantically
   modeled; exists so fast-path pressure relief is observable later).
 
+**Failure cleanup (normative):** when a `SyndromeRound` fails or is cancelled, its
+resources are released in a defined cascade, immediately at the failure event:
+decoder jobs for the round are cancelled; switch-path reservations held on its
+behalf are released; unconsumed leases are disposed per policy — round-bound
+policies (S0) cancel them, pooling policies (pre-generation) return still-fresh
+leases to the pool and expire the rest. Every disposition is a distinct trace event,
+and the work accounting (§11) records pool returns separately so reuse is visible
+rather than silent.
+
 If simulation forces an entity or field the position document lacks, that is a
-finding about the OS design and gets recorded as such.
+finding about the OS design and gets recorded as such. (`Module`/`PortId` is the
+first such finding: §7's endpoint-exclusivity rule is not expressible in the
+position document's object model, which names switch paths but not ports.)
 
 ## 6. Model surfaces
 
@@ -127,6 +146,11 @@ class HeraldingModel(Protocol):
     def success_probability(self, path: PathId,
                             epoch: CalibrationEpoch) -> float:
         """Per-attempt heralding success probability."""
+
+    def heralded_fidelity(self, path: PathId,
+                          epoch: CalibrationEpoch) -> float:
+        """Initial fidelity of a successfully heralded pair on this path —
+        the `fidelity_at_herald` term consumed by DecayModel."""
 
 class RoundSuccessModel(Protocol):
     def success_probability(self, lease_fidelities: Sequence[float],
@@ -176,6 +200,15 @@ state iff any of the following holds, and these are the *only* conflicts modeled
    after acquisition (heralding attempts may not start during δ); other paths are
    unaffected.
 
+**Reservation lifecycle:** acquired → configuring (δ, path unusable) → active
+(heralding attempts run) → released. Release occurs at the first of: heralding
+success (the entangled state now lives in spins; the optical path is free),
+attempt-window/deadline expiry, or round cancellation (§5 cleanup cascade). A
+config flag (`hold_until_consumption`, default off) instead holds the path until
+the lease reaches a terminal state, for architectures where the path is needed
+beyond heralding — deliberately a parameter, because it drastically changes
+effective fabric concurrency.
+
 No per-link capacities, no partial-path blocking, no wavelength constraints in v1.
 Any scheduler conclusion about path allocation or pre-generation is conditional on
 this abstraction; the switch model is itself a sensitivity surface, and richer
@@ -211,8 +244,11 @@ structurally. The engine therefore uses **key-addressed randomness**:
 
 - Every draw is `draw(stream, key)` where `key` is a stable semantic identity —
   e.g. `("herald", round_id, endpoint_pair, attempt_no)` or
-  `("decode", job_id)` — and the generator is seeded from
-  `hash(run_seed, stream, key)`.
+  `("decode", job_id)` — and the generator is seeded from a **deterministic**
+  hash: SHA-256 (or an equivalent stable hash) over a canonical serialization of
+  `(run_seed, stream, key)`. Python's builtin `hash()` is prohibited here — it is
+  salted per-process, which would silently break determinism across runs, forks,
+  and sweep workers.
 - The same semantic event receives the same randomness in every run with the same
   `run_seed`, regardless of policy-induced differences in draw order or count.
 - Draws that exist under only one policy (e.g. pre-generation attempts S0 never
@@ -288,7 +324,9 @@ zstd compression, never sampling.
 `core/` continuously checks **mechanical** correctness: event-time monotonicity,
 lease lifecycle legality (no consumption after expiry, no double consumption),
 conservation (every lease reaches exactly one terminal state; queue and work
-accounting balance), fidelity within [0, 1]. Violation ⇒ flush trace, crash with the
+accounting balance), fidelity within [0, 1], and resource-leak freedom (no
+`SwitchPathReservation` outlives its holding attempt or round — the §5 cleanup
+cascade is checked, not assumed; a leaked port or path slot fails the run). Violation ⇒ flush trace, crash with the
 causal chain of the offending event. Fail-stop, loudly: a silently wrong run poisons
 conclusions downstream.
 
@@ -336,8 +374,12 @@ invariants prove the bookkeeping; the controls prove the thesis isn't self-fulfi
    metrics (e.g. stricter decay improving compliance-among-admitted by rejecting
    more work): faster decay must not increase goodput; the no-decay limit must
    reproduce the standard queueing result; tightening deadlines must not increase
-   goodput; raising heralding success must not increase lease-expiry counts. The
-   monotone keyed-draw coupling (§10) makes these near-deterministic per seed.
+   goodput; raising heralding success must not decrease goodput. (An earlier draft
+   asserted raising heralding success must not increase lease-expiry counts; that
+   relation is false under congestion — more heralded leases waiting on a
+   backlogged decoder means more candidates to expire — and is recorded here as a
+   rejected property so it is not reintroduced.) The monotone keyed-draw coupling
+   (§10) makes these near-deterministic per seed.
 4. **Determinism tests:** same config + `run_seed` ⇒ identical trace hash (scope per
    §13). Paired runs receive identical keyed draws on shared semantic events —
    guaranteed by test, not by assumption.

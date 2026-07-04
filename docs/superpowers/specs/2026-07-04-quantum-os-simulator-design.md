@@ -1,6 +1,7 @@
 # Quantum OS Simulator — Design Spec
 
-**Date:** 2026-07-04
+**Date:** 2026-07-04 (revised same day after Codex review; see
+`2026-07-04-quantum-os-simulator-design-review.md`)
 **Status:** Draft for review
 **Companion document:** `docs/quantum_os_.md` (the constraint-first quantum OS position document; this simulator is its executable counterpart)
 
@@ -24,8 +25,8 @@ Questions that require privileged hardware access become parameter axes, not blo
 - Point predictions of any real machine's performance.
 - Physically grounded logical-error rates (deferred to a future stabilizer backend).
 - Production-quality throughput. The instrument is bounded by iteration speed of the
-  researcher, not events/second. Python 3.14, single-threaded core; process-level
-  parallelism for sweeps later if needed.
+  researcher, not events/second. Single-threaded core; process-level parallelism for
+  sweeps later if needed.
 - Publishable statistical rigor in v1. Observability and correct dynamics first.
 
 ## 3. Locked design decisions
@@ -39,9 +40,13 @@ Questions that require privileged hardware access become parameter axes, not blo
 3. **Closed-loop synthetic workload.** Demand responds to system state (retries,
    stalls, backlog). Open-loop traces and circuit-derived workloads are later
    additions behind the same generator interface.
-4. **V1 = minimal observability + minimal sweep, observability first.**
+4. **V1 = minimal observability + minimal sweep, observability first**, sequenced as
+   two milestones (§17).
 5. **Bespoke event-heap DES core** (Approach A). No simulation framework dependency.
-   Seeded, named RNG streams for common-random-number paired policy comparisons.
+   Key-addressed randomness for common-random-number paired policy comparisons (§10).
+6. **Python ≥3.14 is a repository toolchain constraint** (owner's decision, already
+   in `pyproject.toml`), not a simulator design requirement. The design uses no
+   3.14-only features; nothing below depends on the version.
 
 ## 4. Architecture
 
@@ -54,8 +59,8 @@ Single package `qsim/` with seven sub-packages; dependency arrows point downward
 | `policies/` | Scheduler protocol and implementations; admission, pre-generation, path allocation as separable mechanisms |
 | `models/` | Pluggable physics surfaces (Protocols + v1 analytic implementations) |
 | `entities/` | The OS object model as inert dataclasses |
-| `observe/` | Trace sink, post-hoc metric views, run summaries |
-| `core/` | Event heap, clock, named RNG registry, trace bus, invariant checker, checkpointing |
+| `observe/` | Trace sink, post-hoc metric views, run summaries, work accounting |
+| `core/` | Event heap, clock, keyed RNG (§10), trace bus, invariant checker, checkpointing (§13) |
 
 **Separation rule:** entities are inert state, policies make decisions, models answer
 physics questions. Anything one needs to know while implementing a `models/` surface
@@ -96,13 +101,56 @@ finding about the OS design and gets recorded as such.
 All are Protocols in `models/`; v1 ships one analytic, config-parameterized
 implementation of each.
 
-| Surface | Answers | v1 implementation | Control setting |
-|---|---|---|---|
-| `DecayModel` | fidelity(age, coherence class) | exponential decay, per-class constants | **no-decay** (perishability off) |
-| `MemoryAccessModel` | cost of interrogating a memory qubit (electron-channel time + fidelity spend) | linear per-access charge | **zero-cost** (free reads) |
-| `HeraldingModel` | per-attempt entanglement success | Bernoulli(p) per attempt | — |
-| `RoundSuccessModel` | round outcome given lease fidelities, memory ages, decoder latency | threshold/logistic on aggregate fidelity | — |
-| `DecoderServiceModel` | service time vs. backlog | distribution + optional backlog penalty | — |
+**Conventions (binding on all surfaces):** all times are simulation seconds
+(`float`); fidelities and retention factors are dimensionless in [0, 1]; models are
+pure functions of their arguments plus the `CalibrationEpoch` — they hold no mutable
+state and perform no random draws. All randomness is drawn by the engine through the
+keyed-RNG contract (§10): models return probabilities (or take an engine-supplied
+`Draw` where a sample is unavoidable), and the engine thresholds keyed uniforms
+against them.
+
+```python
+class DecayModel(Protocol):
+    def retention(self, age_s: float, coherence: CoherenceClass,
+                  epoch: CalibrationEpoch) -> float:
+        """Multiplicative retention in [0,1].
+        fidelity(t) = fidelity_at_herald * retention(t - t_herald, class, epoch)."""
+
+class MemoryAccessModel(Protocol):
+    def access_cost(self, qubit: QubitHandle,
+                    epoch: CalibrationEpoch) -> AccessCost:
+        """AccessCost = (electron_channel_s: float, retention_factor: float).
+        Composes AFTER passive decay is applied up to the access instant:
+        f_after = f_decayed_to_now * retention_factor."""
+
+class HeraldingModel(Protocol):
+    def success_probability(self, path: PathId,
+                            epoch: CalibrationEpoch) -> float:
+        """Per-attempt heralding success probability."""
+
+class RoundSuccessModel(Protocol):
+    def success_probability(self, lease_fidelities: Sequence[float],
+                            memory_retentions: Sequence[float],
+                            decoder_latency_s: float,
+                            deadline_slack_s: float) -> float:
+        """Round success given inputs at execution time. decoder_latency_s is the
+        raw duration; deadline_slack_s = deadline - completion time (may be
+        negative). The v1 implementation is threshold/logistic on aggregate
+        fidelity with a slack penalty."""
+
+class DecoderServiceModel(Protocol):
+    def service_time_s(self, job: DecoderJob, backlog: int,
+                       draw: Draw) -> float:
+        """Sampled service time; `draw` is an engine-supplied keyed source."""
+```
+
+| Surface | v1 implementation | Control setting |
+|---|---|---|
+| `DecayModel` | exponential decay, per-class constants | **no-decay** (retention ≡ 1) |
+| `MemoryAccessModel` | linear per-access charge | **zero-cost** (free reads) |
+| `HeraldingModel` | Bernoulli(p) per attempt | — |
+| `RoundSuccessModel` | threshold/logistic on aggregate fidelity | — |
+| `DecoderServiceModel` | distribution + optional backlog penalty | — |
 
 **Two surfaces are required to exist in v1 with controls, not merely planned:**
 
@@ -115,7 +163,25 @@ implementation of each.
    it. Entangled-state coherence (T2* ≈ 2.6 ms in the Song et al. register, vs.
    67–112 ms single-spin) says access costs are plausibly first-order.
 
-## 7. Policies
+## 7. Switch fabric — v1 semantics
+
+One any-to-any crossbar connecting all modules. A path conflicts with the system
+state iff any of the following holds, and these are the *only* conflicts modeled:
+
+1. **Endpoint port exclusivity** — each module optical port carries at most one
+   active path; a second path touching an occupied port blocks.
+2. **Global concurrent-path capacity** — at most `C` simultaneously configured
+   paths fabric-wide.
+3. **Reconfiguration delay** — a newly configured path is unusable for δ seconds
+   after acquisition (heralding attempts may not start during δ); other paths are
+   unaffected.
+
+No per-link capacities, no partial-path blocking, no wavelength constraints in v1.
+Any scheduler conclusion about path allocation or pre-generation is conditional on
+this abstraction; the switch model is itself a sensitivity surface, and richer
+topologies are deferred behind `SwitchPathReservation`'s interface.
+
+## 8. Policies
 
 `Scheduler` Protocol; implementations composed from separable mechanisms so the
 ablation ladder is configuration, not code:
@@ -130,14 +196,51 @@ ablation ladder is configuration, not code:
 The claim under test is that S1's advantage is attributable to the named mechanisms.
 The ladder isolates each.
 
-## 8. Workload
+## 9. Workload
 
 Closed-loop synthetic generator: emits `SyndromeRound` demand parameterized by
 arrival rate, entanglement demand per round, and deadline tightness; consumes
-completion/failure feedback; failed rounds retry per policy. Draws only from the
-`workload` RNG stream.
+completion/failure feedback; failed rounds retry per policy. All stochastic choices
+use `workload`-stream keyed draws (§10).
 
-## 9. Observability and data capture
+## 10. Randomness and the common-random-numbers contract
+
+Named streams alone are insufficient for paired policy comparisons: policies make
+different numbers of draws in different orders, so sequential shared streams diverge
+structurally. The engine therefore uses **key-addressed randomness**:
+
+- Every draw is `draw(stream, key)` where `key` is a stable semantic identity —
+  e.g. `("herald", round_id, endpoint_pair, attempt_no)` or
+  `("decode", job_id)` — and the generator is seeded from
+  `hash(run_seed, stream, key)`.
+- The same semantic event receives the same randomness in every run with the same
+  `run_seed`, regardless of policy-induced differences in draw order or count.
+- Draws that exist under only one policy (e.g. pre-generation attempts S0 never
+  makes) simply have no counterpart; the comparison remains fair on all shared
+  semantic events. This is the accepted, expected form of divergence.
+- Success probabilities are realized by thresholding the keyed uniform against the
+  model's probability, so raising a probability parameter flips outcomes
+  monotonically — several metamorphic tests (§16) rely on this coupling.
+
+Round ids, job ids, and attempt numbers must therefore be assigned from semantic
+context (workload arrival index, retry ordinal), never from draw order or event-heap
+order.
+
+## 11. Work accounting and comparison metrics
+
+Because the workload is closed-loop, policy changes alter the demand actually
+presented to the system. Every run therefore records, as distinct quantities:
+**offered** logical rounds (first arrivals), **retries**, **attempts**
+(offered + retries), **admitted**, **deferred**, **dropped**,
+**completed-in-deadline**, **completed-late**, **failed**.
+
+**Primary cross-policy metrics are normalized by offered work:** goodput =
+completed-in-deadline / offered; logical-error proxy = round failures scored by
+`RoundSuccessModel`, aggregated over offered work. Compliance-among-admitted and
+similar conditional metrics are reported but are never primary — an admission
+controller can trivially improve them by rejecting work.
+
+## 12. Observability and data capture
 
 **Norm (standing, from the researcher): capture everything; metrics are derived,
 never a substitute.** The trace is the deliverable; re-running because data wasn't
@@ -145,56 +248,80 @@ saved is the expensive mistake. Opposite of production logging practice.
 
 Each run produces a **run directory**:
 
-- `header.json` — full resolved config, every RNG stream seed, code git SHA, schema
-  version, and an explicit declaration of any filtering in effect (default: none).
-  A capped or filtered run must say so here; silent truncation is prohibited.
+- `header.json` — full resolved config, `run_seed`, run identity and provenance
+  (§13), code git SHA, schema version, and an explicit declaration of any filtering
+  in effect (default: none). A capped or filtered run must say so here; silent
+  truncation is prohibited.
 - `events.jsonl` — every state transition of every entity, timestamped, with event id
   and **causal parent id**. "Why did round N miss its deadline" is a backward walk
   through the trace, never a re-run with more logging.
-- `checkpoints/` — full simulator state snapshots including serialized RNG stream
-  states; a restored run continues bit-identically. Long warm-ups to steady state are
-  snapshotted once and sweeps fork from the warmed state. V1 steady-state detection is
-  manual (warmup cutoff recorded in the header).
+- `checkpoints/` — full simulator state snapshots (§13).
 
-Metrics are post-hoc views over `events.jsonl` in `observe/views.py`:
-freshness-at-consumption distributions, decoder backlog series, deadline compliance,
-per-resource utilization, and the logical-error proxy (the aggregate round-failure
-rate as scored by `RoundSuccessModel` — a proxy precisely because the scalar core
-cannot compute a physical logical-error rate). New question ⇒ new view over old
-traces. When volume bites: zstd compression, never sampling.
+Metrics — freshness-at-consumption distributions, decoder backlog series, deadline
+compliance, per-resource utilization, the work-accounting table (§11), and the
+logical-error proxy — are all post-hoc views over `events.jsonl` in
+`observe/views.py`. New question ⇒ new view over old traces. When volume bites:
+zstd compression, never sampling.
 
-## 10. Invariants — and the explicit limit of what they prove
+## 13. Run identity, checkpointing, and replay semantics
+
+- **Run identity:** every run has a fresh `run_id`. Event ids are
+  `(run_id, seq)` with `seq` monotonically increasing within the run.
+- **Checkpoints** serialize the complete simulator state: entities, queues, clock,
+  and pending event heap. Keyed randomness (§10) is stateless given `run_seed`, so
+  no generator state needs saving — a restored run redraws identically by key.
+- **Restore semantics: the checkpoint is authoritative.** A run forked from a
+  checkpoint gets a fresh `run_id`; its header records provenance
+  `{parent_run_id, checkpoint_id, parent_seq}`. Its `events.jsonl` contains only
+  post-fork events. Causal parent ids may reference pre-fork events as
+  `(parent_run_id, seq)`, resolvable through the provenance chain.
+- **Trace-hash scope:** the determinism guarantee (§16) is over a run's own
+  `events.jsonl` — for a forked run, the post-fork stream given the same checkpoint
+  and `run_seed`. Paired comparisons across forks of the same warmed checkpoint are
+  valid because state and keyed randomness are both shared at the fork point.
+- Long warm-ups to steady state are snapshotted once; sweeps fork many runs from the
+  warmed state. V1 steady-state detection is manual (a warmup cutoff recorded in the
+  header).
+
+## 14. Invariants — and the explicit limit of what they prove
 
 `core/` continuously checks **mechanical** correctness: event-time monotonicity,
 lease lifecycle legality (no consumption after expiry, no double consumption),
-conservation (every lease reaches exactly one terminal state; queue accounting
-balances), fidelity within [0, 1]. Violation ⇒ flush trace, crash with the causal
-chain of the offending event. Fail-stop, loudly: a silently wrong run poisons
+conservation (every lease reaches exactly one terminal state; queue and work
+accounting balance), fidelity within [0, 1]. Violation ⇒ flush trace, crash with the
+causal chain of the offending event. Fail-stop, loudly: a silently wrong run poisons
 conclusions downstream.
 
 **Scope statement (deliberate):** these invariants prove the bookkeeping is legal.
 They provide *zero* protection against a wrong physics model — a backwards coupling
 model satisfies every one of them. Model-level correctness is the job of the
-negative-control harness (§11) and the metamorphic checks (§12), not the invariant
+negative-control harness (§15) and the metamorphic checks (§16), not the invariant
 layer. Passing invariants must never be cited as evidence the conclusions are right.
 
-## 11. Negative-control harness
+## 15. Negative-control harness
 
-First-class in `experiments/`, run as part of any result we intend to rely on:
+First-class in `experiments/`, run as part of any result we intend to rely on. The
+controls use the ablation ladder (§8), because S1's mechanisms can help through
+congestion management even when perishability is absent — a full-gap-collapse claim
+would overreach:
 
-- **No-decay control:** identical config and seeds, `DecayModel` = no-decay. Assert
-  the S1−S0 gap on the primary metrics (deadline compliance and logical-error proxy)
-  collapses — directionally and quantitatively: report the gap under coupling-on vs.
-  coupling-off; the claim is "the gap shrinks by a large, stated factor," not a
-  binary pass/fail on a stochastic system.
-- **Zero-read-cost control:** identical config and seeds, `MemoryAccessModel` =
-  zero-cost. Report how conclusions about memory-resident scheduling move.
+- **No-decay control:** identical config and `run_seed`, `DecayModel` = no-decay,
+  reported across the full ladder. Required assertions: (a) the increment of
+  freshness-aware admission — (S0+admission) − S0 — collapses under no-decay, since
+  its input signal is constant; (b) the **perishability-attributable quantity**,
+  the difference-in-differences [(S1−S0) under decay-on] − [(S1−S0) under
+  decay-off], is large by a stated factor on the primary metrics (§11).
+  Pre-generation's residual congestion benefit under no-decay is expected and
+  reported, not asserted away.
+- **Zero-read-cost control:** identical config and `run_seed`,
+  `MemoryAccessModel` = zero-cost. Report how conclusions about memory-resident
+  scheduling move across the ladder.
 
 Purpose: positive evidence that conclusions depend on the physics we claim they
 depend on, rather than on something baked into entities or policies. The engine
 invariants prove the bookkeeping; the controls prove the thesis isn't self-fulfilling.
 
-## 12. Testing strategy
+## 16. Testing strategy
 
 1. **Unit tests** (TDD): entity state machines, model implementations against their
    closed-form curves, policy decisions against constructed scenarios.
@@ -203,28 +330,34 @@ invariants prove the bookkeeping; the controls prove the thesis isn't self-fulfi
    Little's Law and analytic waits; heralding attempts against Bernoulli/Poisson
    theory. These establish engine correctness *in the decoupled limit only* — the
    regime where the thesis's coupling is absent by construction.
-3. **Metamorphic checks in the coupled regime** (oracle-free properties that must
-   hold where no closed form exists): faster decay must not improve outcomes;
-   no-decay limit must reproduce the standard queueing result; tightening deadlines
-   must not increase compliance; increasing heralding success must not increase
-   lease expiry counts.
-4. **Determinism tests:** same config + seeds ⇒ identical trace hash. Paired S0/S1
-   runs draw identical `links`/`decoder`/`workload` streams (common random numbers
-   guaranteed by test, not by assumption).
+3. **Metamorphic checks in the coupled regime** — oracle-free properties, each
+   qualified to **fixed policy, same `run_seed`, primary (offered-normalized)
+   metrics** (§11), because adaptive admission can otherwise game conditional
+   metrics (e.g. stricter decay improving compliance-among-admitted by rejecting
+   more work): faster decay must not increase goodput; the no-decay limit must
+   reproduce the standard queueing result; tightening deadlines must not increase
+   goodput; raising heralding success must not increase lease-expiry counts. The
+   monotone keyed-draw coupling (§10) makes these near-deterministic per seed.
+4. **Determinism tests:** same config + `run_seed` ⇒ identical trace hash (scope per
+   §13). Paired runs receive identical keyed draws on shared semantic events —
+   guaranteed by test, not by assumption.
 
-## 13. V1 scope
+## 17. V1 scope and milestones
 
-In: `core/`, `entities/`, the five model surfaces with analytic implementations and
-the two required controls, S0 + S1 + the two intermediate ladder rungs, closed-loop
-workload, run directories with full traces, checkpointing, the metric views listed in
-§9, negative-control harness, a thin grid-sweep driver, the four test tiers.
+**M0 — acceptance milestone (trace contract proven):** `core/` (event heap, keyed
+RNG, trace bus, invariants), `entities/`, the five model surfaces with analytic
+implementations, S0 and S1 only, closed-loop workload, run directories with full
+traces and work accounting, the §12 metric views, determinism tests, limit checks.
+The trace schema is frozen at the end of M0.
 
-Out (deferred behind existing interfaces): stabilizer backend, circuit-derived and
-trace-replay workloads, automated steady-state detection, sensitivity-ranking
-automation, multi-process sweep execution, switch-fabric topologies beyond a single
-contended any-to-any switch with capacity C and reconfiguration delay.
+**M1 — completes v1:** the two intermediate ladder rungs, negative-control harness,
+checkpoint/fork/replay (§13), thin grid-sweep driver, metamorphic checks.
 
-## 14. Seed question backlog (physicist-facing)
+Out of v1 (deferred behind existing interfaces): stabilizer backend, circuit-derived
+and trace-replay workloads, automated steady-state detection, sensitivity-ranking
+automation, multi-process sweep execution, switch topologies beyond §7.
+
+## 18. Seed question backlog (physicist-facing)
 
 Maintained in the repo as findings accumulate; initial entries:
 

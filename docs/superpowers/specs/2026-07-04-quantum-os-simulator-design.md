@@ -184,8 +184,10 @@ class DecoderServiceModel(Protocol):
 2. **`MemoryAccessModel` with a zero-cost control.** Free memory reads are a
    structural omission in the scheduling literature (nobody models read wear), not a
    mis-set parameter. The knob must be deliberately built or no sweep can ever find
-   it. Entangled-state coherence (T2* ≈ 2.6 ms in the Song et al. register, vs.
-   67–112 ms single-spin) says access costs are plausibly first-order.
+   it. Entangled-state coherence says access costs are plausibly first-order:
+   T2* = 2.60(8) ms for the entangled nuclear-spin state, vs. 67–112 ms single-spin
+   echo times (Song et al., *Nature Nanotechnology* 2026, PubMed 41366064; figures
+   verified against the source abstract 2026-07-04).
 
 ## 7. Switch fabric — v1 semantics
 
@@ -262,6 +264,14 @@ Round ids, job ids, and attempt numbers must therefore be assigned from semantic
 context (workload arrival index, retry ordinal), never from draw order or event-heap
 order.
 
+**The guarantee degrades measurably, so measure it.** In a closed-loop system,
+diverging policies induce diverging workloads, so paired runs share a shrinking
+fraction of semantic keys as they progress — CRN variance reduction quietly decays
+toward independent two-sample comparison in late-run regimes. Every draw is
+therefore itself a trace event (stream, key, uniform), and the paired-comparison
+view (§12) reports the **shared-key fraction over time** for any pair of runs, so
+per-seed claims are made only where the pairing is demonstrably intact.
+
 ## 11. Work accounting and comparison metrics
 
 Because the workload is closed-loop, policy changes alter the demand actually
@@ -294,8 +304,9 @@ Each run produces a **run directory**:
 - `checkpoints/` — full simulator state snapshots (§13).
 
 Metrics — freshness-at-consumption distributions, decoder backlog series, deadline
-compliance, per-resource utilization, the work-accounting table (§11), and the
-logical-error proxy — are all post-hoc views over `events.jsonl` in
+compliance, per-resource utilization, the work-accounting table (§11), the
+paired-comparison view (per-window shared-key fraction between two runs, §10), and
+the logical-error proxy — are all post-hoc views over `events.jsonl` in
 `observe/views.py`. New question ⇒ new view over old traces. When volume bites:
 zstd compression, never sampling.
 
@@ -344,11 +355,20 @@ congestion management even when perishability is absent — a full-gap-collapse 
 would overreach:
 
 - **No-decay control:** identical config and `run_seed`, `DecayModel` = no-decay,
-  reported across the full ladder. Required assertions: (a) the increment of
-  freshness-aware admission — (S0+admission) − S0 — collapses under no-decay, since
-  its input signal is constant; (b) the **perishability-attributable quantity**,
-  the difference-in-differences [(S1−S0) under decay-on] − [(S1−S0) under
-  decay-off], is large by a stated factor on the primary metrics (§11).
+  reported across the full ladder — and the difference-in-differences is computed
+  **at every rung**, not only at S1, because the DiD estimator assumes additive
+  separability and the two mechanisms interact through perishability itself
+  (pre-generation shapes the freshness distribution admission reads). Required
+  reporting: (a) the increment of freshness-aware admission — (S0+admission) − S0 —
+  collapses under no-decay, since its input signal is constant; (b) the
+  single-mechanism DiDs, [(S0+admission − S0) decay-on] − [same decay-off] and
+  [(S0+pregen − S0) decay-on] − [same decay-off], which are interaction-free
+  because the other mechanism is absent from both arms; (c) the full DiD
+  [(S1−S0) decay-on] − [(S1−S0) decay-off]; and (d) the **interaction residual** =
+  (c) − sum of (b). The perishability claim is stated on the single-mechanism DiDs
+  (large by a stated factor on the primary metrics, §11); if the effect lives
+  mainly in the residual, the finding is "the mechanisms are complementary only
+  under decay," which is a different claim and must be reported as such.
   Pre-generation's residual congestion benefit under no-decay is expected and
   reported, not asserted away.
 - **Zero-read-cost control:** identical config and `run_seed`,
@@ -380,6 +400,13 @@ invariants prove the bookkeeping; the controls prove the thesis isn't self-fulfi
    backlogged decoder means more candidates to expire — and is recorded here as a
    rejected property so it is not reintroduced.) The monotone keyed-draw coupling
    (§10) makes these near-deterministic per seed.
+   **Scope statement (deliberate, matching §14 and §16.2):** these properties test
+   the *engine's* physical monotonicity under a fixed policy. They deliberately do
+   not test the response of an adaptive policy: a closed-loop controller such as S1
+   can respond non-monotonically to a monotone physics change, and that behavior
+   may be a legitimate finding or a policy bug — the metamorphic suite cannot
+   distinguish the two and does not try. Characterizing policy response to physics
+   is an experiment output, never a test assertion.
 4. **Determinism tests:** same config + `run_seed` ⇒ identical trace hash (scope per
    §13). Paired runs receive identical keyed draws on shared semantic events —
    guaranteed by test, not by assumption.

@@ -21,11 +21,20 @@ class RunConfig:
     pregen_low_water_mark: int | None = None   # required if scheduler == "S1" (§8.2)
     decay_control_enabled: bool = True         # False => NoDecayModel (§6, §15)
     memory_cost_control_enabled: bool = True   # False => ZeroCostMemoryAccessModel (§6, §15)
+    retry_cap: int | None = None               # None => unlimited retries (§9 closed-loop,
+    #                                            current behaviour); N => a round is dropped
+    #                                            after N retries. A sweep knob for isolating
+    #                                            whether the retry storm self-sustains a
+    #                                            congestion collapse (spiral) vs. plain overload.
 
     def __post_init__(self) -> None:
         if self.scheduler not in _VALID_SCHEDULERS:
             raise ValueError(
                 f"scheduler must be one of {_VALID_SCHEDULERS}, got {self.scheduler!r}"
+            )
+        if self.retry_cap is not None and (not isinstance(self.retry_cap, int) or self.retry_cap < 0):
+            raise ValueError(
+                f"retry_cap must be a non-negative int or None, got {self.retry_cap!r}"
             )
         if self.scheduler == "S1":
             if self.admission_theta is None:

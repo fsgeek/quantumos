@@ -16,11 +16,16 @@ class WorkloadGenerator:
     STREAM = "workload"
 
     def __init__(self, run_seed: int, arrival_rate_hz: float,
-                 leases_per_round: int, deadline_slack_s: float):
+                 leases_per_round: int, deadline_slack_s: float,
+                 retry_cap: int | None = None):
         self.run_seed = run_seed
         self.arrival_rate_hz = arrival_rate_hz
         self.leases_per_round = leases_per_round
         self.deadline_slack_s = deadline_slack_s
+        # None => unlimited retries (current closed-loop behaviour); N => stop
+        # retrying (return None -> engine drops) once a lineage has been retried
+        # N times. A sweep knob for the spiral-vs-overload question.
+        self.retry_cap = retry_cap
 
     def next_arrival(self, after_time: float, arrival_index: int) -> SyndromeRound:
         # arrival_index is the semantic key for the interarrival draw — never event-heap order (§10).
@@ -42,7 +47,12 @@ class WorkloadGenerator:
     def on_outcome(self, round: SyndromeRound, succeeded: bool) -> SyndromeRound | None:
         if succeeded:
             return None
-        # v1 policy: failures always retry. Same round_id preserves lineage across the retry chain.
+        # Retry cap: a lineage already retried `retry_cap` times is not retried
+        # again (None => engine drops it). retry_cap=0 disables retries entirely
+        # (first failure drops). None => unlimited (default closed-loop policy).
+        if self.retry_cap is not None and round.retry_ordinal >= self.retry_cap:
+            return None
+        # Failures otherwise retry. Same round_id preserves lineage across the retry chain.
         return SyndromeRound(
             round_id=round.round_id,
             lease_ids=list(round.lease_ids),

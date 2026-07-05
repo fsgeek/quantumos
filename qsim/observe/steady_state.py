@@ -25,12 +25,15 @@ too). A terminal-round event is an EXIT. Terminal types are exactly those a
 round's lifecycle can end (or bounce back into the retry loop) on:
 
     round.completed_in_deadline, round.completed_late,
-    round.failed, round.dropped, round.deferred
+    round.failed, round.deferred
 
 `round.deferred` is treated as terminal because a deferred round LEAVES the
 in-flight set and re-enters later as a fresh retry `round.arrived` — so counting
 the deferral as an exit and its retry as a new entry keeps the accounting
-balanced. (Consumes only these existing event types; invents no producer change.)
+balanced. `round.dropped` is NOT counted: it co-occurs with a failure/deferral
+(published alongside it when the retry cap is hit), so counting it separately
+would double-subtract and drive in-flight negative. (Consumes only these existing
+event types; invents no producer change.)
 
 CONVERGENCE HEURISTIC (conservative, M0)
 ----------------------------------------
@@ -73,15 +76,18 @@ from pathlib import Path
 
 from qsim.observe.work_accounting import iter_events
 
-# In-flight EXIT events: a round's lifecycle terminates (or bounces back into
-# the retry loop) on exactly one of these. Kept local to this module — payload
-# shapes are not relied upon, only the event_type is counted.
+# In-flight EXIT events: each `round.arrived` (attempt) leaves the in-flight set
+# on exactly ONE of these. `round.dropped` is deliberately EXCLUDED: it does not
+# replace a failure/deferral, it CO-OCCURS with one — the engine publishes
+# `round.failed`|`round.deferred` and THEN `round.dropped` when the retry cap is
+# hit — so counting it as a separate exit double-subtracts and drives in-flight
+# negative. (Latent until retry_cap introduced drops; caught by the spiral test.)
+# Only the event_type is counted; payload shapes are not relied upon.
 _TERMINAL_ROUND_EVENTS = frozenset(
     {
         "round.completed_in_deadline",
         "round.completed_late",
         "round.failed",
-        "round.dropped",
         "round.deferred",
     }
 )

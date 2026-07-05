@@ -227,6 +227,7 @@ def run(config: RunConfig, out_dir: Path) -> Path:
         arrival_rate_hz=config.arrival_rate_hz,
         leases_per_round=config.leases_per_round,
         deadline_slack_s=config.deadline_slack_s,
+        retry_cap=config.retry_cap,
     )
 
     engine = Engine(

@@ -1,0 +1,27 @@
+run_seed = 42
+scheduler = "S0"
+arrival_rate_hz = 1.0
+leases_per_round = 1
+deadline_slack_s = 5.0
+switch_capacity_c = 1
+reconfig_delay_s = 0.01
+max_sim_time_s = 20.0
+
+[epoch]
+epoch_id = "example-s0"
+memory_access_channel_s = 0.001
+memory_access_wear_rate = 0.01
+round_success_logistic_midpoint = 0.5
+round_success_logistic_slope = 10.0
+round_success_slack_penalty_per_s = 1.0
+decoder_service_rate = 5.0
+
+[epoch.decay_rate_per_class]
+messenger = 0.01
+memory = 0.001
+
+[[epoch.paths]]
+a = "M0:0"
+b = "M1:0"
+heralding_p = 0.7
+heralded_fidelity = 0.95

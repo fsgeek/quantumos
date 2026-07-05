@@ -159,3 +159,22 @@ def test_reservation_leak_for_unrelated_holder_does_not_raise():
 
     checker.observe(make_event("round.arrived", "round-1", sim_time=0.0, seq=0), state)
     checker.observe(make_event("round.failed", "round-1", sim_time=1.0, seq=1), state)
+
+
+def test_round_rearrival_clears_terminated_holder_so_a_retry_reservation_is_legal():
+    # A round_id is reused across retries for lineage. After the first attempt
+    # fails (round.failed marks it terminated), a retry RE-ARRIVES with the same
+    # round_id and legitimately holds a fresh reservation. The re-arrival must
+    # clear the terminated mark, or the retry's active reservation false-trips
+    # the leak check -- which would fire in exactly the S0-churns-under-load
+    # regime the falsification studies. Without the fix, the final observe below
+    # raises InvariantViolation.
+    checker = InvariantChecker()
+    empty = make_state()
+    checker.observe(make_event("round.arrived", "round-1", sim_time=0.0, seq=0), empty)
+    checker.observe(make_event("round.failed", "round-1", sim_time=1.0, seq=1), empty)
+    checker.observe(make_event("round.arrived", "round-1", sim_time=2.0, seq=2), empty)  # retry
+    retry_reservation = FakeReservation(holder_id="round-1", state="active")
+    held = make_state(active_reservations={"path-a": retry_reservation})
+    # Must NOT raise: round-1 is alive again, so its active reservation is legal.
+    checker.observe(make_event("reservation.acquired", "path-a", sim_time=2.0, seq=3), held)

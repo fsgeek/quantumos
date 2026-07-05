@@ -101,6 +101,16 @@ class InvariantChecker:
             )
 
     def _record_terminated_holder(self, event: Event) -> None:
+        if event.event_type == "round.arrived":
+            # A round_id is reused across retries for lineage (WorkloadGenerator
+            # keeps the same identity on retry). A retry re-arriving is the holder
+            # ALIVE AGAIN, so clear any prior terminal mark — otherwise the
+            # retry's legitimately-held new reservations false-trip the
+            # reservation-leak check below. If the reborn round later terminates
+            # without releasing them, round.failed/etc. re-adds it and the leak is
+            # caught then.
+            self._terminated_holders.discard(event.entity_id)
+            return
         if event.event_type in _ROUND_TERMINAL_EVENTS or event.event_type in _LEASE_TERMINAL_EVENTS:
             self._terminated_holders.add(event.entity_id)
 

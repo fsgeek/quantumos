@@ -14,7 +14,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    # R2 (reconciliation spec): the projected/request models key on the REAL
+    # entity types the engine passes, not `str`. Annotations are lazy
+    # (`from __future__ import annotations`), so this import is type-only and
+    # adds no runtime dependency of policies/ on entities/.
+    from qsim.entities import CoherenceClass, PathId
 
 
 class AdmissionOutcome(Enum):
@@ -51,8 +58,8 @@ class LeaseRequest:
     """A scheduler's request to acquire a lease on a path/coherence class."""
 
     request_id: str
-    path_id: str
-    coherence_class: str
+    path_id: PathId
+    coherence_class: CoherenceClass
     purpose: LeaseRequestPurpose
     requested_at_s: float
     round_id: str | None = None
@@ -70,8 +77,8 @@ class DispositionKind(Enum):
 class LeaseDisposition:
     """A scheduler's disposition of one lease at round-terminal time."""
 
-    path_id: str
-    coherence_class: str
+    path_id: PathId
+    coherence_class: CoherenceClass
     kind: DispositionKind
 
 
@@ -79,8 +86,8 @@ class LeaseDisposition:
 class ProjectableLease:
     """A lease's projectable state (design spec §8.1, §8.2)."""
 
-    path_id: str
-    coherence_class: str
+    path_id: PathId
+    coherence_class: CoherenceClass
     is_held: bool = False
     is_consumed: bool = False
     state_held_since: float | None = None

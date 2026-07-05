@@ -25,7 +25,7 @@ from qsim.policies.protocol import (
 )
 
 if TYPE_CHECKING:
-    from qsim.entities import CalibrationEpoch
+    from qsim.entities import CalibrationEpoch, CoherenceClass, PathId
     from qsim.policies.protocol import RoundProjection
 
 
@@ -65,8 +65,8 @@ class S0Scheduler:
                     lease.path_id, lease.coherence_class, DispositionKind.CANCELLED))
         return dispositions
 
-    def _enqueue(self, round_id: str, deadline_s: float, path_id: str,
-                 coherence_class: str, now_s: float) -> None:
+    def _enqueue(self, round_id: str, deadline_s: float, path_id: PathId,
+                 coherence_class: CoherenceClass, now_s: float) -> None:
         seq = next(self._sequence)
         request = LeaseRequest(
             request_id=f"round-{round_id}-{path_id}-{coherence_class}-{seq}",

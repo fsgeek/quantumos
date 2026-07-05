@@ -112,16 +112,15 @@ def test_single_round_single_path_full_causal_chain_with_fixed_seed():
     #     of decoder.completed off decoder.enqueued (enqueue causes both the
     #     service-time draw and, via the scheduled completion event, the
     #     completion). The thread follows decoder.completed.
-    #   * lease.cancelled IS on this chain, between the round_outcome draw and
-    #     the terminal event: the §5 disposition cascade runs BEFORE the round.*
-    #     terminal event (reconciliation spec §4; S0.on_round_terminal returns
-    #     CANCELLED for the still-held lease), and the terminal event chains off
-    #     the cascade's last event so no reservation outlives its holder. E3's
-    #     tests/core/test_engine_outcome.py locks exactly this threading.
+    #   * lease.consumed IS on this chain, between the round_outcome draw and
+    #     the terminal event: a SUCCESSFUL round USES (consumes) its held lease,
+    #     and consumption runs BEFORE the round.* terminal event so the terminal
+    #     chains off it (reconciliation spec §4). Cancellation is reserved for
+    #     failed/unused leases; a successful round consumes, it does not cancel.
     expected_order = [
         "round.arrived", "round.admitted", "reservation.acquired", "reservation.configuring",
         "reservation.active", "draw.sampled", "lease.heralded",
-        "decoder.enqueued", "decoder.completed", "draw.sampled", "lease.cancelled",
+        "decoder.enqueued", "decoder.completed", "draw.sampled", "lease.consumed",
         "round.completed_in_deadline",
     ]
     # Filter to this round's own causal thread by walking parent links (entity_id

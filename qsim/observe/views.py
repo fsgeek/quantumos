@@ -86,10 +86,15 @@ def logical_error_proxy(events_path: Path) -> float:
     wa = compute_work_accounting(events_path)
     if wa.offered == 0:
         return 0.0
+    # Only scoring failures carry a success_probability (a logical-correction
+    # failure); pre-scoring resource failures (capacity/endpoint) carry None and
+    # are not logical errors, so they are skipped rather than counted as full
+    # error weight.
     total_error_weight = sum(
         1.0 - record["payload"]["success_probability"]
         for record in iter_events(events_path)
         if record["event_type"] == "round.failed"
+        and record["payload"].get("success_probability") is not None
     )
     return total_error_weight / wa.offered
 

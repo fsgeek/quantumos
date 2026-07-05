@@ -383,11 +383,14 @@ class Engine:
         ctx.reservations[lease_id] = reservation
 
         entity_id = self._reservation_entity_id(path_id)
+        path_payload = self._path_id_payload(path_id)
         acquired_id = self._publish("reservation.acquired", entity_id, causal_parent_id,
-                                    {"round_id": round_.round_id, "lease_id": lease_id})
+                                    {"round_id": round_.round_id, "lease_id": lease_id,
+                                     "path_id": path_payload})
         reservation.state = ReservationState.CONFIGURING
         configuring_id = self._publish("reservation.configuring", entity_id, acquired_id,
-                                       {"round_id": round_.round_id, "lease_id": lease_id})
+                                       {"round_id": round_.round_id, "lease_id": lease_id,
+                                        "path_id": path_payload})
         activate_at = self._state.now + self._config.reconfig_delay_s
         self._heap.push(activate_at, _ReservationActivatePayload(
             path_id=path_id, round_id=round_.round_id, lease_id=lease_id,
@@ -409,13 +412,21 @@ class Engine:
         reservation.state = ReservationState.ACTIVE
         entity_id = self._reservation_entity_id(payload.path_id)
         active_id = self._publish("reservation.active", entity_id, payload.causal_parent_id,
-                                  {"round_id": payload.round_id, "lease_id": payload.lease_id})
+                                  {"round_id": payload.round_id, "lease_id": payload.lease_id,
+                                   "path_id": self._path_id_payload(payload.path_id)})
         # Task 3: the path is live — begin heralding on it now.
         self._start_heralding(payload.round_id, payload.lease_id, payload.path_id, active_id)
 
     def _reservation_entity_id(self, path_id: PathId) -> str:
         a, b = path_id
         return f"{a.module_id}:{a.port_index}->{b.module_id}:{b.port_index}"
+
+    @staticmethod
+    def _path_id_payload(path_id: PathId) -> list:
+        # Structured, JSON-serializable path identity in the trace payload so
+        # observe.resource_utilization can key on payload["path_id"] instead of
+        # parsing the entity_id string. Each element is [module_id, port_index].
+        return [[p.module_id, p.port_index] for p in path_id]
 
     # ---- heralding attempt loop (Task 3) ------------------------------------
 
@@ -497,7 +508,8 @@ class Engine:
         reservation.released_at = self._state.now
         entity_id = self._reservation_entity_id(path_id)
         self._publish("reservation.released", entity_id, causal_parent_id,
-                      {"round_id": reservation.holder_id})
+                      {"round_id": reservation.holder_id,
+                       "path_id": self._path_id_payload(path_id)})
 
     # ---- round assembly: decay aging + memory-access costing (Task 4) -------
 
@@ -606,8 +618,12 @@ class Engine:
                                 {"stream": "round_outcome", "key": list(key), "uniform": u})
         succeeded = u < p
 
-        # §5 cascade first (dispose leases, release reservations, release ctx),
-        # then publish the terminal event chained off the returned last event id.
+        # On SUCCESS the round USES (consumes) its held leases: consume them
+        # BEFORE the §5 terminal cascade so on_round_terminal sees them consumed
+        # (is_consumed) and does not cancel them. Failed/unused leases are
+        # disposed by the scheduler inside _terminate_round.
+        if succeeded:
+            draw_id = self._consume_round_leases(ctx, draw_id)
         parent = self._terminate_round(ctx, succeeded, draw_id)
         if succeeded and deadline_slack_s >= 0.0:
             round_.state = RoundState.COMPLETED_IN_DEADLINE
@@ -620,8 +636,30 @@ class Engine:
         else:
             round_.state = RoundState.FAILED
             failed_id = self._publish("round.failed", round_.round_id, parent,
-                                      {"success_probability": p})
+                                      {"success_probability": p, "reason": "scoring_failure"})
             self._retry_or_drop(round_, failed_id)
+
+    def _consume_round_leases(self, ctx: "_RoundContext", causal_parent_id: EventId) -> EventId:
+        """A successful round consumes each held lease: publish lease.consumed
+        with the fidelity at the moment of use (heralded fidelity decayed over
+        the hold, matching _assemble_round). requested->heralded->CONSUMED is the
+        terminal the freshness_at_consumption view reads; cancellation is
+        reserved for failed/unused leases (§5)."""
+        last_id = causal_parent_id
+        for lease_id, lease in ctx.leases.items():
+            if lease.state != LeaseState.HERALDED:
+                continue
+            qubit = ctx.qubit_handles[lease_id]
+            age_s = self._state.now - lease.heralded_at
+            decay_factor = self._state.models.decay.retention(
+                age_s, qubit.coherence_class, self._state.epoch)
+            fidelity_at_consumption = lease.fidelity_at_herald * decay_factor
+            lease.state = LeaseState.CONSUMED
+            last_id = self._publish(
+                "lease.consumed", lease_id, last_id,
+                {"round_id": ctx.round.round_id,
+                 "fidelity_at_consumption": fidelity_at_consumption})
+        return last_id
 
     # ---- failure / retry ----------------------------------------------------
 
@@ -635,8 +673,12 @@ class Engine:
         if ctx is not None:
             causal_parent_id = self._terminate_round(ctx, False, causal_parent_id)
         round_.state = RoundState.FAILED
+        # Pre-scoring (resource) failure: no round-success probability exists.
+        # success_probability is carried as None so round.failed's payload is
+        # schema-consistent; logical_error_proxy skips None (a resource denial
+        # is not a logical error).
         failed_id = self._publish("round.failed", round_.round_id, causal_parent_id,
-                                  {"reason": reason})
+                                  {"reason": reason, "success_probability": None})
         self._retry_or_drop(round_, failed_id)
 
     # ---- §5 failure-cleanup cascade + scheduler disposition (Task 7) --------
@@ -732,7 +774,8 @@ class Engine:
             del self._state.active_reservations[path_id]
             entity_id = self._reservation_entity_id(path_id)
             last_id = self._publish("reservation.released", entity_id, last_id,
-                                    {"round_id": round_id})
+                                    {"round_id": round_id,
+                                     "path_id": self._path_id_payload(path_id)})
         return last_id
 
     def _retry_or_drop(self, round_: SyndromeRound, causal_parent_id: EventId) -> None:

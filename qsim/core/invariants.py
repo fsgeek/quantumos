@@ -114,15 +114,23 @@ class InvariantChecker:
             )
         self._lease_states[lease_key] = target
 
+    # Every payload key that carries a fidelity/retention value in [0,1]. The
+    # engine writes fidelity_at_herald (herald) and fidelity_at_consumption
+    # (consume); "fidelity" is the generic form. Checking only "fidelity" left
+    # the real engine's fidelities entirely unvalidated (they use the *_at_*
+    # keys), so an out-of-range value bypassed the fail-stop net.
+    _FIDELITY_FIELDS = ("fidelity", "fidelity_at_herald", "fidelity_at_consumption")
+
     def _check_fidelity(self, event: Event) -> None:
-        if "fidelity" not in event.payload:
-            return
-        fidelity = event.payload["fidelity"]
-        if not (0.0 <= fidelity <= 1.0):
-            raise InvariantViolation(
-                f"fidelity {fidelity!r} outside [0,1] on entity {event.entity_id!r}",
-                event,
-            )
+        for field in self._FIDELITY_FIELDS:
+            value = event.payload.get(field)
+            if value is None:
+                continue
+            if not (0.0 <= value <= 1.0):
+                raise InvariantViolation(
+                    f"{field} {value!r} outside [0,1] on entity {event.entity_id!r}",
+                    event,
+                )
 
     def _record_terminated_holder(self, event: Event) -> None:
         if event.event_type == "round.arrived":

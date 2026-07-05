@@ -27,6 +27,11 @@ EVENT_TYPES = [
     # lease lifecycle (§5)
     "lease.requested", "lease.heralded", "lease.consumed", "lease.expired", "lease.cancelled",
     "lease.pool_returned",  # pregen return path, accounted separately per §5/§11
+    # per-lease fidelity at EVERY round terminal (success AND failure), tagged by
+    # cause so failure sub-types stay separable. payload: {round_id, outcome:
+    # "success"|"failure", cause, fidelity: float|null (null == never heralded,
+    # NOT rotted to zero)}
+    "lease.outcome_fidelity",
     # round lifecycle (§5, §11)
     "round.arrived", "round.admitted", "round.deferred", "round.dropped",
     "round.completed_in_deadline", "round.completed_late", "round.failed", "round.retried",

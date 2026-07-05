@@ -637,6 +637,17 @@ class Engine:
             round_.state = RoundState.FAILED
             failed_id = self._publish("round.failed", round_.round_id, parent,
                                       {"success_probability": p, "reason": "scoring_failure"})
+            # Cause-tagged fidelity-at-outcome (scoring-failure side). The round
+            # heralded and assembled — every lease has a real aged fidelity, the
+            # SAME vector _assemble_round scored (lease.fidelity_at_herald *
+            # decay_factor, aligned to round_.lease_ids). These are the aged-out
+            # leases the success-only observable was blind to.
+            last_id = failed_id
+            for lease_id, fidelity in zip(round_.lease_ids, lease_fidelities):
+                last_id = self._publish(
+                    "lease.outcome_fidelity", lease_id, last_id,
+                    {"round_id": round_.round_id, "outcome": "failure",
+                     "cause": "scoring_failure", "fidelity": fidelity})
             self._retry_or_drop(round_, failed_id)
 
     def _consume_round_leases(self, ctx: "_RoundContext", causal_parent_id: EventId) -> EventId:
@@ -655,13 +666,43 @@ class Engine:
                 age_s, qubit.coherence_class, self._state.epoch)
             fidelity_at_consumption = lease.fidelity_at_herald * decay_factor
             lease.state = LeaseState.CONSUMED
-            last_id = self._publish(
+            consumed_id = self._publish(
                 "lease.consumed", lease_id, last_id,
                 {"round_id": ctx.round.round_id,
                  "fidelity_at_consumption": fidelity_at_consumption})
+            # Cause-tagged fidelity-at-outcome (success side). Same aged fidelity
+            # the consumed event carries; recorded on the shared observable so the
+            # success and failure distributions live in one place. Hung off the
+            # consumed event as a LEAF (it does not advance last_id), so the round
+            # terminal's causal spine stays consumed -> ... -> round.completed,
+            # unchanged by this annotation.
+            self._publish(
+                "lease.outcome_fidelity", lease_id, consumed_id,
+                {"round_id": ctx.round.round_id, "outcome": "success",
+                 "cause": "consumed", "fidelity": fidelity_at_consumption})
+            last_id = consumed_id
         return last_id
 
     # ---- failure / retry ----------------------------------------------------
+
+    def _aged_fidelity_or_none(self, ctx: "_RoundContext", lease_id: str) -> float | None:
+        """The lease's heralded fidelity aged to `now`, or None if the lease was
+        never heralded. Reads lease.heralded_at / lease.fidelity_at_herald, which
+        the §5 cascade does NOT reset — so this is valid even after _terminate_round
+        has cancelled the lease. Matches the aging in _consume_round_leases /
+        _assemble_round (fidelity_at_herald * decay_factor, no memory-access cost).
+
+        None is the deliberate encoding for "never existed": a pre-herald failure
+        is NOT a fidelity that rotted to zero, and conflating the two would corrupt
+        the outcome distribution."""
+        lease = ctx.leases.get(lease_id)
+        if lease is None or lease.heralded_at is None or lease.fidelity_at_herald is None:
+            return None
+        qubit = ctx.qubit_handles[lease_id]
+        age_s = self._state.now - lease.heralded_at
+        decay_factor = self._state.models.decay.retention(
+            age_s, qubit.coherence_class, self._state.epoch)
+        return lease.fidelity_at_herald * decay_factor
 
     def _fail_round(self, round_: SyndromeRound, reason: str, causal_parent_id: EventId) -> None:
         # Run the §5 cleanup cascade (decoder-job cancellation, scheduler lease
@@ -679,6 +720,22 @@ class Engine:
         # is not a logical error).
         failed_id = self._publish("round.failed", round_.round_id, causal_parent_id,
                                   {"reason": reason, "success_probability": None})
+        # Cause-tagged fidelity-at-outcome (pre-scoring failure side). Two
+        # physically distinct sub-types must NOT average together:
+        #  - a heralding deadline (some leases may have heralded and aged) ->
+        #    cause="deadline", aged fidelity for heralded leases, null otherwise;
+        #  - a resource denial before ANY heralding (capacity/endpoint) ->
+        #    cause="no_herald", fidelity=null for every lease (never existed).
+        # ctx here is the pre-terminate reference (heralded_at/fidelity_at_herald
+        # survive the cascade), so the aged fidelity is still recoverable.
+        if ctx is not None:
+            cause = "deadline" if reason == "heralding_deadline_exceeded" else "no_herald"
+            last_id = failed_id
+            for lease_id in round_.lease_ids:
+                last_id = self._publish(
+                    "lease.outcome_fidelity", lease_id, last_id,
+                    {"round_id": round_.round_id, "outcome": "failure",
+                     "cause": cause, "fidelity": self._aged_fidelity_or_none(ctx, lease_id)})
         self._retry_or_drop(round_, failed_id)
 
     # ---- §5 failure-cleanup cascade + scheduler disposition (Task 7) --------

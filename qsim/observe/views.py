@@ -26,6 +26,31 @@ def freshness_at_consumption(events_path: Path) -> list[float]:
     ]
 
 
+def fidelity_at_outcome(events_path: Path) -> dict[tuple[str, str], list[float]]:
+    """Per-lease fidelity at round terminal, for ALL outcomes, keyed by
+    (outcome, cause) so success-vs-failure and rot-vs-deadline-vs-no_herald
+    distributions stay separable (design defect fix: freshness_at_consumption
+    reads only lease.consumed and so is blind to the aged-out leases that CAUSED
+    failures — survivor bias).
+
+    Reads lease.outcome_fidelity events. Null fidelities (cause="no_herald" and
+    unheralded leases of a deadline failure — "never existed", not "rotted to
+    zero") are EXCLUDED from the returned distributions; conflating them with a
+    real 0.0 would corrupt the aggregate. Keys with only null fidelities are
+    therefore absent from the result."""
+    distributions: dict[tuple[str, str], list[float]] = {}
+    for record in iter_events(events_path):
+        if record["event_type"] != "lease.outcome_fidelity":
+            continue
+        payload = record["payload"]
+        fidelity = payload["fidelity"]
+        if fidelity is None:
+            continue
+        key = (payload["outcome"], payload["cause"])
+        distributions.setdefault(key, []).append(fidelity)
+    return distributions
+
+
 def decoder_backlog_series(events_path: Path) -> list[tuple[float, int]]:
     series: list[tuple[float, int]] = []
     backlog = 0

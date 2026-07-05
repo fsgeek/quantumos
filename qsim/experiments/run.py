@@ -47,6 +47,7 @@ from qsim.models.heralding import BernoulliHeraldingModel
 from qsim.models.memory_access import LinearMemoryAccessModel, ZeroCostMemoryAccessModel
 from qsim.models.round_success import LogisticRoundSuccessModel
 from qsim.observe.run_dir import RunDirWriter
+from qsim.observe.steady_state import compute_steady_state
 from qsim.policies.s0 import S0Scheduler
 from qsim.policies.s1 import S1Scheduler
 from qsim.workload.generator import WorkloadGenerator
@@ -246,4 +247,20 @@ def run(config: RunConfig, out_dir: Path) -> Path:
 
     engine.run_to(config.max_sim_time_s)
 
+    # Steady-state / convergence gate (spec §13). Computed AFTER the run from
+    # the captured trace, then stamped into the already-written header so a
+    # non-converged (divergent-queue) run is flagged, not silently trusted.
+    # Localized additive patch of header.json (does not touch RunDirWriter).
+    _stamp_steady_state(run_dir_writer.header_path, run_dir_writer.events_path)
+
     return run_dir_writer.run_dir
+
+
+def _stamp_steady_state(header_path: Path, events_path: Path) -> None:
+    """Add a `steady_state` block to an already-written header.json (§13)."""
+    import json
+
+    verdict = compute_steady_state(events_path)
+    header = json.loads(header_path.read_text())
+    header["steady_state"] = verdict.as_dict()
+    header_path.write_text(json.dumps(header, indent=2, sort_keys=True))

@@ -13,9 +13,15 @@ fi
 upgraded=0
 for f in timestamps/*.ots; do
     [ -f "$f" ] || continue
+    orig_hash=$(sha256sum "$f" | cut -d' ' -f1)
     if "$OTS" upgrade "$f" 2>/dev/null; then
-        echo "upgraded: $f"
-        upgraded=$((upgraded + 1))
+        new_hash=$(sha256sum "$f" | cut -d' ' -f1)
+        if [ "$orig_hash" != "$new_hash" ]; then
+            echo "upgraded: $f"
+            upgraded=$((upgraded + 1))
+        else
+            echo "already complete: $f"
+        fi
     else
         echo "pending:  $f"
     fi

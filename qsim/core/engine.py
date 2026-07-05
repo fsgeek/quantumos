@@ -169,6 +169,11 @@ class Engine:
         self._port_pair_counter = 0
         self._arrival_index = 0
         self._round_contexts: dict[str, _RoundContext] = {}
+        # Single-server (M/M/1) decoder: the wall-clock instant the decoder
+        # becomes free. A job cannot begin service before this (see
+        # _enqueue_decoder_job). Without it the decoder would be infinite-server
+        # and could never become the bottleneck the design doc requires (§16.2).
+        self._decoder_free_at = 0.0
 
     # ---- trace/invariant plumbing -------------------------------------------
 
@@ -548,8 +553,17 @@ class Engine:
         service_time_s = self._state.models.decoder_service.service_time_s(
             job, self._state.decoder_backlog, Draw(u=u),
         )
-        job.dequeue_time = self._state.now
-        self._heap.push(self._state.now + service_time_s, _DecoderCompletionPayload(
+        # Single-server (M/M/1) serialization: service STARTS when the decoder is
+        # free, i.e. max(now, _decoder_free_at); the server is then busy until
+        # start + service_time. sojourn = wait + service, so a backed-up decoder
+        # can push rounds late (decoder-bound) — the behavior §16.2's M/M/1 gate
+        # checks. (M0 imprecision, flagged: a job cancelled mid-service via the
+        # §5 cascade still holds its reserved server window; benign for the
+        # decoupled M/M/1 regime, which has no round failures.)
+        start_s = max(self._state.now, self._decoder_free_at)
+        self._decoder_free_at = start_s + service_time_s
+        job.dequeue_time = start_s
+        self._heap.push(start_s + service_time_s, _DecoderCompletionPayload(
             job_id=job.job_id, round_id=round_.round_id, causal_parent_id=enqueued_id,
         ))
 

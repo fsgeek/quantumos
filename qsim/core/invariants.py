@@ -59,11 +59,16 @@ class InvariantChecker:
 
     def __init__(self) -> None:
         self._last_sim_time: float | None = None
-        self._lease_states: dict[str, str | None] = {}
+        self._lease_states: dict[tuple[str, int], str | None] = {}
         self._terminated_holders: set[str] = set()
+        # Reused round_id -> most recent retry_ordinal seen on round.arrived
+        # (§9: WorkloadGenerator keeps the same round_id across retries for
+        # lineage). Drives the lease-identity scoping in _lease_key below.
+        self._round_retry_ordinal: dict[str, int] = {}
 
     def observe(self, event: Event, state: EngineState) -> None:
         self._check_monotonicity(event)
+        self._record_round_retry_ordinal(event)
         self._check_lease_transition(event)
         self._check_fidelity(event)
         self._record_terminated_holder(event)
@@ -77,18 +82,37 @@ class InvariantChecker:
                 event,
             )
 
+    def _record_round_retry_ordinal(self, event: Event) -> None:
+        if event.event_type == "round.arrived":
+            self._round_retry_ordinal[event.entity_id] = event.payload.get("retry_ordinal", 0)
+
+    def _lease_key(self, event: Event) -> tuple[str, int]:
+        # A lease_id is reused verbatim across a round's retries
+        # (WorkloadGenerator.on_outcome keeps "same round identity for
+        # lineage", §9) even though each retry is a genuinely NEW lease
+        # attempt, not a resurrection of the prior attempt's cancelled one.
+        # Scope lease-transition legality by (lease_id, retry_ordinal at
+        # request time) -- mirroring how _record_terminated_holder already
+        # scopes round terminality by round_id generation via round.arrived
+        # -- so a retry's fresh lease.requested is compared against None,
+        # not against the failed attempt's terminal 'cancelled' state.
+        round_id = event.payload.get("round_id")
+        generation = self._round_retry_ordinal.get(round_id, 0) if round_id is not None else 0
+        return (event.entity_id, generation)
+
     def _check_lease_transition(self, event: Event) -> None:
         target = _LEASE_TRANSITION_EVENTS.get(event.event_type)
         if target is None:
             return
-        current = self._lease_states.get(event.entity_id)
+        lease_key = self._lease_key(event)
+        current = self._lease_states.get(lease_key)
         if target not in _LEGAL_LEASE_TRANSITIONS[current]:
             raise InvariantViolation(
                 f"illegal lease transition for {event.entity_id!r}: "
                 f"{current!r} -> {target!r} via {event.event_type!r}",
                 event,
             )
-        self._lease_states[event.entity_id] = target
+        self._lease_states[lease_key] = target
 
     def _check_fidelity(self, event: Event) -> None:
         if "fidelity" not in event.payload:

@@ -166,6 +166,13 @@ class DecoderServiceModel(Protocol):
     def service_time_s(self, job: DecoderJob, backlog: int,
                        draw: Draw) -> float:
         """Sampled service time; `draw` is an engine-supplied keyed source."""
+
+    def expected_service_time_s(self, backlog: int,
+                                epoch: CalibrationEpoch) -> float:
+        """Closed-form mean service time at the given backlog, no draw.
+        Used by admission-control projection (§8.1), which needs an
+        expectation rather than a sample: the model surface owns knowledge
+        of its own distribution's mean, per §4's separation rule."""
 ```
 
 | Surface | v1 implementation | Control setting |
@@ -230,6 +237,51 @@ ablation ladder is configuration, not code:
 
 The claim under test is that S1's advantage is attributable to the named mechanisms.
 The ladder isolates each.
+
+### 8.1 Admission control signal
+
+The admission decision at round-request time is: admit only if the round's
+**projected success probability at the projected consumption instant** exceeds a
+configured threshold `θ_admit` (a swept parameter, not a fixed constant). This is a
+named design decision, not a default silently assumed by the admission mechanism's
+implementation — it elevates *which signal gates admission* to the same level of
+scrutiny as the physics parameters it depends on.
+
+The projection reuses `RoundSuccessModel.success_probability` — the same surface
+used to score the round's real outcome — applied to *projected* rather than
+*actual* inputs:
+
+- `lease_fidelities` — for leases not yet held: `HeraldingModel.heralded_fidelity`
+  decayed by `DecayModel.retention` over the projected age at the consumption
+  instant; for leases already held: decay applied from `state_held_since` to that
+  same instant.
+- `memory_retentions` — `MemoryAccessModel.access_cost(...).retention_factor` at
+  the projected access instant, composed with decay-to-that-instant per §6's
+  composition rule.
+- `decoder_latency_s` — `DecoderServiceModel.expected_service_time_s` at the
+  current backlog: a deterministic estimate, not a sampled draw. Admission stays a
+  deterministic function of state (consistent with S0's threshold/priority
+  decisions), and does not consume an RNG draw that the round would separately
+  draw from the `decode` stream if actually admitted.
+- `deadline_slack_s` — `deadline − (admission_time + projected_time_to_consumption
+  + decoder_latency_s estimate)`.
+
+This folds fidelity decay *and* decoder congestion into one signal, rather than
+reasoning about freshness independent of backlog — deliberately broader than a raw
+freshness threshold, and it means admission-control quality inherits whatever
+functional form `RoundSuccessModel` takes, which is exactly the sensitivity §19's
+kill condition is designed to surface if that shape turns out to be load-bearing.
+
+### 8.2 Lease pre-generation policy
+
+Pre-generation maintains a pool of not-yet-consumed leases keyed by
+`(path, coherence class)`. A generation attempt (switch-path reservation +
+heralding attempt, per §7's lifecycle) is triggered whenever a pool's depth falls
+below a configured low-water mark `L` — a swept parameter, not a fixed constant,
+consistent with §8.1's treatment of `θ_admit`. Pool leases that age past
+usefulness are disposed per the §5 cleanup cascade (returned/expired), which is
+why pool returns are accounted separately in work accounting (§11) — reuse must
+stay visible rather than silently folded into "consumed."
 
 ## 9. Workload
 

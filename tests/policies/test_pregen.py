@@ -217,6 +217,44 @@ def test_round_bound_demand_still_takes_priority_while_replenish_is_in_flight():
     assert scheduler.next_lease_request(now_s=0.0).purpose is LeaseRequestPurpose.ROUND
 
 
+def test_replenish_scan_cursor_rotates_past_a_resolved_key():
+    # B3 review finding (engine drain starvation): the engine's drain pass ends
+    # at the first §7 denial, so a FIXED scan order re-offers the same
+    # head-of-line key every pass — a key whose path is perpetually
+    # endpoint-conflicted then starves every later key of mints forever. The
+    # cursor must advance past a resolved key so the next mint starts at its
+    # successor, spreading attempts across the tracked universe.
+    key_a = ("pathA", "electron")
+    key_b = ("pathB", "electron")
+    scheduler = _S0WithPregen(low_water_mark=1, tracked_keys=[key_a, key_b])
+
+    first = scheduler.next_lease_request(now_s=0.0)
+    assert first.path_id == "pathA"
+
+    # The attempt resolves as abandoned (e.g. a §7 endpoint denial): key A is
+    # again below L, but the next mint must NOT return to it first.
+    scheduler.on_pool_replenish_outcome(key_a, False, None, now_s=0.0)
+
+    second = scheduler.next_lease_request(now_s=0.0)
+    assert second.path_id == "pathB"
+
+
+def test_replenish_mints_rotate_across_keys_before_deepening_one_key():
+    # With L >= 2 a fixed scan order mints the SAME key twice back-to-back in
+    # one drain pass; the second attempt's path always endpoint-conflicts with
+    # the first attempt's own live reservation — a guaranteed abandonment that
+    # burns the pass. Rotation interleaves keys instead: A, B, A, B.
+    key_a = ("pathA", "electron")
+    key_b = ("pathB", "electron")
+    scheduler = _S0WithPregen(low_water_mark=2, tracked_keys=[key_a, key_b])
+
+    minted = [scheduler.next_lease_request(now_s=0.0).path_id for _ in range(4)]
+
+    assert minted == ["pathA", "pathB", "pathA", "pathB"]
+    # Universe exhausted at L per key: no fifth mint.
+    assert scheduler.next_lease_request(now_s=0.0) is None
+
+
 def test_on_round_terminal_skips_consumed_and_never_held_leases():
     scheduler = _S0WithPregen(low_water_mark=1, tracked_keys=[KEY])
     consumed = _FakeLease(path_id="pathA", coherence_class="electron", is_held=True, is_consumed=True)

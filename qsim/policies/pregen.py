@@ -32,6 +32,17 @@ class PregenMixin:
         # bounds outstanding attempts per key, no extra config knob.
         self._in_flight: dict[tuple, int] = {key: 0 for key in tracked_keys}
         self._pool_request_seq = 0
+        # B3 review: rotating scan cursor over the tracked-key ring. The
+        # engine's drain pass ends at the first §7 denial, so a FIXED scan
+        # order would re-offer the same head-of-line key every pass — one
+        # perpetually endpoint-conflicted key then starves every later key of
+        # mints — and with L >= 2 the second back-to-back mint for one key
+        # always conflicts with the first attempt's own live reservation, a
+        # guaranteed abandonment that burns the pass. Advancing the cursor
+        # past each minted key spreads attempts around the ring; termination
+        # is unchanged (the in-flight bound still caps mints per key at L).
+        self._scan_keys: list[tuple] = list(self._pool)
+        self._scan_cursor = 0
 
     def pool_depth(self, key: tuple) -> int:
         return len(self._pool.get(key, []))
@@ -55,8 +66,13 @@ class PregenMixin:
         base_request = super().next_lease_request(now_s)
         if base_request is not None:
             return base_request
-        for key, pool in self._pool.items():
-            if len(pool) + self._in_flight[key] < self._low_water_mark:
+        n = len(self._scan_keys)
+        for offset in range(n):
+            idx = (self._scan_cursor + offset) % n
+            key = self._scan_keys[idx]
+            if len(self._pool[key]) + self._in_flight[key] < self._low_water_mark:
+                # Next mint starts at this key's successor (see __init__).
+                self._scan_cursor = (idx + 1) % n
                 self._in_flight[key] += 1
                 self._pool_request_seq += 1
                 path_id, coherence_class = key

@@ -189,8 +189,13 @@ def build_scheduler(config: RunConfig, models: ModelBundle | None = None):
             decoder_service_model=bundle.decoder_service,
             low_water_mark=config.pregen_low_water_mark,
             # B3: the full engine-synthesized path universe x MESSENGER (the
-            # engine's single lease coherence class), so every path a round can
-            # demand has a pool the low-water trigger maintains.
+            # engine's single lease coherence class), so every path a round
+            # can demand has a pool. Maintenance is best-effort, NOT a depth
+            # guarantee: replenish attempts compete with round demand for §7
+            # capacity, minted round-robin across this universe (PregenMixin's
+            # rotating scan cursor) at each drain opportunity (round admission
+            # and reservation release). Contended regimes can hold depths
+            # below L indefinitely — that is a T1 measurement, not a defect.
             tracked_keys=tuple(
                 (path, CoherenceClass.MESSENGER)
                 for path in synthesized_path_universe(config.switch_capacity_c)

@@ -363,7 +363,12 @@ class Engine:
     def _begin_lease_acquisition(self, round_: SyndromeRound, causal_parent_id: EventId) -> None:
         ctx = self._round_contexts[round_.round_id]
         ctx.causal_parent_id = causal_parent_id
+        self._drain_lease_requests(causal_parent_id)
+
+    def _drain_lease_requests(self, causal_parent_id: EventId | None) -> None:
         # Drive acquisition from the scheduler's queue (EDF-ordered in S0).
+        # Called at round admission and — for pooling schedulers — whenever a
+        # reservation release frees a fabric slot (see _release_reservation).
         while True:
             request = self._scheduler.next_lease_request(self._state.now)
             if request is None:
@@ -371,11 +376,18 @@ class Engine:
             if (request.purpose is LeaseRequestPurpose.POOL_REPLENISH
                     and self._scheduler_pools):
                 # B3: service the §8.2 generation attempt. A reservation-time
-                # denial ends THIS drain pass (returns False): a contended
-                # fabric would deny every further replenish at the same
-                # instant, and ending the pass is what bounds the drain — all
-                # ROUND requests were already served (the mixin orders them
-                # strictly first), so nothing is starved by the break.
+                # denial ends THIS drain pass (returns False). The denial is
+                # NOT proof the whole tracked universe is blocked — an
+                # endpoint conflict is key-local and a disjoint key might
+                # still fit — but continuing would let the abandonment re-arm
+                # the denied key's trigger inside the same pass and un-bound
+                # the drain. Ending the pass is the termination bound;
+                # fairness across keys is the mixin's rotating scan cursor's
+                # job (the NEXT pass starts past the denied key), and denied
+                # attempts re-fire at the next drain opportunity — a later
+                # admission or a reservation release. All ROUND requests were
+                # already served (the mixin orders them strictly first), so no
+                # round is starved by the break.
                 if not self._begin_pool_replenish(request, causal_parent_id):
                     break
                 continue
@@ -392,6 +404,23 @@ class Engine:
         path_id = request.path_id
         causal_parent_id = ctx.causal_parent_id
         lease_id = ctx.path_to_lease.get(path_id, request.request_id)
+
+        # B3 review must-fix: a within-round path collision — two of the
+        # round's leases canonicalize to one PathId, so ctx.path_to_lease
+        # resolves both requests to a single lease_id (leases_per_round >= 2
+        # at C=1, or generally > 2*C). Pre-B3 the first request's live
+        # reservation made the second fail the §7 checks below before it
+        # published anything; a pool withdrawal holds NO reservation, so
+        # without this guard the second request would re-publish
+        # lease.requested for the already-HERALDED lease_id (or double-
+        # withdraw at pool depth >= 2) — an illegal transition that fail-stops
+        # the ENTIRE run. Fail the ROUND instead, with the same verdict §7
+        # would have reached: the colliding paths share both endpoints by
+        # identity. Unreachable without a pool hit (with a live reservation
+        # the §7 checks still fire first), so S0 traces are untouched.
+        if lease_id in ctx.requested:
+            self._fail_round(round_, "endpoint_conflict", causal_parent_id)
+            return
 
         # B3 pool withdrawal: a live pool satisfies ROUND demand BEFORE the §7
         # checks — a pool hit holds no path, so it must be able to relieve a
@@ -573,9 +602,24 @@ class Engine:
         reservation.state = ReservationState.RELEASED
         reservation.released_at = self._state.now
         entity_id = self._reservation_entity_id(path_id)
-        self._publish("reservation.released", entity_id, causal_parent_id,
-                      {"round_id": reservation.holder_id,
-                       "path_id": self._path_id_payload(path_id)})
+        released_id = self._publish("reservation.released", entity_id, causal_parent_id,
+                                    {"round_id": reservation.holder_id,
+                                     "path_id": self._path_id_payload(path_id)})
+        # B3 review fix: a freed slot is a drain opportunity. Replenishes
+        # minted ONLY during the admission drain always lose to the admitting
+        # round's own reservation at C=1 (the round's request is served first
+        # and occupies the single slot), so the pool could never fill under
+        # healthy operation — spec §8.2's "triggered whenever depth falls
+        # below L" was silently dead for every C=1 regime, including the
+        # shipped examples/s1-admission.toml. Draining here lets the just-
+        # released slot host the §8.2 attempt immediately. Deliberately NOT
+        # also drained at replenish RESOLUTION (_release_pool_reservation):
+        # with reconfig_delay_s=0 and an uncalibrated (p=0) tracked path, a
+        # resolution-time drain would mint -> herald-fail -> re-mint at one
+        # frozen sim instant, a livelock; herald-time releases are tied to
+        # round progress, which the deadline bounds.
+        if self._scheduler_pools:
+            self._drain_lease_requests(released_id)
 
     # ---- pregen pool replenish + withdrawal (B3, design spec §8.2) ----------
 

@@ -88,6 +88,46 @@ def test_run_with_s1_scheduler_wires_admission_and_pregen_params(tmp_path):
     ), "no admission decision carried the S1 admission_theta — params not wired"
 
 
+def test_s1_multi_lease_round_with_colliding_paths_completes_the_run(tmp_path):
+    # B3 review must-fix regression: leases_per_round=2 at switch_capacity_c=1
+    # collapses both of a round's leases onto ONE canonical engine path
+    # (M0:0, M1:0), so both requests share a single lease_id. A pool hit holds
+    # no reservation, so the second request used to slip past the §7 checks and
+    # re-publish lease.requested for the already-HERALDED shared lease_id — an
+    # InvariantViolation that crashed the ENTIRE run mid-simulation. The run
+    # completing is the core assertion; the pool.withdrawn check proves the
+    # regression's trigger (a withdrawal-satisfied first request) actually fired.
+    a = PortId(module_id="M0", port_index=0)
+    b = PortId(module_id="M1", port_index=0)
+    path = make_path_id(a, b)
+    epoch = CalibrationEpoch(
+        epoch_id="collision-epoch",
+        decay_rate_per_class={CoherenceClass.MESSENGER: 0.0, CoherenceClass.MEMORY: 0.0},
+        memory_access_channel_s=0.0,
+        memory_access_wear_rate=0.0,
+        heralding_p_per_path={path: 1.0},
+        heralded_fidelity_per_path={path: 0.9},
+        round_success_logistic_midpoint=-10.0,
+        round_success_logistic_slope=10.0,
+        round_success_slack_penalty_per_s=0.0,
+        decoder_service_rate=1000.0,
+    )
+    config = RunConfig(
+        run_seed=3, scheduler="S1", epoch=epoch, arrival_rate_hz=0.5,
+        leases_per_round=2, deadline_slack_s=50.0, switch_capacity_c=1,
+        reconfig_delay_s=0.0, max_sim_time_s=10.0,
+        admission_theta=0.0, pregen_low_water_mark=2, retry_cap=2,
+    )
+
+    run_dir = run(config, tmp_path)
+
+    events = [json.loads(line)
+              for line in (run_dir / "events.jsonl").read_text().strip().splitlines()]
+    assert any(e["event_type"] == "pool.withdrawn" for e in events), (
+        "the pool was never exercised — this config no longer reproduces the "
+        "withdrawal-satisfied first request the regression guards")
+
+
 def test_build_scheduler_wires_admission_theta_and_low_water_mark_into_s1():
     config = _s0_config(scheduler="S1", admission_theta=0.5, pregen_low_water_mark=2)
     scheduler = build_scheduler(config)

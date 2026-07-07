@@ -8,6 +8,7 @@ from qsim.policies.protocol import (
     LeaseDisposition,
     LeaseRequest,
     LeaseRequestPurpose,
+    PoolingScheduler,
     ProjectableLease,
     RoundProjection,
     Scheduler,
@@ -75,3 +76,22 @@ def test_scheduler_protocol_is_structurally_satisfied_by_a_minimal_implementatio
             return None
 
     assert isinstance(_MinimalScheduler(), Scheduler)
+
+
+def test_pooling_scheduler_protocol_is_satisfied_by_pregen_compositions_not_s0():
+    # B3: the engine gates EVERY pool code path on isinstance(scheduler,
+    # PoolingScheduler), so S0 runs execute zero new code (bit-identical S0).
+    from qsim.policies.pregen import PregenMixin
+    from qsim.policies.s0 import S0Scheduler
+    from qsim.policies.s1 import S1Scheduler
+
+    class _S0WithPregen(PregenMixin, S0Scheduler):
+        pass
+
+    pregen_composed = _S0WithPregen(low_water_mark=1, tracked_keys=[])
+    assert isinstance(pregen_composed, PoolingScheduler)
+    assert issubclass(S1Scheduler, PoolingScheduler)
+    assert not isinstance(S0Scheduler(), PoolingScheduler)
+    # A PoolingScheduler is still a Scheduler (the protocol EXTENDS, it does
+    # not fork): the engine's existing call surface is unchanged.
+    assert isinstance(pregen_composed, Scheduler)

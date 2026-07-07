@@ -41,6 +41,18 @@ EVENT_TYPES = [
     "decoder.enqueued", "decoder.dequeued", "decoder.completed", "decoder.cancelled",
     # randomness (§10) — every draw is itself a trace event
     "draw.sampled",  # payload: {stream, key, uniform}
+    # pregen pool state (§8.2, B3) — ANNOTATIONS only, never terminals: none of
+    # these enters work-accounting counters, the lease-transition map, or the
+    # terminal sets (the standing annotation/terminal double-count lesson).
+    # Common payload core: {key: [path_id payload, coherence-class value],
+    # depth: pool depth AFTER the operation}; sim_time comes from the bus.
+    # pool.deposited adds {lease_id, round_id|null, source: "replenish"|"round_return"};
+    # pool.withdrawn adds {pooled_lease_id, lease_id (the consuming round's), round_id};
+    # pool.expired adds {lease_id, round_id|null (the would-be withdrawer)};
+    # pool.replenish_abandoned adds {request_id,
+    #   reason: "switch_capacity_exhausted"|"endpoint_conflict"|"herald_failed"}
+    # (depth unchanged by an abandonment; carried for series continuity).
+    "pool.deposited", "pool.withdrawn", "pool.expired", "pool.replenish_abandoned",
 ]
 
 _EVENT_TYPE_SET = frozenset(EVENT_TYPES)

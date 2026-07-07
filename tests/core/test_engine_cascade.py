@@ -97,6 +97,64 @@ def test_round_bound_cascade_cancels_reservation_when_heralding_never_succeeds()
     assert "lease.cancelled" in cascade_types_before_failed
 
 
+def test_returned_to_pool_disposition_also_publishes_pool_deposited_annotation():
+    # B3: the RETURNED_TO_POOL disposition now leaves the pool-depth trace
+    # alongside its §5/§11 counter event — pool.deposited(source="round_return")
+    # co-occurs with lease.pool_returned, and only the former moves the depth
+    # series (the annotation/terminal double-count lesson).
+    from collections import defaultdict as _dd
+    from dataclasses import replace
+
+    from qsim.entities import CoherenceClass, PortId, make_path_id
+    from qsim.policies.pregen import PregenMixin
+
+    class _PoolingS0(PregenMixin, S0Scheduler):
+        pass
+
+    epoch = make_epoch()
+    object.__setattr__(epoch, "heralding_p_per_path", _dd(lambda: 1.0))
+    object.__setattr__(epoch, "heralded_fidelity_per_path", _dd(lambda: 0.9))
+    config = replace(make_config(switch_capacity_c=2), epoch=epoch)
+    # Heralding always succeeds; scoring always fails (midpoint 10 puts every
+    # achievable aggregate fidelity far below the curve): the round terminates
+    # FAILED with a fresh held lease for the cascade to return.
+    models = ModelBundle(
+        decay=NoDecayModel(),
+        memory_access=ZeroCostMemoryAccessModel(),
+        heralding=BernoulliHeraldingModel(),
+        round_success=LogisticRoundSuccessModel(
+            logistic_midpoint=10.0, logistic_slope=10.0, slack_penalty_per_s=0.0),
+        decoder_service=ExponentialDecoderServiceModel(service_rate=1000.0),
+    )
+    key = (make_path_id(PortId("M0", 0), PortId("M1", 0)), CoherenceClass.MESSENGER)
+    scheduler = _PoolingS0(low_water_mark=0, tracked_keys=[key])
+
+    events = []
+    clock = SimClock()
+    trace = TraceBus(run_id="test-run", clock=clock)
+    trace.subscribe(events.append)
+    engine = Engine(config=config, scheduler=scheduler, models=models,
+                    workload=make_workload(), trace=trace,
+                    invariants=InvariantChecker())
+    first_round = make_workload().next_arrival(0.0, 1)
+    engine.run_to(first_round.arrival_time + 0.3)
+
+    returned = [e for e in events if e.event_type == "lease.pool_returned"]
+    deposits = [e for e in events if e.event_type == "pool.deposited"]
+    assert returned, "scoring failure with a fresh held lease must pool-return"
+    assert deposits, "every pool return must also leave the depth annotation"
+    first_return, first_deposit = returned[0], deposits[0]
+    assert first_deposit.payload["source"] == "round_return"
+    assert first_deposit.payload["lease_id"] == first_return.entity_id
+    assert first_deposit.payload["round_id"] == first_return.payload["round_id"]
+    assert first_deposit.payload["depth"] == 1
+    assert first_deposit.payload["key"] == [[["M0", 0], ["M1", 0]], "messenger"]
+    # The annotation chains off its co-occurring counter event.
+    assert first_deposit.causal_parent_id == (first_return.run_id, first_return.seq)
+    # Depth agreement (R3) across the paired deposit.
+    assert len(engine._state.pool[key]) == scheduler.pool_depth(key)
+
+
 def test_cascade_releases_only_the_failing_rounds_reservation_not_a_peers():
     # Two capacity-1 rounds contend for the single path. r1 acquires it and —
     # make_models's empty heralding epoch yields p=0.0, so r1 never heralds —

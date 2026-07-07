@@ -25,6 +25,12 @@ class PregenMixin:
         super().__init__(**kwargs)
         self._low_water_mark = low_water_mark
         self._pool: dict[tuple, list[ProjectableLease]] = {key: [] for key in tracked_keys}
+        # Per-key count of minted-but-unresolved POOL_REPLENISH attempts (B3).
+        # Without this term in the trigger, minting-while-below-L makes the
+        # engine's acquisition drain loop non-terminating for a perpetually
+        # empty pool (the documented run.py unbounded-drain hazard): L itself
+        # bounds outstanding attempts per key, no extra config knob.
+        self._in_flight: dict[tuple, int] = {key: 0 for key in tracked_keys}
         self._pool_request_seq = 0
 
     def pool_depth(self, key: tuple) -> int:
@@ -50,7 +56,8 @@ class PregenMixin:
         if base_request is not None:
             return base_request
         for key, pool in self._pool.items():
-            if len(pool) < self._low_water_mark:
+            if len(pool) + self._in_flight[key] < self._low_water_mark:
+                self._in_flight[key] += 1
                 self._pool_request_seq += 1
                 path_id, coherence_class = key
                 return LeaseRequest(
@@ -62,6 +69,18 @@ class PregenMixin:
                     round_id=None,
                 )
         return None
+
+    def on_pool_replenish_outcome(self, key: tuple, succeeded: bool,
+                                   lease: ProjectableLease | None, now_s: float) -> None:
+        """Engine callback at replenish-attempt resolution (B3): every attempt
+        — heralded, herald-failed, or denied at reservation time — releases its
+        in-flight slot exactly once, so the low-water trigger re-arms. A
+        successful attempt deposits the engine's projection of the new pooled
+        lease, keeping this mirror in lockstep with EngineState.pool."""
+        if self._in_flight.get(key, 0) > 0:
+            self._in_flight[key] -= 1
+        if succeeded and lease is not None:
+            self.deposit_to_pool(lease)
 
     def on_round_terminal(self, round_projection: RoundProjection, succeeded: bool,
                            now_s: float) -> list[LeaseDisposition]:

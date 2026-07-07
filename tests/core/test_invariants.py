@@ -87,6 +87,42 @@ def test_pool_returned_event_is_not_checked_as_a_lease_transition():
     checker.observe(make_event("lease.consumed", "lease-1", sim_time=3.0, seq=3), state)
 
 
+def test_pool_events_pass_through_as_annotations_not_lease_transitions():
+    # B3 guard: the four pool.* events are annotations — no lease-lifecycle
+    # legality is applied to them, and they mark no entity terminated. A pooled
+    # lease's id flowing through pool events between its consumer's requested
+    # and consumed transitions must be legal.
+    checker = InvariantChecker()
+    state = make_state()
+    key = [[["M0", 0], ["M1", 0]], "messenger"]
+    checker.observe(make_event("pool.deposited", "pooled-1", sim_time=0.0, seq=0,
+                               payload={"key": key, "depth": 1, "source": "replenish"}), state)
+    checker.observe(make_event("lease.requested", "lease-1", sim_time=1.0, seq=1), state)
+    checker.observe(make_event("pool.withdrawn", "pooled-1", sim_time=1.0, seq=2,
+                               payload={"key": key, "depth": 0, "lease_id": "lease-1"}), state)
+    checker.observe(make_event("lease.heralded", "lease-1", sim_time=1.0, seq=3,
+                               payload={"fidelity_at_herald": 0.9, "source": "pool"}), state)
+    checker.observe(make_event("pool.expired", "pooled-2", sim_time=2.0, seq=4,
+                               payload={"key": key, "depth": 0}), state)
+    checker.observe(make_event("pool.replenish_abandoned", "pool-req-1", sim_time=2.5, seq=5,
+                               payload={"key": key, "depth": 0, "reason": "herald_failed"}), state)
+    # The consumer's terminal is still legal AFTER its lease id appeared in
+    # pool.withdrawn's payload: pool events terminated nothing.
+    checker.observe(make_event("lease.consumed", "lease-1", sim_time=3.0, seq=6,
+                               payload={"fidelity_at_consumption": 0.8}), state)
+
+
+def test_pool_event_with_out_of_range_fidelity_field_still_fail_stops():
+    # Annotation status exempts pool.* from lifecycle checks, NOT from the
+    # fidelity range net: any payload carrying a _FIDELITY_FIELDS key is
+    # range-checked regardless of event type.
+    checker = InvariantChecker()
+    state = make_state()
+    with pytest.raises(InvariantViolation, match="fidelity"):
+        checker.observe(make_event("pool.deposited", "pooled-1", sim_time=0.0, seq=0,
+                                   payload={"key": [], "depth": 1, "fidelity": 1.5}), state)
+
+
 def test_fidelity_above_one_raises():
     checker = InvariantChecker()
     state = make_state()

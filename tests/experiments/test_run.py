@@ -97,6 +97,24 @@ def test_build_scheduler_wires_admission_theta_and_low_water_mark_into_s1():
     assert scheduler._low_water_mark == 2
 
 
+def test_build_scheduler_derives_tracked_keys_as_full_path_universe_x_messenger():
+    # B3: the pregen pool is LIVE — tracked_keys is the engine's full
+    # synthesized path universe (n = max(2, 2*switch_capacity_c) round-robin-
+    # adjacent port pairs, deduplicated) crossed with the single hard-coded
+    # MESSENGER coherence class, so pool keys are guaranteed identical to the
+    # engine-generated request.path_id values. No new config surface.
+    from qsim.core.engine import synthesized_path_universe
+
+    for capacity in (1, 2, 3):
+        config = _s0_config(scheduler="S1", admission_theta=0.5,
+                            pregen_low_water_mark=2, switch_capacity_c=capacity)
+        scheduler = build_scheduler(config)
+        expected = {(path, CoherenceClass.MESSENGER)
+                    for path in synthesized_path_universe(capacity)}
+        assert set(scheduler._pool.keys()) == expected
+        assert expected, "the derived tracked-key set must never be empty"
+
+
 def test_build_scheduler_returns_s0_scheduler_for_s0_tag():
     assert isinstance(build_scheduler(_s0_config()), S0Scheduler)
 

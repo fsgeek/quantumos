@@ -21,13 +21,15 @@ the placeholder signatures sketched in the frozen contract):
 * `S1Scheduler(PregenMixin, AdmissionMixin, S0Scheduler)` is constructed
   through its cooperative-MRO __init__: `theta_admit` and the five model
   surfaces feed `AdmissionMixin` (§8.1); `low_water_mark`/`tracked_keys`
-  feed `PregenMixin` (§8.2). `tracked_keys` is empty in M0: the engine
-  synthesizes its own fabric paths and never deposits to the pregen pool, so
-  a non-empty tracked-key set would make `next_lease_request` emit unbounded
-  POOL_REPLENISH requests for perpetually-empty pools (the engine's
-  acquisition drain loop would not terminate). Pregen is therefore inert in
-  M0 by construction — flagged; wiring the pool deposit/withdraw path is
-  future work.
+  feed `PregenMixin` (§8.2). B3 discharges M0's inert-pool flag:
+  `tracked_keys` is derived here as the engine's FULL synthesized path
+  universe (qsim.core.engine.synthesized_path_universe, so pool keys are
+  guaranteed identical to engine-generated request.path_id values) crossed
+  with the single hard-coded MESSENGER coherence class — no new config
+  surface. The formerly documented unbounded-drain hazard (minting
+  POOL_REPLENISH forever for perpetually-empty pools) is closed by
+  PregenMixin's per-key in-flight accounting (trigger: depth + in_flight
+  strictly below L) plus the engine's denial-ends-drain rule.
 """
 from __future__ import annotations
 
@@ -36,7 +38,8 @@ import uuid
 from pathlib import Path
 
 from qsim.core.clock import SimClock
-from qsim.core.engine import Engine
+from qsim.core.engine import Engine, synthesized_path_universe
+from qsim.entities import CoherenceClass
 from qsim.core.invariants import InvariantChecker
 from qsim.core.state import ModelBundle
 from qsim.core.trace import TraceBus
@@ -185,7 +188,13 @@ def build_scheduler(config: RunConfig, models: ModelBundle | None = None):
             round_success_model=bundle.round_success,
             decoder_service_model=bundle.decoder_service,
             low_water_mark=config.pregen_low_water_mark,
-            tracked_keys=(),
+            # B3: the full engine-synthesized path universe x MESSENGER (the
+            # engine's single lease coherence class), so every path a round can
+            # demand has a pool the low-water trigger maintains.
+            tracked_keys=tuple(
+                (path, CoherenceClass.MESSENGER)
+                for path in synthesized_path_universe(config.switch_capacity_c)
+            ),
         )
     raise ValueError(f"unknown scheduler tag: {config.scheduler!r}")
 

@@ -60,6 +60,38 @@ def test_compute_work_accounting_counts_each_event_type(tmp_path):
     assert wa.pool_returned == 1
 
 
+def test_pool_annotation_events_change_no_work_accounting_counter(tmp_path):
+    # B3 guard: the four pool.* events are ANNOTATIONS of pool state, not round
+    # terminals — none may increment a WorkAccounting counter, while the
+    # co-occurring lease.pool_returned keeps its separate §5/§11 counter with
+    # exactly one increment per occurrence (the double-count failure mode).
+    key = [[["M0", 0], ["M1", 0]], "messenger"]
+    events = [
+        Event(run_id="r", seq=0, sim_time=0.0, event_type="pool.deposited",
+              entity_id="lease-0", causal_parent_id=None,
+              payload={"key": key, "depth": 1, "source": "round_return"}),
+        Event(run_id="r", seq=1, sim_time=0.0, event_type="lease.pool_returned",
+              entity_id="lease-0", causal_parent_id=None, payload={}),
+        Event(run_id="r", seq=2, sim_time=1.0, event_type="pool.withdrawn",
+              entity_id="lease-0", causal_parent_id=None,
+              payload={"key": key, "depth": 0}),
+        Event(run_id="r", seq=3, sim_time=2.0, event_type="pool.expired",
+              entity_id="lease-1", causal_parent_id=None,
+              payload={"key": key, "depth": 0}),
+        Event(run_id="r", seq=4, sim_time=3.0, event_type="pool.replenish_abandoned",
+              entity_id="pool-req-1", causal_parent_id=None,
+              payload={"key": key, "depth": 0, "reason": "herald_failed"}),
+    ]
+    path = _seed_events(tmp_path, "run-pool-annotations", events)
+
+    wa = compute_work_accounting(path)
+
+    assert wa.pool_returned == 1
+    assert (wa.offered, wa.retries, wa.admitted, wa.deferred, wa.dropped,
+            wa.completed_in_deadline, wa.completed_late, wa.failed) == (
+        0, 0, 0, 0, 0, 0, 0, 0)
+
+
 def test_compute_work_accounting_empty_trace_is_all_zero(tmp_path):
     path = _seed_events(tmp_path, "run-empty", [])
 

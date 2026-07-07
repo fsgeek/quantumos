@@ -118,3 +118,26 @@ class Scheduler(Protocol):
                            now_s: float) -> list[LeaseDisposition]: ...
 
     def register_round_demand(self, round_projection: RoundProjection, now_s: float) -> None: ...
+
+
+@runtime_checkable
+class PoolingScheduler(Scheduler, Protocol):
+    """A Scheduler that additionally custodies a pregen pool projection (§8.2,
+    B3). The engine gates every pool code path on
+    `isinstance(scheduler, PoolingScheduler)`, so a plain S0Scheduler run
+    executes zero pool code and stays bit-identical (RNG draws included).
+
+    R3 resolution: EngineState.pool is authoritative for the real
+    EntanglementLease objects; the implementations behind this protocol
+    (PregenMixin) hold only the policy-side ProjectableLease mirror — §4's
+    layering rule forbids policies custodying real entities — and the engine
+    pairs every mutation across the two."""
+
+    def pool_depth(self, key: tuple) -> int: ...
+
+    def deposit_to_pool(self, lease: ProjectableLease) -> None: ...
+
+    def withdraw_from_pool(self, key: tuple) -> ProjectableLease | None: ...
+
+    def on_pool_replenish_outcome(self, key: tuple, succeeded: bool,
+                                   lease: ProjectableLease | None, now_s: float) -> None: ...

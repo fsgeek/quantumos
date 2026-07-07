@@ -124,6 +124,37 @@ def logical_error_proxy(events_path: Path) -> float:
     return total_error_weight / wa.offered
 
 
+# The ONLY pool.* events that move pool depth (B3, prereg T1). The two
+# diagnostics are deliberately absent: pool.replenish_abandoned changes no
+# inventory, and lease.pool_returned CO-OCCURS with
+# pool.deposited(source="round_return") at round terminals — counting it here
+# would double-count every round return (the standing annotation/terminal
+# double-count lesson, applied one level down).
+_POOL_DEPTH_DELTAS = {
+    "pool.deposited": 1,
+    "pool.withdrawn": -1,
+    "pool.expired": -1,
+}
+
+
+def pool_depth_series(events_path: Path) -> dict[tuple, list[tuple[float, int]]]:
+    """Per-(path, coherence)-key pool-depth time series, reconstructed from the
+    trace ALONE (prereg T1): each depth-changing pool.* event contributes one
+    (sim_time, running_depth) point. The payload's own after-op `depth` field is
+    NOT read — the series is derived purely from deltas so tests can use the
+    payload field as an independent self-check."""
+    series: dict[tuple, list[tuple[float, int]]] = {}
+    depth: dict[tuple, int] = {}
+    for record in iter_events(events_path):
+        delta = _POOL_DEPTH_DELTAS.get(record["event_type"])
+        if delta is None:
+            continue
+        key = _to_hashable(record["payload"]["key"])
+        depth[key] = depth.get(key, 0) + delta
+        series.setdefault(key, []).append((record["sim_time"], depth[key]))
+    return series
+
+
 def _to_hashable(value):
     if isinstance(value, list):
         return tuple(_to_hashable(v) for v in value)

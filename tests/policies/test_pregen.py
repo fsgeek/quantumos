@@ -156,6 +156,67 @@ def test_withdraw_from_pool_returns_none_for_undeclared_key():
     assert scheduler.withdraw_from_pool(("pathZ", "nuclear")) is None
 
 
+def test_below_low_water_mark_mints_exactly_one_replenish_per_key_while_in_flight():
+    scheduler = _S0WithPregen(low_water_mark=1, tracked_keys=[KEY])
+
+    first = scheduler.next_lease_request(now_s=0.0)
+    assert first is not None
+    assert first.purpose is LeaseRequestPurpose.POOL_REPLENISH
+
+    # The attempt is in flight: depth(0) + in_flight(1) == L(1), so no second
+    # mint — the unbounded-drain hazard (run.py:24-30) is bounded by L itself.
+    assert scheduler.next_lease_request(now_s=0.0) is None
+
+
+def test_trigger_is_depth_plus_in_flight_strictly_below_low_water_mark():
+    scheduler = _S0WithPregen(low_water_mark=2, tracked_keys=[KEY])
+    scheduler.deposit_to_pool(_FakeLease(path_id="pathA", coherence_class="electron", is_held=True))
+
+    # depth(1) + in_flight(0) == 1 < 2: mints once...
+    assert scheduler.next_lease_request(now_s=0.0) is not None
+    # ...then depth(1) + in_flight(1) == 2 == L: no trigger at exactly L.
+    assert scheduler.next_lease_request(now_s=0.0) is None
+
+
+def test_on_pool_replenish_outcome_success_deposits_and_decrements_in_flight():
+    scheduler = _S0WithPregen(low_water_mark=1, tracked_keys=[KEY])
+    assert scheduler.next_lease_request(now_s=0.0) is not None  # in flight
+
+    lease = _FakeLease(path_id="pathA", coherence_class="electron",
+                       is_held=True, state_held_since=0.5)
+    scheduler.on_pool_replenish_outcome(KEY, True, lease, now_s=0.5)
+
+    assert scheduler.pool_depth(KEY) == 1
+    # depth(1) + in_flight(0) == 1 == L: satisfied, no further mint.
+    assert scheduler.next_lease_request(now_s=0.5) is None
+
+
+def test_on_pool_replenish_outcome_failure_decrements_and_re_arms_minting():
+    scheduler = _S0WithPregen(low_water_mark=1, tracked_keys=[KEY])
+    assert scheduler.next_lease_request(now_s=0.0) is not None  # in flight
+    assert scheduler.next_lease_request(now_s=0.0) is None
+
+    scheduler.on_pool_replenish_outcome(KEY, False, None, now_s=0.5)
+
+    assert scheduler.pool_depth(KEY) == 0
+    # The failed attempt released its in-flight slot: the low-water condition
+    # re-fires at the next drain opportunity.
+    request = scheduler.next_lease_request(now_s=0.5)
+    assert request is not None
+    assert request.purpose is LeaseRequestPurpose.POOL_REPLENISH
+
+
+def test_round_bound_demand_still_takes_priority_while_replenish_is_in_flight():
+    scheduler = _S0WithPregen(low_water_mark=2, tracked_keys=[KEY])
+    assert scheduler.next_lease_request(now_s=0.0).purpose is LeaseRequestPurpose.POOL_REPLENISH
+
+    lease = _FakeLease(path_id="pathB", coherence_class="nuclear", is_held=False)
+    round_ = _FakeRound(round_id="r1", deadline_s=10.0, leases=[lease])
+    scheduler.register_round_demand(round_, now_s=0.0)
+
+    assert scheduler.next_lease_request(now_s=0.0).purpose is LeaseRequestPurpose.ROUND
+
+
 def test_on_round_terminal_skips_consumed_and_never_held_leases():
     scheduler = _S0WithPregen(low_water_mark=1, tracked_keys=[KEY])
     consumed = _FakeLease(path_id="pathA", coherence_class="electron", is_held=True, is_consumed=True)

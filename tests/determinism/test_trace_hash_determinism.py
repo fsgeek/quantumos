@@ -58,6 +58,54 @@ def _config(run_seed: int) -> RunConfig:
     )
 
 
+def _s1_pooling_config(run_seed: int) -> RunConfig:
+    # Calibrate every path the engine synthesizes at switch_capacity_c=2
+    # (M0..M3 adjacent pairs) so heralding — round AND pool replenish — is
+    # actually reachable; see the paired-draw test for why a mismatched epoch
+    # silently degenerates the run into a busy-retry storm.
+    ports = [PortId(module_id=f"M{i}", port_index=0) for i in range(4)]
+    paths = [make_path_id(ports[i], ports[(i + 1) % len(ports)]) for i in range(len(ports))]
+    epoch = CalibrationEpoch(
+        epoch_id="s1-pool-determinism-epoch",
+        decay_rate_per_class={CoherenceClass.MESSENGER: 0.02, CoherenceClass.MEMORY: 0.005},
+        memory_access_channel_s=0.002,
+        memory_access_wear_rate=0.01,
+        heralding_p_per_path={path: 0.6 for path in paths},
+        heralded_fidelity_per_path={path: 0.9 for path in paths},
+        round_success_logistic_midpoint=0.5,
+        round_success_logistic_slope=8.0,
+        round_success_slack_penalty_per_s=0.5,
+        decoder_service_rate=4.0,
+    )
+    return RunConfig(
+        run_seed=run_seed,
+        scheduler="S1",
+        epoch=epoch,
+        arrival_rate_hz=1.0,
+        leases_per_round=1,
+        deadline_slack_s=3.0,
+        switch_capacity_c=2,
+        reconfig_delay_s=0.02,
+        max_sim_time_s=60.0,
+        admission_theta=0.0,
+        pregen_low_water_mark=1,
+    )
+
+
+def test_s1_run_with_live_pool_produces_identical_trace_hash(tmp_path):
+    # B3: the pool going live must not cost S1 its determinism — same config +
+    # run_seed gives a bit-identical trace, pool traffic included.
+    config = _s1_pooling_config(run_seed=2026)
+
+    run_dir_a = run(config, tmp_path / "run-a")
+    run_dir_b = run(config, tmp_path / "run-b")
+
+    events_a = (run_dir_a / "events.jsonl").read_text()
+    assert '"pool.' in events_a, "the S1 determinism run must exercise the live pool"
+    assert _canonical_trace_hash(run_dir_a / "events.jsonl") == _canonical_trace_hash(
+        run_dir_b / "events.jsonl")
+
+
 def test_same_config_and_run_seed_produce_identical_trace_hash(tmp_path):
     config = _config(run_seed=2024)
 

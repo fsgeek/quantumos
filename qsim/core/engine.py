@@ -40,6 +40,8 @@ from qsim.policies.protocol import (
     AdmissionOutcome,
     DispositionKind,
     LeaseRequest,
+    LeaseRequestPurpose,
+    PoolingScheduler,
     ProjectableLease,
     RoundProjection,
     Scheduler,
@@ -77,6 +79,24 @@ def _synthesize_ports(switch_capacity_c: int) -> list[PortId]:
     return [PortId(module_id=f"M{i}", port_index=0) for i in range(count)]
 
 
+def synthesized_path_universe(switch_capacity_c: int) -> list[PathId]:
+    """The CLOSED universe of PathIds this engine can synthesize for a given
+    capacity: every round-robin-adjacent port pair `_endpoints_for` can emit,
+    canonicalized and deduplicated (at 2 ports, (M0,M1) and (M1,M0) are the
+    same PathId). Exported for run.py's B3 tracked-key derivation so pregen
+    pool keys are GUARANTEED identical to engine-generated request.path_id
+    values — a hand-maintained list would silently drift and leave pools
+    unreachable by demand."""
+    ports = _synthesize_ports(switch_capacity_c)
+    n = len(ports)
+    universe: list[PathId] = []
+    for i in range(n):
+        path = make_path_id(ports[i], ports[(i + 1) % n])
+        if path not in universe:
+            universe.append(path)
+    return universe
+
+
 @dataclass(frozen=True)
 class _ArrivalPayload:
     round: SyndromeRound
@@ -105,6 +125,21 @@ class _HeraldAttemptPayload:
     endpoints: tuple[PortId, PortId]
     attempt_no: int
     causal_parent_id: EventId | None
+
+
+@dataclass(frozen=True)
+class _PoolReplenishActivatePayload:
+    """Activation of a POOL_REPLENISH reservation (B3). Mirrors
+    _ReservationActivatePayload's identity-carrying design (the exact
+    reservation object travels with the payload so a stale activation can be
+    detected by identity), but carries the replenish request identity instead
+    of a round: a replenish attempt has no round."""
+    path_id: PathId
+    request_id: str
+    lease_id: str
+    key: tuple  # (PathId, CoherenceClass) — the pool this attempt feeds
+    causal_parent_id: EventId | None
+    reservation: SwitchPathReservation
 
 
 @dataclass(frozen=True)
@@ -167,6 +202,16 @@ class Engine:
         )
         self._ports = _synthesize_ports(config.switch_capacity_c)
         self._port_pair_counter = 0
+        # B3 gate: EVERY pool code path below is conditioned on the scheduler
+        # satisfying PoolingScheduler, so an S0 run executes zero pool code and
+        # stays bit-identical (no new draws, no reordering).
+        self._scheduler_pools = isinstance(scheduler, PoolingScheduler)
+        # Per-(path, coherence)-key count of pool_herald draws taken: the
+        # semantic generation ordinal in the CRN key. Only actual draws consume
+        # ordinals (a reservation-denied attempt never reaches the draw), so
+        # the ordinal is the identity of the k-th physical generation attempt
+        # on that key, never heap/call order.
+        self._pool_herald_ordinal: dict[tuple, int] = {}
         self._arrival_index = 0
         self._round_contexts: dict[str, _RoundContext] = {}
         # Single-server (M/M/1) decoder: the wall-clock instant the decoder
@@ -212,6 +257,8 @@ class Engine:
             self._on_reservation_active(payload)
         elif isinstance(payload, _HeraldAttemptPayload):
             self._on_herald_attempt(payload)
+        elif isinstance(payload, _PoolReplenishActivatePayload):
+            self._on_pool_replenish_active(payload)
         elif isinstance(payload, _DecoderCompletionPayload):
             self._on_decoder_completion(payload)
         else:
@@ -321,6 +368,17 @@ class Engine:
             request = self._scheduler.next_lease_request(self._state.now)
             if request is None:
                 break
+            if (request.purpose is LeaseRequestPurpose.POOL_REPLENISH
+                    and self._scheduler_pools):
+                # B3: service the §8.2 generation attempt. A reservation-time
+                # denial ends THIS drain pass (returns False): a contended
+                # fabric would deny every further replenish at the same
+                # instant, and ending the pass is what bounds the drain — all
+                # ROUND requests were already served (the mixin orders them
+                # strictly first), so nothing is starved by the break.
+                if not self._begin_pool_replenish(request, causal_parent_id):
+                    break
+                continue
             target_ctx = self._round_contexts.get(request.round_id)
             if target_ctx is None:
                 # R4: the request's round is already terminal (e.g. an earlier
@@ -334,6 +392,14 @@ class Engine:
         path_id = request.path_id
         causal_parent_id = ctx.causal_parent_id
         lease_id = ctx.path_to_lease.get(path_id, request.request_id)
+
+        # B3 pool withdrawal: a live pool satisfies ROUND demand BEFORE the §7
+        # checks — a pool hit holds no path, so it must be able to relieve a
+        # capacity-exhausted fabric rather than fail alongside it.
+        if (self._scheduler_pools
+                and request.purpose is LeaseRequestPurpose.ROUND
+                and self._try_pool_withdrawal(ctx, request, lease_id)):
+            return
 
         # §7 capacity check.
         if len(self._state.active_reservations) >= self._state.switch_capacity_c:
@@ -509,6 +575,239 @@ class Engine:
         entity_id = self._reservation_entity_id(path_id)
         self._publish("reservation.released", entity_id, causal_parent_id,
                       {"round_id": reservation.holder_id,
+                       "path_id": self._path_id_payload(path_id)})
+
+    # ---- pregen pool replenish + withdrawal (B3, design spec §8.2) ----------
+
+    @staticmethod
+    def _pool_key_payload(key: tuple) -> list:
+        # Structured, JSON-serializable (path, coherence) pool key for pool.*
+        # payloads, mirroring _path_id_payload so the depth-series reader can
+        # key on payload["key"] without parsing entity ids.
+        path_id, coherence_class = key
+        return [Engine._path_id_payload(path_id), coherence_class.value]
+
+    def _begin_pool_replenish(self, request: LeaseRequest,
+                              causal_parent_id: EventId | None) -> bool:
+        """Reserve a path for a §8.2 generation attempt. Returns False on a §7
+        capacity/endpoint denial (the attempt is abandoned and the caller ends
+        its drain pass — the termination bound); True once the reservation is
+        acquired and the single herald attempt is scheduled."""
+        path_id = request.path_id
+        key = (path_id, request.coherence_class)
+
+        # §7 capacity check — same predicate as _acquire_path, but a denied
+        # replenish fails NOTHING (there is no round to fail): it is abandoned
+        # and the low-water condition re-fires at the next drain opportunity.
+        if len(self._state.active_reservations) >= self._state.switch_capacity_c:
+            self._abandon_pool_replenish(request, key, "switch_capacity_exhausted",
+                                         causal_parent_id)
+            return False
+
+        # §7 endpoint-exclusivity check against live reservations.
+        a, b = path_id
+        for other in self._state.active_reservations.values():
+            if other.state == ReservationState.RELEASED:
+                continue
+            oa, ob = other.path_id
+            if a in (oa, ob) or b in (oa, ob):
+                self._abandon_pool_replenish(request, key, "endpoint_conflict",
+                                             causal_parent_id)
+                return False
+
+        # holder_id is the replenish REQUEST id, never a round id: request ids
+        # never appear as terminal-event entity ids, so the invariant checker's
+        # terminated-holder reservation-leak check cannot false-trip on it.
+        reservation = SwitchPathReservation(
+            path_id=path_id, holder_id=request.request_id,
+            acquired_at=self._state.now, state=ReservationState.ACQUIRED,
+        )
+        self._state.active_reservations[path_id] = reservation
+        lease_id = f"{request.request_id}:L"
+        entity_id = self._reservation_entity_id(path_id)
+        path_payload = self._path_id_payload(path_id)
+        acquired_id = self._publish(
+            "reservation.acquired", entity_id, causal_parent_id,
+            {"round_id": None, "lease_id": lease_id,
+             "request_id": request.request_id, "path_id": path_payload})
+        reservation.state = ReservationState.CONFIGURING
+        configuring_id = self._publish(
+            "reservation.configuring", entity_id, acquired_id,
+            {"round_id": None, "lease_id": lease_id,
+             "request_id": request.request_id, "path_id": path_payload})
+        activate_at = self._state.now + self._config.reconfig_delay_s
+        self._heap.push(activate_at, _PoolReplenishActivatePayload(
+            path_id=path_id, request_id=request.request_id, lease_id=lease_id,
+            key=key, causal_parent_id=configuring_id, reservation=reservation,
+        ))
+        return True
+
+    def _abandon_pool_replenish(self, request: LeaseRequest, key: tuple,
+                                reason: str, causal_parent_id: EventId | None) -> EventId:
+        """Resolve a replenish attempt as abandoned: release the mixin's
+        in-flight slot (so minting re-arms) and leave a trace — a pool-starved
+        churn regime is undiagnosable if denied replenishes leave zero trace."""
+        self._scheduler.on_pool_replenish_outcome(key, False, None, self._state.now)
+        depth = len(self._state.pool.get(key, []))
+        return self._publish(
+            "pool.replenish_abandoned", request.request_id, causal_parent_id,
+            {"key": self._pool_key_payload(key), "depth": depth,
+             "request_id": request.request_id, "reason": reason})
+
+    def _on_pool_replenish_active(self, payload: _PoolReplenishActivatePayload) -> None:
+        reservation = self._state.active_reservations.get(payload.path_id)
+        if reservation is not payload.reservation:
+            # Identity mismatch mirrors _on_reservation_active's guard. A
+            # replenish reservation is only ever released by its own
+            # resolution below, so this is defensive symmetry, not a live path.
+            return
+        reservation.state = ReservationState.ACTIVE
+        entity_id = self._reservation_entity_id(payload.path_id)
+        active_id = self._publish(
+            "reservation.active", entity_id, payload.causal_parent_id,
+            {"round_id": None, "lease_id": payload.lease_id,
+             "request_id": payload.request_id,
+             "path_id": self._path_id_payload(payload.path_id)})
+
+        # §8.2 verbatim: ONE heralding attempt per generation trigger. (An
+        # internal retry loop would non-terminate at p=0 — the round path's
+        # retry loop is bounded by the round deadline, which a replenish
+        # attempt lacks.) New named CRN stream: reusing the round "herald"
+        # stream would collide two different-kinded physical events on one key.
+        path_id, coherence_class = payload.key
+        ordinal = self._pool_herald_ordinal.get(payload.key, 0) + 1
+        self._pool_herald_ordinal[payload.key] = ordinal
+        key = ("pool_herald",
+               tuple((p.module_id, p.port_index) for p in path_id),
+               coherence_class.value, ordinal)
+        u = draw_uniform(self._config.run_seed, "pool_herald", key)
+        draw_id = self._publish("draw.sampled", payload.lease_id, active_id,
+                                {"stream": "pool_herald", "key": list(key), "uniform": u})
+        # Same p=0.0 uncalibrated-path guard as _on_herald_attempt: an
+        # uncalibrated path cannot herald, honestly and trace-visibly.
+        try:
+            p = self._state.models.heralding.success_probability(path_id, self._state.epoch)
+        except KeyError:
+            p = 0.0
+
+        if u < p:
+            fidelity = self._state.models.heralding.heralded_fidelity(
+                path_id, self._state.epoch)
+            # Same freshness bound as round-synthesized leases (the M0
+            # deadline_slack_s fallback) — B3 adds NO new duration (the
+            # 2026-07-05 parked spec owns that separation).
+            lease = EntanglementLease(
+                lease_id=payload.lease_id, endpoints=path_id, path_id=path_id,
+                created_at=self._state.now,
+                freshness_bound_s=self._config.deadline_slack_s,
+                fidelity_at_herald=fidelity, heralded_at=self._state.now,
+                state=LeaseState.HERALDED,
+            )
+            pool = self._state.pool.setdefault(payload.key, [])
+            pool.append(lease)
+            # Paired mirror deposit (R3): the mixin gets the PROJECTION only —
+            # §4's layering rule forbids handing it the real lease.
+            projection = ProjectableLease(
+                path_id=path_id, coherence_class=coherence_class,
+                is_held=True, is_consumed=False,
+                state_held_since=lease.heralded_at,
+                freshness_bound_s=lease.freshness_bound_s,
+                heralded_fidelity_estimate=fidelity,
+            )
+            self._scheduler.on_pool_replenish_outcome(
+                payload.key, True, projection, self._state.now)
+            resolution_id = self._publish(
+                "pool.deposited", payload.lease_id, draw_id,
+                {"key": self._pool_key_payload(payload.key), "depth": len(pool),
+                 "lease_id": payload.lease_id, "round_id": None,
+                 "source": "replenish"})
+        else:
+            self._scheduler.on_pool_replenish_outcome(
+                payload.key, False, None, self._state.now)
+            depth = len(self._state.pool.get(payload.key, []))
+            resolution_id = self._publish(
+                "pool.replenish_abandoned", payload.request_id, draw_id,
+                {"key": self._pool_key_payload(payload.key), "depth": depth,
+                 "request_id": payload.request_id, "reason": "herald_failed"})
+
+        # The generation attempt's scope is reservation + herald attempt (§8.2):
+        # release at resolution UNCONDITIONALLY, success or failure, and even
+        # under hold_until_consumption=True — holding a path for a pooled lease
+        # would couple pool residency to fabric occupancy, nullifying pregen.
+        self._release_pool_reservation(payload.path_id, payload.request_id, resolution_id)
+
+    def _try_pool_withdrawal(self, ctx: _RoundContext, request: LeaseRequest,
+                             lease_id: str) -> bool:
+        """Satisfy a ROUND lease request from the pool: FIFO pop with a lazy
+        freshness check (§8.2 / §5 cleanup — stale residents are expired at
+        withdrawal time and popping continues). Returns True on a fresh hit;
+        False (empty, or drained by stale pops) falls through to the normal
+        reservation + herald path.
+
+        Both pool sides pop in lockstep (R3): EngineState.pool custodies the
+        real leases, the mixin's projection mirror drives its low-water trigger.
+
+        A fresh hit mints NO resurrection: the pooled lease's trace identity is
+        closed (§5 — exactly one terminal state), so the consuming round's OWN
+        lease_id runs the legal None -> requested -> heralded chain, adopting
+        the pooled state's original heralded_at/fidelity_at_herald. Decay and
+        freshness therefore age CONTINUOUSLY across pool residency with zero
+        new physics; lineage lives in the pool.withdrawn/lease.heralded payloads.
+        """
+        key = (request.path_id, request.coherence_class)
+        pool = self._state.pool.get(key)
+        if not pool:
+            return False
+        round_ = ctx.round
+        causal_parent_id = ctx.causal_parent_id
+        key_payload = self._pool_key_payload(key)
+        while pool:
+            pooled = pool.pop(0)
+            self._scheduler.withdraw_from_pool(key)  # paired mirror pop (R3)
+            # Same freshness predicate as EntanglementLease.is_fresh, applied
+            # lazily: no sweep machinery, and no stale lease is ever reused.
+            heralded_at = pooled.heralded_at if pooled.heralded_at is not None else self._state.now
+            if self._state.now - heralded_at > pooled.freshness_bound_s:
+                causal_parent_id = self._publish(
+                    "pool.expired", pooled.lease_id, causal_parent_id,
+                    {"key": key_payload, "depth": len(pool),
+                     "lease_id": pooled.lease_id, "round_id": round_.round_id})
+                continue
+
+            lease = ctx.leases.get(lease_id)
+            if lease is not None:
+                lease.state = LeaseState.REQUESTED
+            ctx.requested.add(lease_id)
+            requested_id = self._publish("lease.requested", lease_id, causal_parent_id,
+                                         {"round_id": round_.round_id})
+            withdrawn_id = self._publish(
+                "pool.withdrawn", pooled.lease_id, requested_id,
+                {"key": key_payload, "depth": len(pool),
+                 "pooled_lease_id": pooled.lease_id, "lease_id": lease_id,
+                 "round_id": round_.round_id})
+            if lease is not None:
+                lease.state = LeaseState.HERALDED
+                lease.heralded_at = pooled.heralded_at
+                lease.fidelity_at_herald = pooled.fidelity_at_herald
+            heralded_id = self._publish(
+                "lease.heralded", lease_id, withdrawn_id,
+                {"round_id": round_.round_id,
+                 "fidelity_at_herald": pooled.fidelity_at_herald,
+                 "source": "pool", "pooled_lease_id": pooled.lease_id})
+            self._check_assembly(round_, heralded_id)
+            return True
+        return False
+
+    def _release_pool_reservation(self, path_id: PathId, request_id: str,
+                                  causal_parent_id: EventId) -> None:
+        reservation = self._state.active_reservations.pop(path_id, None)
+        if reservation is None:
+            return
+        reservation.state = ReservationState.RELEASED
+        reservation.released_at = self._state.now
+        entity_id = self._reservation_entity_id(path_id)
+        self._publish("reservation.released", entity_id, causal_parent_id,
+                      {"round_id": None, "request_id": request_id,
                        "path_id": self._path_id_payload(path_id)})
 
     # ---- round assembly: decay aging + memory-access costing (Task 4) -------
@@ -798,11 +1097,22 @@ class Engine:
             # re-consuming it while EngineState.pool holds the live reference for
             # future reuse. lease.pool_returned is accounted separately (§5/§11)
             # and is deliberately not a LeaseState transition the invariant
-            # tracks. (Not exercised in M0's S0 runs; see reconciliation R3.)
+            # tracks. (R3 resolved by B3: EngineState.pool is authoritative; the
+            # pooling mixin deposited its projection mirror inside
+            # on_round_terminal, so this append is the paired half.)
             lease.state = LeaseState.CANCELLED
-            self._state.pool.setdefault((lease.path_id, _LEASE_COHERENCE), []).append(lease)
-            return self._publish("lease.pool_returned", lease.lease_id, causal_parent_id,
-                                 {"round_id": round_.round_id})
+            key = (lease.path_id, _LEASE_COHERENCE)
+            pool = self._state.pool.setdefault(key, [])
+            pool.append(lease)
+            returned_id = self._publish("lease.pool_returned", lease.lease_id, causal_parent_id,
+                                        {"round_id": round_.round_id})
+            # B3 depth annotation, CO-OCCURRING with the counter event above:
+            # only pool.deposited moves the depth series; lease.pool_returned
+            # keeps its separate §5/§11 counter (double-count lesson).
+            return self._publish("pool.deposited", lease.lease_id, returned_id,
+                                 {"key": self._pool_key_payload(key), "depth": len(pool),
+                                  "lease_id": lease.lease_id, "round_id": round_.round_id,
+                                  "source": "round_return"})
         if kind is DispositionKind.EXPIRED:
             lease.state = LeaseState.EXPIRED
             return self._publish("lease.expired", lease.lease_id, causal_parent_id,

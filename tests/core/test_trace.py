@@ -76,6 +76,15 @@ def test_event_dataclass_is_frozen():
         event.seq = 1
 
 
+def test_pool_annotation_event_types_are_registered():
+    # B3: the four pregen-pool annotation events (per prereg 2026-07-06 T1's
+    # depth-series requirement) must be publishable trace types.
+    assert "pool.deposited" in EVENT_TYPES
+    assert "pool.withdrawn" in EVENT_TYPES
+    assert "pool.expired" in EVENT_TYPES
+    assert "pool.replenish_abandoned" in EVENT_TYPES
+
+
 @pytest.mark.parametrize("event_type", EVENT_TYPES)
 def test_every_event_type_is_publishable_and_round_trips(event_type):
     bus = TraceBus(run_id="run-1", clock=SimClock())

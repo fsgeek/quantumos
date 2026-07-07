@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Mapping
 
 from qsim.core.event_heap import EventHeap
 from qsim.core.invariants import InvariantChecker
@@ -97,6 +97,31 @@ def synthesized_path_universe(switch_capacity_c: int) -> list[PathId]:
         if path not in universe:
             universe.append(path)
     return universe
+
+
+def epoch_enumerated_path_universe(
+    switch_capacity_c: int, heralding_p_per_path: Mapping[PathId, float],
+) -> list[PathId]:
+    """The CLOSED universe of PathIds `BestHeraldingPathChoice` (B1 seam) can
+    emit at a given capacity: every epoch-enumerated path whose endpoints both
+    lie in the synthesized port fabric. This is the chooser's own viability
+    filter (enumerated AND in-universe, see policies/path_choice.py) applied
+    over the SAME `_synthesize_ports` set the engine hands it, so the two can
+    never disagree. Exported for run.py's B3 tracked-key derivation for the
+    same reason as `synthesized_path_universe`: pool keys must be GUARANTEED
+    identical to the paths rounds can demand, and the comparative chooser
+    demands epoch-table paths whether or not they are round-robin-adjacent —
+    keying its pools off the adjacent ring silently leaves every demanded key
+    poolless while replenishment maintains never-demanded pools that only
+    contend with round demand for §7 capacity (B1 review finding).
+
+    Order-preserving over the epoch table (no re-sort): the table's insertion
+    order is config-determined, so the derived tracked-key ring — and with it
+    PregenMixin's scan-cursor rotation and pool request ids — stays a pure
+    function of (config, seed), which §16.4's trace-hash determinism needs."""
+    ports = set(_synthesize_ports(switch_capacity_c))
+    return [path for path in heralding_p_per_path
+            if all(endpoint in ports for endpoint in path)]
 
 
 @dataclass(frozen=True)

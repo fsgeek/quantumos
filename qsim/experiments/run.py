@@ -22,11 +22,12 @@ the placeholder signatures sketched in the frozen contract):
   through its cooperative-MRO __init__: `theta_admit` and the five model
   surfaces feed `AdmissionMixin` (§8.1); `low_water_mark`/`tracked_keys`
   feed `PregenMixin` (§8.2). B3 discharges M0's inert-pool flag:
-  `tracked_keys` is derived here as the engine's FULL synthesized path
-  universe (qsim.core.engine.synthesized_path_universe, so pool keys are
-  guaranteed identical to engine-generated request.path_id values) crossed
-  with the single hard-coded MESSENGER coherence class — no new config
-  surface. The formerly documented unbounded-drain hazard (minting
+  `tracked_keys` is derived here as the configured path policy's DEMANDABLE
+  path universe (round_robin: qsim.core.engine.synthesized_path_universe;
+  best_heralding: epoch_enumerated_path_universe — both exported so pool
+  keys are guaranteed identical to engine-generated request.path_id values)
+  crossed with the single hard-coded MESSENGER coherence class — no new
+  config surface. The formerly documented unbounded-drain hazard (minting
   POOL_REPLENISH forever for perpetually-empty pools) is closed by
   PregenMixin's per-key in-flight accounting (trigger: depth + in_flight
   strictly below L) plus the engine's denial-ends-drain rule.
@@ -38,8 +39,12 @@ import uuid
 from pathlib import Path
 
 from qsim.core.clock import SimClock
-from qsim.core.engine import Engine, synthesized_path_universe
-from qsim.entities import CoherenceClass
+from qsim.core.engine import (
+    Engine,
+    epoch_enumerated_path_universe,
+    synthesized_path_universe,
+)
+from qsim.entities import CoherenceClass, PathId
 from qsim.core.invariants import InvariantChecker
 from qsim.core.state import ModelBundle
 from qsim.core.trace import TraceBus
@@ -168,6 +173,27 @@ def build_model_bundle(config: RunConfig) -> ModelBundle:
     )
 
 
+def _demandable_path_universe(config: RunConfig) -> list[PathId]:
+    """The CLOSED set of PathIds the configured B1 path policy can make a
+    round demand — the tracked-key basis for S1's §8.2 pools. MUST stay in
+    lockstep with `build_path_choice`: a pool is only reachable by demand if
+    it is keyed by exactly the paths its arm's chooser emits. round_robin
+    demands the engine's adjacent-pair ring; best_heralding demands any
+    epoch-enumerated path with both endpoints in the fabric (B1 review
+    finding: keying its pools off the adjacent ring left the actually
+    demanded keys poolless — pooling silently degraded to round-bound
+    disposal while POOL_REPLENISH maintained never-demanded pools that
+    competed with round demand for §7 slots). A new path policy MUST declare
+    its demandable universe here, so an unhandled tag fails loudly instead of
+    silently inheriting a mismatched pool-key set."""
+    if config.path_policy == "round_robin":
+        return synthesized_path_universe(config.switch_capacity_c)
+    if config.path_policy == "best_heralding":
+        return epoch_enumerated_path_universe(
+            config.switch_capacity_c, config.epoch.heralding_p_per_path)
+    raise ValueError(f"unknown path_policy tag: {config.path_policy!r}")
+
+
 def build_scheduler(config: RunConfig, models: ModelBundle | None = None):
     """Constructs the Scheduler named by config.scheduler (§8's ablation ladder).
 
@@ -190,17 +216,20 @@ def build_scheduler(config: RunConfig, models: ModelBundle | None = None):
             round_success_model=bundle.round_success,
             decoder_service_model=bundle.decoder_service,
             low_water_mark=config.pregen_low_water_mark,
-            # B3: the full engine-synthesized path universe x MESSENGER (the
-            # engine's single lease coherence class), so every path a round
-            # can demand has a pool. Maintenance is best-effort, NOT a depth
-            # guarantee: replenish attempts compete with round demand for §7
-            # capacity, minted round-robin across this universe (PregenMixin's
-            # rotating scan cursor) at each drain opportunity (round admission
-            # and reservation release). Contended regimes can hold depths
-            # below L indefinitely — that is a T1 measurement, not a defect.
+            # B3 (+B1 review fix): the configured path policy's demandable
+            # path universe x MESSENGER (the engine's single lease coherence
+            # class), so every path a round can demand has a pool — and ONLY
+            # those paths, since an undemandable pool can never relieve round
+            # demand, only contend with it. Maintenance is best-effort, NOT a
+            # depth guarantee: replenish attempts compete with round demand
+            # for §7 capacity, minted round-robin across this universe
+            # (PregenMixin's rotating scan cursor) at each drain opportunity
+            # (round admission and reservation release). Contended regimes
+            # can hold depths below L indefinitely — that is a T1
+            # measurement, not a defect.
             tracked_keys=tuple(
                 (path, CoherenceClass.MESSENGER)
-                for path in synthesized_path_universe(config.switch_capacity_c)
+                for path in _demandable_path_universe(config)
             ),
         )
     raise ValueError(f"unknown scheduler tag: {config.scheduler!r}")

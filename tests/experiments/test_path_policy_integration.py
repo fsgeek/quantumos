@@ -126,6 +126,40 @@ def test_contended_best_heralding_still_churns_not_covert_admission_control(tmp_
     _all_views_run(ep)
 
 
+def test_s1_pools_track_the_best_heralding_demanded_keys_not_the_adjacent_ring(tmp_path):
+    # B1 review should-fix regression probe: BestHeraldingPathChoice demands
+    # the argmax-p EPOCH-ENUMERATED path — here the non-adjacent (M0, M2) at
+    # switch_capacity_c=2 — but tracked_keys used to be derived from the
+    # round-robin-adjacent synthesized_path_universe, so the ONE key every
+    # round demanded had no pool (0 pool.withdrawn; unconsumed leases fell to
+    # round-bound disposal) while POOL_REPLENISH kept four never-demanded
+    # adjacent pools at depth L, burning §7 reservation slots against round
+    # demand. The pool must serve the demanded key, and mint NOTHING outside
+    # the policy's demandable set.
+    ports = [PortId(f"M{i}", 0) for i in range(4)]
+    demanded = make_path_id(ports[0], ports[2])
+    epoch = _epoch(heralding_p_per_path={demanded: 0.95},
+                   heralded_fidelity_per_path={demanded: 0.9})
+    config = _config(scheduler="S1", epoch=epoch, leases_per_round=1,
+                     admission_theta=0.0, pregen_low_water_mark=2)
+    ep = run(config, tmp_path / "run") / "events.jsonl"
+
+    demanded_path_payload = [["M0", 0], ["M2", 0]]
+    pool_events = [e for e in iter_events(ep)
+                   if e["event_type"].startswith("pool.")]
+    assert any(e["payload"]["key"][0] == demanded_path_payload
+               for e in pool_events if e["event_type"] == "pool.withdrawn"), (
+        "the demanded (M0, M2) key was never served from its pool — pooling "
+        "is silently disabled for exactly the path best_heralding demands")
+    # No pool activity outside the demandable set: an undemandable pool can
+    # never relieve round demand, only contend with it for §7 capacity.
+    off_universe = [e["payload"]["key"][0] for e in pool_events
+                    if e["payload"]["key"][0] != demanded_path_payload]
+    assert not off_universe, (
+        f"pool activity on undemandable keys: {off_universe}")
+    _all_views_run(ep)
+
+
 def test_best_heralding_consumes_zero_new_rng_streams(tmp_path):
     ep = run(_config(), tmp_path / "run") / "events.jsonl"
     streams = {e["payload"]["stream"] for e in iter_events(ep)

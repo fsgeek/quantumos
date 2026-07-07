@@ -139,11 +139,12 @@ def test_build_scheduler_wires_admission_theta_and_low_water_mark_into_s1():
 
 
 def test_build_scheduler_derives_tracked_keys_as_full_path_universe_x_messenger():
-    # B3: the pregen pool is LIVE — tracked_keys is the engine's full
-    # synthesized path universe (n = max(2, 2*switch_capacity_c) round-robin-
-    # adjacent port pairs, deduplicated) crossed with the single hard-coded
-    # MESSENGER coherence class, so pool keys are guaranteed identical to the
-    # engine-generated request.path_id values. No new config surface.
+    # B3: the pregen pool is LIVE — for the round_robin default policy,
+    # tracked_keys is the engine's full synthesized path universe
+    # (n = max(2, 2*switch_capacity_c) round-robin-adjacent port pairs,
+    # deduplicated) crossed with the single hard-coded MESSENGER coherence
+    # class, so pool keys are guaranteed identical to the engine-generated
+    # request.path_id values. No new config surface.
     from qsim.core.engine import synthesized_path_universe
 
     for capacity in (1, 2, 3):
@@ -154,6 +155,41 @@ def test_build_scheduler_derives_tracked_keys_as_full_path_universe_x_messenger(
                     for path in synthesized_path_universe(capacity)}
         assert set(scheduler._pool.keys()) == expected
         assert expected, "the derived tracked-key set must never be empty"
+
+
+def test_build_scheduler_tracked_keys_follow_the_best_heralding_demandable_set():
+    # B1 review: BestHeraldingPathChoice demands epoch-ENUMERATED paths with
+    # both endpoints in the synthesized fabric — including non-adjacent pairs
+    # like (M0, M2) that the round-robin universe never contains — so S1's
+    # pool keys must be exactly that demandable set. Keying off the adjacent
+    # ring leaves the demanded key poolless (pooling silently disabled for
+    # the only paths the arm demands) while POOL_REPLENISH tops up
+    # never-demanded adjacent pools that compete for §7 slots.
+    m = [PortId(module_id=f"M{i}", port_index=0) for i in range(4)]
+    non_adjacent = make_path_id(m[0], m[2])   # demandable, NOT in the adjacent ring
+    adjacent = make_path_id(m[2], m[3])       # demandable AND adjacent
+    out_of_fabric = make_path_id(m[0], PortId(module_id="M9", port_index=0))
+    epoch = CalibrationEpoch(
+        epoch_id="b1-demandable-epoch",
+        decay_rate_per_class={CoherenceClass.MESSENGER: 0.01, CoherenceClass.MEMORY: 0.001},
+        memory_access_channel_s=0.001,
+        memory_access_wear_rate=0.01,
+        # out_of_fabric carries the MAX p but an unreachable endpoint (M9):
+        # the chooser's universe filter excludes it, so tracked_keys must too.
+        heralding_p_per_path={non_adjacent: 0.9, adjacent: 0.5, out_of_fabric: 0.99},
+        heralded_fidelity_per_path={non_adjacent: 0.95, adjacent: 0.95, out_of_fabric: 0.95},
+        round_success_logistic_midpoint=0.5,
+        round_success_logistic_slope=10.0,
+        round_success_slack_penalty_per_s=1.0,
+        decoder_service_rate=5.0,
+    )
+    config = _s0_config(scheduler="S1", admission_theta=0.5, pregen_low_water_mark=2,
+                        switch_capacity_c=2, path_policy="best_heralding", epoch=epoch)
+    scheduler = build_scheduler(config)
+    assert set(scheduler._pool.keys()) == {
+        (non_adjacent, CoherenceClass.MESSENGER),
+        (adjacent, CoherenceClass.MESSENGER),
+    }
 
 
 def test_build_scheduler_returns_s0_scheduler_for_s0_tag():

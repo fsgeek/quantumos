@@ -1,0 +1,54 @@
+# T1 sensitivity CONTROL — pool-starved churn at capacity exhaustion.
+# Canonical bytes for the field-battery pre-registration
+# (docs/superpowers/specs/2026-07-06-field-battery-prereg.md, T1 amendment).
+# DECLARED LOSS: this regime was smoke-run 2026-07-06 (40 s horizon) during
+# build verification; it is a calibration control, not a finding.
+run_seed = 7
+scheduler = "S1"
+path_policy = "round_robin"
+arrival_rate_hz = 5.0
+leases_per_round = 1
+deadline_slack_s = 2.0
+switch_capacity_c = 2
+reconfig_delay_s = 0.1
+max_sim_time_s = 400.0
+admission_theta = 0.0
+pregen_low_water_mark = 2
+retry_cap = 4
+
+[epoch]
+epoch_id = "t1-control"
+memory_access_channel_s = 0.0
+memory_access_wear_rate = 0.0
+round_success_logistic_midpoint = -10.0
+round_success_logistic_slope = 10.0
+round_success_slack_penalty_per_s = 0.0
+decoder_service_rate = 1000.0
+
+[epoch.decay_rate_per_class]
+messenger = 0.0
+memory = 0.0
+
+[[epoch.paths]]
+a = "M0:0"
+b = "M1:0"
+heralding_p = 1.0
+heralded_fidelity = 0.9
+
+[[epoch.paths]]
+a = "M1:0"
+b = "M2:0"
+heralding_p = 1.0
+heralded_fidelity = 0.9
+
+[[epoch.paths]]
+a = "M2:0"
+b = "M3:0"
+heralding_p = 1.0
+heralded_fidelity = 0.9
+
+[[epoch.paths]]
+a = "M0:0"
+b = "M3:0"
+heralding_p = 1.0
+heralded_fidelity = 0.9

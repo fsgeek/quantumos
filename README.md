@@ -13,6 +13,14 @@ entanglement leases, syndrome rounds, decoder capacity, switch paths, and
 calibration epochs as first-class schedulable resources. This repository is the
 executable counterpart to that design argument.
 
+The methodological stance is deliberate: this is not a place that accumulates
+concepts, but "a place that tests whether concepts deserve to exist" (external
+methods review, 2026-07-07). No quantity enters the object model merely for
+being physically meaningful — it must name the decision that reads it, the lead
+time it is read at, and why it is not derivable from cheaper represented state.
+The governing rule and the pre-registered experiments that enforce it live in
+`docs/superpowers/specs/2026-07-06-field-battery-prereg.md`.
+
 ## Project Status
 
 This is an M0 research simulator. The core package and tests are implemented,
@@ -53,7 +61,7 @@ qsim/
   workload/      Closed-loop synthetic workload generator
 
 docs/
-  quantum_os_.md                         Constraint-first OS argument
+  quantum_os.md                          Constraint-first OS argument
   superpowers/specs/...design.md         Simulator design spec
   references/                            Supporting reference material
 
@@ -214,9 +222,11 @@ print(views.deadline_compliance(events))
 
 Start with:
 
-- `docs/quantum_os_.md` for the constraint-first quantum OS framing.
+- `docs/quantum_os.md` for the constraint-first quantum OS framing.
 - `docs/superpowers/specs/2026-07-04-quantum-os-simulator-design.md` for the
   simulator architecture and M0 design contract.
+- `docs/superpowers/specs/2026-07-06-field-battery-prereg.md` for the
+  pre-registered field battery and the object-model admission rule.
 
 The simulator intentionally keeps physics details behind Protocol-based model
 surfaces so analytic M0 implementations can later be replaced by richer

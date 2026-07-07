@@ -51,6 +51,7 @@ from qsim.models.memory_access import LinearMemoryAccessModel, ZeroCostMemoryAcc
 from qsim.models.round_success import LogisticRoundSuccessModel
 from qsim.observe.run_dir import RunDirWriter
 from qsim.observe.steady_state import compute_steady_state
+from qsim.policies.path_choice import BestHeraldingPathChoice, RoundRobinPathChoice
 from qsim.policies.s0 import S0Scheduler
 from qsim.policies.s1 import S1Scheduler
 from qsim.workload.generator import WorkloadGenerator
@@ -86,8 +87,9 @@ _WORKLOAD_DRAW_FILTERING = {
             "kind": "uncalibrated_path_heralding",
             "stream": "heralding",
             "reason": (
-                "core/engine.py synthesizes fabric PathIds (_synthesize_ports/"
-                "_endpoints_for) that a CalibrationEpoch need not enumerate. Both "
+                "core/engine.py synthesizes fabric PathIds (_synthesize_ports + "
+                "the injected PathChoice chooser, B1 seam) that a "
+                "CalibrationEpoch need not enumerate. Both "
                 "the engine's §5 heralding attempt and the §8.1 S1 admission "
                 "projection may look up such a path in the epoch's per-path "
                 "heralding tables."
@@ -204,6 +206,22 @@ def build_scheduler(config: RunConfig, models: ModelBundle | None = None):
     raise ValueError(f"unknown scheduler tag: {config.scheduler!r}")
 
 
+def build_path_choice(config: RunConfig):
+    """Constructs the PathChoice strategy named by config.path_policy (B1).
+
+    "round_robin" is the bit-identical pre-B1 default (pinned golden hashes in
+    tests/determinism/test_b1_path_seam_preserves_trace.py); "best_heralding"
+    is the comparative table-reader the S2 spatial-ordering test needs. Both
+    are occupancy-blind and draw-free — the seam changes WHERE the decision
+    lives, not what the engine does with it.
+    """
+    if config.path_policy == "round_robin":
+        return RoundRobinPathChoice()
+    if config.path_policy == "best_heralding":
+        return BestHeraldingPathChoice()
+    raise ValueError(f"unknown path_policy tag: {config.path_policy!r}")
+
+
 def git_sha() -> str:
     """Best-effort current commit SHA for header.json provenance (§12)."""
     try:
@@ -251,6 +269,7 @@ def run(config: RunConfig, out_dir: Path) -> Path:
         workload=workload,
         trace=trace,
         invariants=invariants,
+        path_choice=build_path_choice(config),
     )
 
     run_dir_writer.write_header(

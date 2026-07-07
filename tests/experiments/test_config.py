@@ -75,3 +75,18 @@ def test_runconfig_is_frozen():
     config = RunConfig(**_base_kwargs())
     with pytest.raises(FrozenInstanceError):
         config.run_seed = 2
+
+
+def test_runconfig_path_policy_defaults_to_round_robin():
+    config = RunConfig(**_base_kwargs())
+    assert config.path_policy == "round_robin"
+
+
+def test_runconfig_accepts_best_heralding_path_policy():
+    config = RunConfig(**_base_kwargs(path_policy="best_heralding"))
+    assert config.path_policy == "best_heralding"
+
+
+def test_runconfig_rejects_unknown_path_policy():
+    with pytest.raises(ValueError, match="path_policy"):
+        RunConfig(**_base_kwargs(path_policy="fastest_first"))

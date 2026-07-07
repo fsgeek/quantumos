@@ -36,6 +36,7 @@ from qsim.entities import (
     SyndromeRound,
     make_path_id,
 )
+from qsim.policies.path_choice import PathChoice, RoundRobinPathChoice
 from qsim.policies.protocol import (
     AdmissionOutcome,
     DispositionKind,
@@ -81,7 +82,8 @@ def _synthesize_ports(switch_capacity_c: int) -> list[PortId]:
 
 def synthesized_path_universe(switch_capacity_c: int) -> list[PathId]:
     """The CLOSED universe of PathIds this engine can synthesize for a given
-    capacity: every round-robin-adjacent port pair `_endpoints_for` can emit,
+    capacity: every round-robin-adjacent port pair the default
+    `RoundRobinPathChoice` chooser (B1 seam) can emit,
     canonicalized and deduplicated (at 2 ports, (M0,M1) and (M1,M0) are the
     same PathId). Exported for run.py's B3 tracked-key derivation so pregen
     pool keys are GUARANTEED identical to engine-generated request.path_id
@@ -177,7 +179,8 @@ class _RoundContext:
 class Engine:
     def __init__(self, config: "RunConfig", scheduler: Scheduler,
                  models: ModelBundle, workload: WorkloadGenerator,
-                 trace: TraceBus, invariants: InvariantChecker) -> None:
+                 trace: TraceBus, invariants: InvariantChecker,
+                 *, path_choice: PathChoice | None = None) -> None:
         self._config = config
         self._scheduler = scheduler
         self._workload = workload
@@ -201,7 +204,11 @@ class Engine:
             hold_until_consumption=config.hold_until_consumption,
         )
         self._ports = _synthesize_ports(config.switch_capacity_c)
-        self._port_pair_counter = 0
+        # B1 seam: path selection is a policy decision point. The default is
+        # constructed HERE (one chooser per Engine) so its counter has exactly
+        # the engine-instance lifetime the old _port_pair_counter had.
+        self._path_choice: PathChoice = (
+            path_choice if path_choice is not None else RoundRobinPathChoice())
         # B3 gate: EVERY pool code path below is conditioned on the scheduler
         # satisfying PoolingScheduler, so an S0 run executes zero pool code and
         # stays bit-identical (no new draws, no reordering).
@@ -305,7 +312,19 @@ class Engine:
         `next_lease_request`."""
         ctx = _RoundContext(round=round_, causal_parent_id=arrived_id)
         for ordinal, lease_id in enumerate(round_.lease_ids):
-            a, b = self._endpoints_for(round_.round_id, ordinal)
+            # B1: delegate to the injected PathChoice at the exact pre-seam
+            # call site — per lease, at arrival, BEFORE admission, retries
+            # included — so the default chooser's counter advances identically
+            # to the old engine-private one. The chooser sees only projected,
+            # read-only inputs (never active_reservations: §7 conflict-then-
+            # churn stays the engine's pathway, see _acquire_path).
+            a, b = self._path_choice.choose_endpoints(
+                round_id=round_.round_id,
+                lease_ordinal=ordinal,
+                ports=self._ports,
+                taken_path_ids=frozenset(ctx.path_to_lease),
+                heralding_p_by_path=self._state.epoch.heralding_p_per_path,
+            )
             path_id = make_path_id(a, b)
             lease = EntanglementLease(
                 lease_id=lease_id,
@@ -353,12 +372,6 @@ class Engine:
         )
 
     # ---- path allocation + reservation lifecycle (Task 2, reconciled) -------
-
-    def _endpoints_for(self, round_id: str, ordinal: int) -> tuple[PortId, PortId]:
-        n = len(self._ports)
-        idx = self._port_pair_counter % n
-        self._port_pair_counter += 1
-        return (self._ports[idx], self._ports[(idx + 1) % n])
 
     def _begin_lease_acquisition(self, round_: SyndromeRound, causal_parent_id: EventId) -> None:
         ctx = self._round_contexts[round_.round_id]
@@ -556,7 +569,8 @@ class Engine:
         u = draw_uniform(self._config.run_seed, "herald", key)
         draw_id = self._publish("draw.sampled", payload.lease_id, payload.causal_parent_id,
                                 {"stream": "herald", "key": key, "uniform": u})
-        # The engine synthesizes PathIds (_synthesize_ports/_endpoints_for) that a
+        # The engine synthesizes PathIds (_synthesize_ports + the injected
+        # PathChoice chooser, B1 seam) that a
         # partial CalibrationEpoch need not enumerate; BernoulliHeraldingModel does
         # a bare `epoch.heralding_p_per_path[path]` lookup that KeyErrors on such a
         # path. An uncalibrated path cannot herald: default to p=0.0 (the round then

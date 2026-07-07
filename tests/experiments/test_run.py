@@ -2,9 +2,10 @@ import json
 
 from qsim.entities import CalibrationEpoch, CoherenceClass, PortId, make_path_id
 from qsim.experiments.config import RunConfig
-from qsim.experiments.run import build_model_bundle, build_scheduler, run
+from qsim.experiments.run import build_model_bundle, build_path_choice, build_scheduler, run
 from qsim.models.decay import ExponentialDecayModel, NoDecayModel
 from qsim.models.memory_access import LinearMemoryAccessModel, ZeroCostMemoryAccessModel
+from qsim.policies.path_choice import BestHeraldingPathChoice, RoundRobinPathChoice
 from qsim.policies.s0 import S0Scheduler
 from qsim.policies.s1 import S1Scheduler
 
@@ -162,6 +163,21 @@ def test_build_scheduler_returns_s0_scheduler_for_s0_tag():
 def test_build_scheduler_returns_s1_scheduler_for_s1_tag():
     config = _s0_config(scheduler="S1", admission_theta=0.5, pregen_low_water_mark=2)
     assert isinstance(build_scheduler(config), S1Scheduler)
+
+
+def test_build_path_choice_returns_round_robin_for_the_default_policy():
+    assert isinstance(build_path_choice(_s0_config()), RoundRobinPathChoice)
+
+
+def test_build_path_choice_returns_best_heralding_for_the_comparative_policy():
+    config = _s0_config(path_policy="best_heralding")
+    assert isinstance(build_path_choice(config), BestHeraldingPathChoice)
+
+
+def test_header_config_block_carries_the_path_policy_field(tmp_path):
+    run_dir = run(_s0_config(), tmp_path)
+    header = json.loads((run_dir / "header.json").read_text())
+    assert header["config"]["path_policy"] == "round_robin"
 
 
 def test_build_model_bundle_honors_decay_control_flag():

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from qsim.entities import CalibrationEpoch
 
 _VALID_SCHEDULERS = ("S0", "S1")
+_VALID_PATH_POLICIES = ("round_robin", "best_heralding")
 
 
 @dataclass(frozen=True)
@@ -26,8 +27,19 @@ class RunConfig:
     #                                            after N retries. A sweep knob for isolating
     #                                            whether the retry storm self-sustains a
     #                                            congestion collapse (spiral) vs. plain overload.
+    path_policy: str = "round_robin"           # B1 seam: "round_robin" (bit-identical
+    #                                            pre-B1 default) | "best_heralding"
+    #                                            (comparative: argmax heralding_p among
+    #                                            epoch-enumerated viable paths). Trailing
+    #                                            defaulted field: existing construction
+    #                                            sites and events.jsonl are untouched; the
+    #                                            field reaches header.json via _json_safe.
 
     def __post_init__(self) -> None:
+        if self.path_policy not in _VALID_PATH_POLICIES:
+            raise ValueError(
+                f"path_policy must be one of {_VALID_PATH_POLICIES}, got {self.path_policy!r}"
+            )
         if self.scheduler not in _VALID_SCHEDULERS:
             raise ValueError(
                 f"scheduler must be one of {_VALID_SCHEDULERS}, got {self.scheduler!r}"

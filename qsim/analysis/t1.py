@@ -247,5 +247,61 @@ def analyze_t1(run_dir: Path, mode: str, companion_dir: Path | None = None,
 
 def _open_verdict(report, pools, predicted_bins, run_dir, companion_dir,
                   bin_s, surrogate_seed) -> None:
-    """Completed in the next task (open regime + knob-motion companion)."""
-    raise NotImplementedError("open mode lands in Task 9")
+    """Open-regime verdict (design §6) + knob-motion companion (design §7).
+
+    The protocol is TWO runs; no PROVISIONAL state exists. The companion
+    comparison emits statistics only — the prereg pins no threshold for
+    'visibly moved', so no verdict word attaches to it."""
+    if companion_dir is None:
+        report["refusals"].append(
+            "open mode requires the knob-motion companion run dir "
+            "(design §7: the protocol is two runs; no PROVISIONAL state)")
+        write_report(run_dir, "t1_report", report)
+        raise AnalysisRefusal(report["refusals"][-1])
+
+    report["knob_motion"] = {
+        "primary": _knob_motion_stats(run_dir, bin_s),
+        "companion": _knob_motion_stats(Path(companion_dir), bin_s),
+    }
+    report["companion_steady_state"] = _load_header(Path(companion_dir)).get("steady_state")
+
+    significant, unattributed = [], []
+    for stats in pools.values():
+        if "refusal" in stats:
+            continue
+        in_window = stats["significant_in_window"]
+        significant.extend(in_window)
+        result = assign(in_window, predicted_bins)
+        stats["attribution"] = result
+        unattributed.extend(result["unattributed"])
+    report["unattributed_lags"] = sorted(set(unattributed))
+
+    if not significant:
+        report["verdict"] = "FIELD-BLOCKED"
+        report["caveat"] = FLAT_SWEEP_CAVEAT
+    elif unattributed:
+        report["verdict"] = "ATTRIBUTION-FAILED"
+        report["caveat"] = MECHANISM_PROBE_NOTE
+    else:
+        report["verdict"] = "FIELD-EARNED"
+        report["caveat"] = ATTRIBUTION_CAVEAT
+
+
+def _knob_motion_stats(run_dir: Path, bin_s: float) -> dict:
+    """Per-pool depth/flux summaries (design §7): exploratory two-point
+    dose-response of pool dynamics on load. Statistics only."""
+    events = run_dir / "events.jsonl"
+    depth = pool_depth_series(events)
+    flux = pool_flux_series(events, bin_s)
+    out = {}
+    for key in sorted(depth, key=str):
+        values = [v for _, v in depth[key]]
+        bins = flux.get(key, [])
+        m = numerics.mean(bins) if bins else 0.0
+        out[str(key)] = {
+            "mean_depth": numerics.mean([float(v) for v in values]),
+            "n_depth_events": len(values),
+            "flux_variance": (numerics.mean([(b - m) ** 2 for b in bins])
+                               if bins else 0.0),
+        }
+    return out

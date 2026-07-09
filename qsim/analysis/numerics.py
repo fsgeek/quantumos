@@ -1,32 +1,37 @@
 """Series arithmetic for the analysis package (design §3).
 
-Pure stdlib. This module is the numpy-swap seam: NOTHING else in qsim does
-series statistics, so numpy can replace these internals later without
-touching gate or verdict logic.
+numpy-backed since the 2026-07-09 swap (stamped decision doc
+docs/superpowers/specs/2026-07-09-open-run-decisions.md, decision 2):
+direct correlation via np.correlate, never FFT — numerically closest to
+the pure-Python loops that produced the T1 control PASS. Those loops live
+on verbatim in reference.py; a cross-validation test holds the two
+backends to ~1e-12 agreement, and the calibration bridge measures the
+instrument change on the control run itself.
+
+This module remains the numpy seam: NOTHING else in qsim does series
+statistics, so backend changes never touch gate or verdict logic.
 """
 from __future__ import annotations
 
 import math
 
+import numpy as np
+
+BACKEND = "numpy"
+
 
 def mean(xs: list[float]) -> float:
-    if not xs:
+    if not len(xs):
         raise ValueError("mean of empty list")
-    return sum(xs) / len(xs)
+    return float(np.mean(np.asarray(xs, dtype=np.float64)))
 
 
 def percentile(xs: list[float], q: float) -> float:
     """Linear-interpolation percentile, q in [0, 100]."""
-    if not xs:
+    if not len(xs):
         raise ValueError("percentile of empty list")
-    s = sorted(xs)
-    if len(s) == 1:
-        return s[0]
-    pos = (q / 100.0) * (len(s) - 1)
-    lo = math.floor(pos)
-    hi = math.ceil(pos)
-    frac = pos - lo
-    return s[lo] * (1.0 - frac) + s[hi] * frac
+    return float(np.percentile(np.asarray(xs, dtype=np.float64), q,
+                               method="linear"))
 
 
 def max_estimable_lag(n_bins: int) -> int:
@@ -49,13 +54,12 @@ def acf(series: list[float], max_lag: int) -> list[float]:
     n = len(series)
     if n < 2:
         raise ValueError(f"series too short for ACF: n={n}")
-    m = sum(series) / n
-    dev = [x - m for x in series]
-    denom = sum(d * d for d in dev)
+    x = np.asarray(series, dtype=np.float64)
+    dev = x - x.mean()
+    denom = float(dev @ dev)
     if denom == 0.0:
         raise ValueError("zero-variance series: ACF undefined")
-    out = []
-    for k in range(1, max_lag + 1):
-        num = sum(dev[t] * dev[t + k] for t in range(n - k))
-        out.append(num / denom)
-    return out
+    # full correlation index n-1 is lag 0, so lags 1..max_lag are the next
+    # max_lag entries
+    num = np.correlate(dev, dev, mode="full")[n:n + max_lag]
+    return [float(v) / denom for v in num]

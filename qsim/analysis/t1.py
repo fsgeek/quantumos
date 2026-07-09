@@ -36,7 +36,10 @@ class AnalysisRefusal(Exception):
 # rides every FIELD-EARNED verdict.
 ATTRIBUTION_CAVEAT = (
     "Structure present under (P) -> field-earned at this operating point; "
-    "transfers as Simmons Q4 (subject to the attribution requirement)."
+    "transfers as Simmons Q4 (subject to the attribution requirement). "
+    "A false FIELD-EARNED corrupts, a false ATTRIBUTION-FAILED merely costs "
+    "a mechanism probe: the verdict word alone is not transferable; read "
+    "the full-curve disclosure first."
 )
 # Standing flat-sweep lesson (design §7): no threshold is pinned for
 # "visibly moved", so the knob-motion comparison emits statistics only.

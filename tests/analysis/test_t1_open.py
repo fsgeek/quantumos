@@ -67,6 +67,10 @@ def test_open_field_earned_when_all_lags_attributed(tmp_path):
     report = analyze_t1(primary, mode="open", companion_dir=companion)
     assert report["verdict"] == "FIELD-EARNED"
     assert "field-earned at this operating point" in report["caveat"]
+    # Asymmetric-loss sentence (stamped decision doc ab5040e): a false
+    # FIELD-EARNED corrupts; the residual load lands on the human reader.
+    assert ("the verdict word alone is not transferable; "
+            "read the full-curve disclosure first" in report["caveat"])
     assert "knob_motion" in report
     km = report["knob_motion"]
     assert set(km) == {"primary", "companion"}

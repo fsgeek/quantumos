@@ -59,3 +59,18 @@ def test_write_report_creates_analysis_dir(tmp_path):
     assert path == run_dir / "analysis" / "t1_report.json"
     assert json.loads(path.read_text())["verdict"] == "X"
     assert analysis_dir(run_dir).is_dir()
+
+
+def test_write_once_leaves_no_temp_files(tmp_path):
+    path = tmp_path / "predicted_lags_t1.json"
+    write_once(path, {"a": 1})
+    write_once(path, {"a": 2})  # reuse path
+    leftovers = [p for p in tmp_path.iterdir() if p.name != path.name]
+    assert leftovers == []
+
+
+def test_write_once_content_is_complete_json(tmp_path):
+    path = tmp_path / "predicted_lags_t1.json"
+    content, reused = write_once(path, {"nested": {"k": [1, 2, 3]}})
+    assert reused is False
+    assert json.loads(path.read_text()) == {"nested": {"k": [1, 2, 3]}}

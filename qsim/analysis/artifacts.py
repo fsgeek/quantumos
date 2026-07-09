@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
+import tempfile
 from pathlib import Path
 
 # The prereg's OTS-stamped commit (docs/superpowers/specs/
@@ -25,11 +27,25 @@ def analysis_dir(run_dir: Path) -> Path:
 
 def write_once(path: Path, payload: dict) -> tuple[dict, bool]:
     """Write payload as JSON iff `path` does not exist; otherwise return the
-    existing content VERBATIM and never rewrite (design §4.3)."""
+    existing content VERBATIM and never rewrite (design §4.3).
+
+    Atomic and exclusive: the payload is written to a temp file in the same
+    directory and hard-linked into place. os.link fails with FileExistsError
+    if the path already exists (no exists-then-write race), and a partial
+    file can never appear at `path` — only fully written temp files are ever
+    linked in.
+    """
     path = Path(path)
-    if path.exists():
-        return json.loads(path.read_text()), True
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True))
+    fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(json.dumps(payload, indent=2, sort_keys=True))
+        try:
+            os.link(tmp_name, path)
+        except FileExistsError:
+            return json.loads(path.read_text()), True
+    finally:
+        os.unlink(tmp_name)
     return payload, False
 
 

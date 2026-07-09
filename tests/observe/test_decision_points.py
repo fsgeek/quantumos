@@ -3,8 +3,6 @@
 Hand-built traces with known co-pending sets (design §11)."""
 import json
 
-import pytest
-
 from qsim.observe.decision_points import t3_decision_points
 
 KEY_A = [[["M0", 0], ["M1", 0]], "messenger"]
@@ -102,3 +100,19 @@ def test_censored_lease_has_none_terminal(tmp_path):
     by_id = {l.lease_id: l for l in points[0].co_pending}
     assert by_id["L1"].terminal_type is None
     assert by_id["L1"].terminal_time is None
+
+
+def test_herald_without_requested_still_produces_decision_point(tmp_path):
+    """Regression: pass-1 defaulted missing incarnations to 1 but pass-2's
+    per-event index used no default, silently dropping every event of a
+    lease with no lease.requested — wrongly-empty output, not an error."""
+    events = tmp_path / "events.jsonl"
+    _write_events(events, [
+        (1.0, "lease.heralded", "L1", {"round_id": "r1", "fidelity_at_herald": 0.9}),
+        (2.0, "lease.consumed", "L1", {"round_id": "r1", "fidelity_at_consumption": 0.8}),
+    ])
+    points = t3_decision_points(events)
+    assert len(points) == 1
+    (lease,) = points[0].co_pending
+    assert lease.incarnation == 1
+    assert lease.heralded_at == 1.0

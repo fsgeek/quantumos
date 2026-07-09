@@ -53,7 +53,7 @@ def t3_decision_points(events_path: Path) -> list[DecisionPoint]:
     incarnation: dict[str, int] = {}
     herald: dict[tuple[str, int], tuple[float, float]] = {}
     terminal: dict[tuple[str, int], tuple[str, float]] = {}
-    incarnation_of_event: list[int | None] = []
+    incarnation_of_event: list[int] = []
     for record in records:
         event_type = record["event_type"]
         lease_id = record["entity_id"]
@@ -73,7 +73,7 @@ def t3_decision_points(events_path: Path) -> list[DecisionPoint]:
         if event_type in _TERMINAL_LEASE_EVENTS:
             key = (lease_id, incarnation.get(lease_id, 1))
             terminal.setdefault(key, (event_type, record["sim_time"]))
-        incarnation_of_event.append(incarnation.get(lease_id))
+        incarnation_of_event.append(incarnation.get(lease_id, 1))
 
     # Pass 2: replay live-heralded set; snapshot at each lease.consumed.
     def _lease_record(key: tuple[str, int]) -> LeaseAtDecision:
@@ -92,8 +92,6 @@ def t3_decision_points(events_path: Path) -> list[DecisionPoint]:
         event_type = record["event_type"]
         lease_id = record["entity_id"]
         inc = incarnation_of_event[i]
-        if inc is None:
-            continue
         key = (lease_id, inc)
         if event_type == "lease.heralded" and key in herald:
             live.add(key)

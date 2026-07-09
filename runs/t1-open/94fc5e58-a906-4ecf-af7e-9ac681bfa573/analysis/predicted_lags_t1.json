@@ -1,0 +1,28 @@
+{
+  "bin_s": 0.01,
+  "cycles_s": {
+    "low_water_oscillation:((('M0', 0), ('M1', 0)), 'messenger')": 13.3522602620192,
+    "low_water_oscillation:((('M0', 0), ('M3', 0)), 'messenger')": 13.680891382630568,
+    "low_water_oscillation:((('M1', 0), ('M2', 0)), 'messenger')": 14.152596162102286,
+    "low_water_oscillation:((('M2', 0), ('M3', 0)), 'messenger')": 11.944261523441318,
+    "replenishment_cycle": 0.009999999999990905,
+    "retry_cadence": 0.6848725747980922
+  },
+  "lag_bins": {
+    "low_water_oscillation:((('M0', 0), ('M1', 0)), 'messenger')": 1335,
+    "low_water_oscillation:((('M0', 0), ('M3', 0)), 'messenger')": 1368,
+    "low_water_oscillation:((('M1', 0), ('M2', 0)), 'messenger')": 1415,
+    "low_water_oscillation:((('M2', 0), ('M3', 0)), 'messenger')": 1194,
+    "replenishment_cycle": 1,
+    "retry_cadence": 68
+  },
+  "run_id": "94fc5e58-a906-4ecf-af7e-9ac681bfa573",
+  "sensitivity_window": [
+    1,
+    3
+  ],
+  "window": [
+    1,
+    3
+  ]
+}

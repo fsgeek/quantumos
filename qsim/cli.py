@@ -253,6 +253,20 @@ def _analyze_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _sweep_command(args: argparse.Namespace) -> int:
+    from qsim.experiments.sweep import S1_DELTAS, run_sweep
+
+    deltas = tuple(args.deltas) if args.deltas else S1_DELTAS
+    manifest = run_sweep(args.base_config, args.out, deltas=deltas,
+                         max_sim_time_s=args.max_sim_time)
+    for arm in manifest["arms"]:
+        print(f"delta={arm['delta']}: {arm['status']}"
+              + (f" run_dir={arm['run_dir']}" if arm["status"] == "ran" else
+                 f" ({arm['reason']})"))
+    print(f"artifacts: {args.out}/sweep_manifest.json, {args.out}/dose_response.json")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="quantumos",
@@ -308,6 +322,17 @@ def build_parser() -> argparse.ArgumentParser:
     t3_parser = analyze_sub.add_parser("t3", help="rank inversions (prereg T3)")
     t3_parser.add_argument("run_dir", type=Path)
     t3_parser.set_defaults(func=_analyze_command)
+
+    sweep_parser = subparsers.add_parser("sweep", help="run a pinned battery sweep")
+    sweep_sub = sweep_parser.add_subparsers(dest="sweep_name", required=True)
+    s1_parser = sweep_sub.add_parser("s1", help="spatial-blindness dose-response (prereg S1)")
+    s1_parser.add_argument("base_config", type=Path,
+                           help="T1-open base config (examples/t1-open.toml)")
+    s1_parser.add_argument("--out", type=Path, default=Path("runs/sweep-s1"))
+    s1_parser.add_argument("--deltas", type=float, nargs="+", default=None)
+    s1_parser.add_argument("--max-sim-time", dest="max_sim_time", type=float,
+                           default=None, help="EXPLICIT horizon override")
+    s1_parser.set_defaults(func=_sweep_command)
 
     return parser
 

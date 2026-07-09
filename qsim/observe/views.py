@@ -9,6 +9,7 @@ rejecting work.
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from qsim.observe.work_accounting import compute_work_accounting, iter_events
@@ -159,6 +160,67 @@ def _to_hashable(value):
     if isinstance(value, list):
         return tuple(_to_hashable(v) for v in value)
     return value
+
+
+def _bin_deltas(deltas: list[tuple[float, float]], bin_s: float,
+                horizon: float) -> list[float]:
+    """Net delta per bin over [0, horizon). Reconstruction granularity, not
+    statistics — series arithmetic proper lives in qsim.analysis.numerics
+    (disclosed deviation in the 2026-07-09 plan: keeping this loop here means
+    observe never imports analysis)."""
+    n = max(1, math.ceil(horizon / bin_s))
+    bins = [0.0] * n
+    for t, d in deltas:
+        i = min(int(t // bin_s), n - 1)
+        bins[i] += d
+    return bins
+
+
+def pool_flux_series(events_path: Path, bin_s: float) -> dict[tuple, list[float]]:
+    """Binned d(pool)/dt per (path, coherence) key, from depth-moving pool.*
+    deltas ALONE (design §2; prereg T1 statistic). Values are rates
+    (net delta / bin_s). Bin span is [0, horizon) with horizon = max
+    sim_time over ALL events, so every key's series is index-aligned."""
+    deltas_by_key: dict[tuple, list[tuple[float, float]]] = {}
+    horizon = 0.0
+    for record in iter_events(events_path):
+        t = float(record["sim_time"])
+        if t > horizon:
+            horizon = t
+        delta = _POOL_DEPTH_DELTAS.get(record["event_type"])
+        if delta is None:
+            continue
+        key = _to_hashable(record["payload"]["key"])
+        deltas_by_key.setdefault(key, []).append((t, float(delta)))
+    return {
+        key: [v / bin_s for v in _bin_deltas(deltas, bin_s, horizon)]
+        for key, deltas in deltas_by_key.items()
+    }
+
+
+_BACKLOG_DELTAS = {
+    "decoder.enqueued": 1.0,
+    "decoder.completed": -1.0,
+    "decoder.cancelled": -1.0,
+}
+
+
+def backlog_slope_series(events_path: Path, bin_s: float) -> list[float]:
+    """Binned slope of decoder backlog (design §2; T2 statistic): net
+    enqueue/complete/cancel delta per bin / bin_s — exactly the per-bin
+    slope of the `decoder_backlog_series` step function."""
+    deltas: list[tuple[float, float]] = []
+    horizon = 0.0
+    for record in iter_events(events_path):
+        t = float(record["sim_time"])
+        if t > horizon:
+            horizon = t
+        delta = _BACKLOG_DELTAS.get(record["event_type"])
+        if delta is not None:
+            deltas.append((t, delta))
+    if not deltas:
+        return []
+    return [v / bin_s for v in _bin_deltas(deltas, bin_s, horizon)]
 
 
 def _draw_key(record: dict):

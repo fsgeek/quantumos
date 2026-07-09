@@ -67,3 +67,26 @@ def test_t2_busy_period_refusal_recorded_when_saturated(tmp_path):
     run_dir = _write_run_dir(tmp_path, sorted(rows, key=lambda r: r[0]))
     report = analyze_t2(run_dir)
     assert any("utilization" in r for r in report["refusals"])
+
+
+def test_t2_reused_predictions_divergence_is_disclosed(tmp_path):
+    """Write-once honesty: on rerun, the committed file governs, and any
+    divergence from fresh derivation must be recorded, not swallowed."""
+    rows = []
+    for i in range(200):
+        rows.append((0.4 * i + 0.1, "decoder.enqueued"))
+        rows.append((0.4 * i + 0.3, "decoder.completed"))
+    run_dir = _write_run_dir(tmp_path, sorted(rows, key=lambda r: r[0]))
+    # Pre-seed a committed predictions file that a fresh derivation cannot match.
+    analysis = run_dir / "analysis"
+    analysis.mkdir()
+    (analysis / "predicted_lags_t2.json").write_text(json.dumps({
+        "bin_s": 0.5, "window": [1, 3],
+        "cycles_s": {"decoder_service_time": 0.5},
+        "lag_bins": {"decoder_service_time": 1},
+        "run_id": "someone-else",
+    }))
+    report = analyze_t2(run_dir)
+    assert report["predicted_lags_reused"] is True
+    assert report["bin_s"] == 0.5  # the committed file governs
+    assert any("DISCARDED" in r for r in report["refusals"])

@@ -92,6 +92,10 @@ def analyze_t2(run_dir: Path, bin_s_override: float | None = None,
     report["predicted_lags"] = committed
     report["predicted_lags_reused"] = reused
     report["predicted_lags_sha256"] = sha256_of(lags_path)
+    if reused and committed != predictions:
+        report["refusals"].append(
+            "predicted_lags_t2.json reused verbatim; freshly derived values "
+            "differ and are DISCARDED (write-once, design §4.3)")
     bin_s = committed["bin_s"]
     window = tuple(committed["window"])
     report["bin_s"] = bin_s

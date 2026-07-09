@@ -167,11 +167,18 @@ def analyze_t1(run_dir: Path, mode: str, companion_dir: Path | None = None,
     sensitivity_window = lag_window(latency, bin_s, lo_q=10, hi_q=90)
 
     # 3. Predicted lags, WRITE-ONCE, before any ACF (design §4.3).
+    # No configured positive L => the low-water oscillation mechanism cannot
+    # exist; pass no withdrawal gaps rather than fabricate a cycle with L=1.
+    low_water_mark = header["config"].get("pregen_low_water_mark")
+    withdrawal_gaps = (
+        {str(k): v for k, v in inter_withdrawal_times(events).items()}
+        if low_water_mark else {}
+    )
     cycles = predicted_cycles_t1(
         latency,
-        {str(k): v for k, v in inter_withdrawal_times(events).items()},
+        withdrawal_gaps,
         retry_cadence_samples(events),
-        low_water_mark=header["config"].get("pregen_low_water_mark") or 1,
+        low_water_mark=low_water_mark or 1,  # unused when gaps is empty
     )
     predictions = {
         "bin_s": bin_s, "window": list(window),

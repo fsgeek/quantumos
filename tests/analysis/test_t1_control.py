@@ -120,3 +120,18 @@ def test_write_once_predictions_survive_rerun(tmp_path):
     report = analyze_t1(run_dir, mode="control")
     assert (run_dir / "analysis" / "predicted_lags_t1.json").read_text() == first
     assert report["predicted_lags_reused"] is True
+
+
+def test_zero_low_water_mark_fabricates_no_low_water_cycle(tmp_path):
+    """Regression: `or 1` silently replaced a configured L=0, fabricating a
+    low-water predicted cycle for a mechanism that cannot exist."""
+    run_dir = _write_run_dir(tmp_path, _loud_rows())
+    header_path = run_dir / "header.json"
+    header = json.loads(header_path.read_text())
+    header["config"]["pregen_low_water_mark"] = 0
+    header_path.write_text(json.dumps(header))
+    report = analyze_t1(run_dir, mode="control")
+    assert not any(
+        name.startswith("low_water_oscillation")
+        for name in report["predicted_lags"]["cycles_s"]
+    )

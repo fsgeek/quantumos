@@ -63,6 +63,8 @@ def test_aligned_orderings_are_rare(tmp_path):
                  other_terminal="lease.consumed")
     report = analyze_t3(_run_dir(tmp_path, sorted(rows, key=lambda r: r[0])))
     assert report["verdict"] == "INVERSIONS-RARE"
+    # fraction == 0.5 is the boundary: NOT degenerate-dominated (strict <)
+    assert report["nondegenerate_fraction"] == 0.5
 
 
 def test_immaterial_inversion_demotion_stands(tmp_path):
@@ -108,3 +110,43 @@ def test_no_decision_points_is_refusal(tmp_path):
         (1.0, "round.arrived", "r1", {"retry_ordinal": 0, "deadline": 2.0})]))
     assert report["verdict"] is None
     assert report["refusals"]
+
+
+def _pair_episode(base, suffix, inverted):
+    """One two-lease episode starting at sim time `base`. Aligned episodes:
+    both consumed shortly after herald (orderings agree). Inverted episode:
+    the second lease expires much later (current vs projected order flips
+    at rate 0.1 — same arithmetic as test_material_inversion...)."""
+    a, b = f"L{suffix}a", f"L{suffix}b"
+    if inverted:
+        return [
+            (base + 0.0, "lease.requested", a, {"round_id": f"r{suffix}a"}),
+            (base + 0.0, "lease.heralded", a, {"round_id": f"r{suffix}a", "fidelity_at_herald": 0.9}),
+            (base + 3.6, "lease.requested", b, {"round_id": f"r{suffix}b"}),
+            (base + 4.0, "lease.heralded", b, {"round_id": f"r{suffix}b", "fidelity_at_herald": 0.85}),
+            (base + 5.0, "lease.consumed", a, {"round_id": f"r{suffix}a", "fidelity_at_consumption": 0.0}),
+            (base + 20.0, "lease.expired", b, {"round_id": f"r{suffix}b"}),
+        ]
+    return [
+        (base + 0.0, "lease.requested", a, {"round_id": f"r{suffix}a"}),
+        (base + 0.0, "lease.heralded", a, {"round_id": f"r{suffix}a", "fidelity_at_herald": 0.9}),
+        (base + 1.0, "lease.requested", b, {"round_id": f"r{suffix}b"}),
+        (base + 1.0, "lease.heralded", b, {"round_id": f"r{suffix}b", "fidelity_at_herald": 0.8}),
+        (base + 2.0, "lease.consumed", a, {"round_id": f"r{suffix}a", "fidelity_at_consumption": 0.0}),
+        (base + 3.0, "lease.consumed", b, {"round_id": f"r{suffix}b", "fidelity_at_consumption": 0.0}),
+    ]
+
+
+def test_inversion_rate_exactly_at_threshold_is_rare(tmp_path):
+    """Prereg says 'more than 10%': exactly 0.10 must NOT trigger FREQUENT.
+    9 aligned episodes (2 points each: 1 nondegenerate + 1 degenerate
+    singleton) + 1 inverted episode (1 nondegenerate point) = 10
+    nondegenerate points, exactly 1 inverted -> rate == 0.10 -> RARE."""
+    rows = []
+    for k in range(9):
+        rows += _pair_episode(30.0 * k, k, inverted=False)
+    rows += _pair_episode(270.0, 9, inverted=True)
+    report = analyze_t3(_run_dir(tmp_path, sorted(rows, key=lambda r: r[0])))
+    assert report["n_nondegenerate"] == 10
+    assert report["inversion_point_rate"] == 0.1
+    assert report["verdict"] == "INVERSIONS-RARE"

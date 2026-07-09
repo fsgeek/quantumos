@@ -86,11 +86,14 @@ def run_sweep(base_config_path: Path, out_root: Path,
         try:
             config = build_arm_config(base, delta)
         except InfeasibleArm as exc:
+            (p_bar,) = set(base.epoch.heralding_p_per_path.values())
+            max_delta = min(p_bar, 1.0 - p_bar)
             arms.append({
                 "delta": delta, "status": "infeasible", "reason": str(exc),
-                "recommend": ("prereg amendment: replace delta=0.4 "
-                               "(heralding_p 1.1 > 1) with a feasible arm, "
-                               "e.g. delta=0.3"),
+                "recommend": (
+                    f"prereg amendment: delta={delta} is infeasible at "
+                    f"p_bar={p_bar:.10g} ({exc}); widest feasible half-spread "
+                    f"is delta={max_delta:.10g}"),
             })
             continue
         run_dir = run(config, out_root)
@@ -122,6 +125,10 @@ def run_sweep(base_config_path: Path, out_root: Path,
                     f"{HOMOGENEITY_UTILIZATION_TOLERANCE} at delta=0: "
                     "any effect at the anchor is a bug, not a curve")
         rows.append(row)
+
+    # Dose-response is a function of delta, not of request order: sort rows
+    # so the monotonicity reading is order-independent.
+    rows.sort(key=lambda r: r["delta"])
 
     values = [r["deadline_compliance"]["completed_in_deadline"] for r in rows]
     dose = {

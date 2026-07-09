@@ -41,6 +41,7 @@ def test_run_sweep_records_infeasible_arm_and_runs_feasible(tmp_path):
     arms = {arm["delta"]: arm for arm in manifest["arms"]}
     assert arms[0.4]["status"] == "infeasible"
     assert "amendment" in arms[0.4]["recommend"]
+    assert "0.3" in arms[0.4]["recommend"]  # derived from p_bar=0.7, not hardcoded
     assert arms[0.0]["status"] == "ran"
     assert (tmp_path / "sweep_manifest.json").exists()
     dose = json.loads((tmp_path / "dose_response.json").read_text())
@@ -52,3 +53,11 @@ def test_run_sweep_records_infeasible_arm_and_runs_feasible(tmp_path):
 
 def test_default_grid_is_the_prereg_grid():
     assert S1_DELTAS == (0.0, 0.1, 0.2, 0.4)
+
+
+def test_dose_response_rows_sorted_by_delta_regardless_of_request_order(tmp_path):
+    """Monotonicity is a function of delta, not request order."""
+    run_sweep("examples/t1-open.toml", tmp_path,
+              deltas=(0.2, 0.0), max_sim_time_s=5.0)
+    dose = json.loads((tmp_path / "dose_response.json").read_text())
+    assert [r["delta"] for r in dose["rows"]] == [0.0, 0.2]

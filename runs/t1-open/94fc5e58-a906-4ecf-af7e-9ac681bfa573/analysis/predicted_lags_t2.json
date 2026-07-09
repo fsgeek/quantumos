@@ -1,0 +1,16 @@
+{
+  "bin_s": 0.2,
+  "cycles_s": {
+    "busy_period_relaxation": 0.24830893423929043,
+    "decoder_service_time": 0.2
+  },
+  "lag_bins": {
+    "busy_period_relaxation": 1,
+    "decoder_service_time": 1
+  },
+  "run_id": "94fc5e58-a906-4ecf-af7e-9ac681bfa573",
+  "window": [
+    1,
+    3
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "ancestry": {
+    "is_descendant": true,
+    "note": "run sha is a descendant of the stamped commit",
+    "run_git_sha": "cd70c88fea78abd6c38ab154d65439e16dc660d5",
+    "stamped_commit": "06b0bd4feb0ca97d5b8f0245b8cbdf5bda10721d"
+  },
+  "conventions": {
+    "censoring": "leases without a terminal are excluded and counted; censored leases are counted per decision-point occurrence, not per lease",
+    "projection_time": "each lease's own terminal event time from the trace; fidelity analytic, never observed"
+  },
+  "decay_rate": 0.01,
+  "git_sha": "cd70c88fea78abd6c38ab154d65439e16dc660d5",
+  "n_censored_leases": 0,
+  "n_decision_points": 382,
+  "n_nondegenerate": 54,
+  "nondegenerate_fraction": 0.14136125654450263,
+  "operating_point": {
+    "admission_theta": 0.5,
+    "arrival_rate_hz": 1.0,
+    "deadline_slack_s": 5.0,
+    "decay_control_enabled": true,
+    "epoch": {
+      "decay_rate_per_class": {
+        "memory": 0.001,
+        "messenger": 0.01
+      },
+      "decoder_service_rate": 5.0,
+      "epoch_id": "t1-open",
+      "heralded_fidelity_per_path": {
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M1\", \"port_index\": 0}]": 0.95,
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.95,
+        "[{\"module_id\": \"M1\", \"port_index\": 0}, {\"module_id\": \"M2\", \"port_index\": 0}]": 0.95,
+        "[{\"module_id\": \"M2\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.95
+      },
+      "heralding_p_per_path": {
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M1\", \"port_index\": 0}]": 0.7,
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.7,
+        "[{\"module_id\": \"M1\", \"port_index\": 0}, {\"module_id\": \"M2\", \"port_index\": 0}]": 0.7,
+        "[{\"module_id\": \"M2\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.7
+      },
+      "memory_access_channel_s": 0.001,
+      "memory_access_wear_rate": 0.01,
+      "round_success_logistic_midpoint": 0.5,
+      "round_success_logistic_slope": 10.0,
+      "round_success_slack_penalty_per_s": 1.0
+    },
+    "hold_until_consumption": false,
+    "leases_per_round": 1,
+    "max_sim_time_s": 400.0,
+    "memory_cost_control_enabled": true,
+    "path_policy": "round_robin",
+    "pregen_low_water_mark": 2,
+    "reconfig_delay_s": 0.01,
+    "retry_cap": 4,
+    "run_seed": 11,
+    "scheduler": "S1",
+    "switch_capacity_c": 2
+  },
+  "refusals": [],
+  "test": "t3",
+  "thresholds": {
+    "degenerate_dominance": 0.5,
+    "inversion_point_rate": 0.1,
+    "median_projected_delta": 0.01
+  },
+  "verdict": "NON-FIELD-AT-OPERATING-POINT (degenerate-dominated); retest under higher concurrency"
+}

@@ -125,3 +125,25 @@ def test_companion_config_differs_only_in_arrival_rate():
         if f.name == "arrival_rate_hz":
             continue
         assert getattr(open_cfg, f.name) == getattr(companion_cfg, f.name), f.name
+
+
+def test_open_all_pools_refused_withholds_verdict(tmp_path):
+    """A refusal is not a flat series: if no pool yields an ACF, open mode
+    must withhold rather than declare FIELD-BLOCKED."""
+    # Deposits at bin centers, one per bin: constant flux -> zero variance
+    # -> per-pool refusal (mirrors the control INSENSITIVE construction).
+    rows = []
+    for i in range(200):
+        rows.append((max(0.0, i * 0.4 - 0.2), "reservation.acquired", f"res{i}",
+                     {"round_id": None, "lease_id": f"R{i}:L",
+                      "request_id": f"R{i}", "path_id": PATH_A}))
+        rows.append((i * 0.4 + 0.2, "pool.deposited", f"R{i}:L",
+                     {"key": KEY_A, "depth": i, "lease_id": f"R{i}:L",
+                      "round_id": None, "source": "replenish"}))
+    primary = _write_run_dir(tmp_path, "primary", sorted(rows, key=lambda r: r[0]))
+    companion = _write_run_dir(tmp_path, "companion", sorted(rows, key=lambda r: r[0]))
+    with pytest.raises(AnalysisRefusal):
+        analyze_t1(primary, mode="open", companion_dir=companion)
+    report = json.loads((primary / "analysis" / "t1_report.json").read_text())
+    assert report["verdict"] is None
+    assert any("verdict withheld" in r for r in report["refusals"])

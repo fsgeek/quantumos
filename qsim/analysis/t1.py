@@ -276,6 +276,14 @@ def _open_verdict(report, pools, predicted_bins, run_dir, companion_dir,
         unattributed.extend(result["unattributed"])
     report["unattributed_lags"] = sorted(set(unattributed))
 
+    usable = [s for s in pools.values() if "refusal" not in s]
+    if not usable:
+        report["refusals"].append(
+            "every pool refused (no ACF computed): verdict withheld, "
+            "not FIELD-BLOCKED — a refusal is not a flat series")
+        write_report(run_dir, "t1_report", report)
+        raise AnalysisRefusal(report["refusals"][-1])
+
     if not significant:
         report["verdict"] = "FIELD-BLOCKED"
         report["caveat"] = FLAT_SWEEP_CAVEAT

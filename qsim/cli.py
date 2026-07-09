@@ -10,6 +10,9 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Sequence
 
+from qsim.analysis.t1 import analyze_t1
+from qsim.analysis.t2 import analyze_t2
+from qsim.analysis.t3 import analyze_t3
 from qsim.entities import CalibrationEpoch, CoherenceClass, PortId, make_path_id
 from qsim.experiments.config import RunConfig
 from qsim.experiments.run import run
@@ -223,6 +226,33 @@ def _validate_config_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _print_analysis(report: dict) -> None:
+    print(f"test: {report['test']}")
+    print(f"verdict: {report['verdict']}")
+    if report.get("directive"):
+        print(f"DIRECTIVE: **{report['directive']}**")
+    if report.get("caveat"):
+        print(f"caveat: {report['caveat']}")
+    for refusal in report.get("refusals", []):
+        print(f"refusal: {refusal}")
+
+
+def _analyze_command(args: argparse.Namespace) -> int:
+    if args.test == "t1":
+        report = analyze_t1(args.run_dir, mode=args.mode,
+                            companion_dir=args.companion,
+                            bin_s_override=args.bin_s,
+                            surrogate_seed=args.seed)
+    elif args.test == "t2":
+        report = analyze_t2(args.run_dir, bin_s_override=args.bin_s,
+                            surrogate_seed=args.seed)
+    else:
+        report = analyze_t3(args.run_dir)
+    _print_analysis(report)
+    print(f"report: {Path(args.run_dir) / 'analysis'}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="quantumos",
@@ -256,6 +286,28 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate-config", help="validate a config file")
     validate_parser.add_argument("config", type=Path, help="TOML or JSON config file")
     validate_parser.set_defaults(func=_validate_config_command)
+
+    analyze_parser = subparsers.add_parser(
+        "analyze", help="run a field-battery analysis over a run directory"
+    )
+    analyze_sub = analyze_parser.add_subparsers(dest="test", required=True)
+    t1_parser = analyze_sub.add_parser("t1", help="pool-flux ACF (prereg T1)")
+    t1_parser.add_argument("run_dir", type=Path)
+    t1_parser.add_argument("--mode", choices=("control", "open"), required=True)
+    t1_parser.add_argument("--companion", type=Path, default=None,
+                           help="knob-motion companion run dir (open mode)")
+    t1_parser.add_argument("--bin-s", dest="bin_s", type=float, default=None)
+    t1_parser.add_argument("--seed", type=int, default=0,
+                           help="surrogate shuffle seed (recorded in report)")
+    t1_parser.set_defaults(func=_analyze_command)
+    t2_parser = analyze_sub.add_parser("t2", help="backlog-slope ACF (prereg T2)")
+    t2_parser.add_argument("run_dir", type=Path)
+    t2_parser.add_argument("--bin-s", dest="bin_s", type=float, default=None)
+    t2_parser.add_argument("--seed", type=int, default=0)
+    t2_parser.set_defaults(func=_analyze_command)
+    t3_parser = analyze_sub.add_parser("t3", help="rank inversions (prereg T3)")
+    t3_parser.add_argument("run_dir", type=Path)
+    t3_parser.set_defaults(func=_analyze_command)
 
     return parser
 

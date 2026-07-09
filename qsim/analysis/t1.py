@@ -142,7 +142,11 @@ def analyze_t1(run_dir: Path, mode: str, companion_dir: Path | None = None,
             "window_rule": "[p25,p75] of replenishment latency, min 3 bins, min lag 1",
             "warmup_trim": "bins starting before header steady_state.warmup_cutoff_s dropped",
             "max_lag_rule": "floor(n_bins/4)",
+            "attribution_scope": "verdict-gating attribution over significant lags "
+                                  "in the [p10,p90] sensitivity window; full-curve "
+                                  "unattributed lags disclosed non-gating",
         },
+        "n_shuffles": n_shuffles,
     }
 
     # 1. Steady-state gate (design §4.1): a transient is not read.
@@ -264,17 +268,33 @@ def _open_verdict(report, pools, predicted_bins, run_dir, companion_dir,
         "companion": _knob_motion_stats(Path(companion_dir), bin_s),
     }
     report["companion_steady_state"] = _load_header(Path(companion_dir)).get("steady_state")
+    if (report["companion_steady_state"] or {}).get("status") == "DIVERGENT":
+        report["refusals"].append(
+            "knob-motion companion run is DIVERGENT (transient): its comparison "
+            "statistics are a transient snapshot, not a system property")
 
-    significant, unattributed = [], []
+    significant, unattributed, full_curve_unattributed = [], [], []
     for stats in pools.values():
         if "refusal" in stats:
             continue
         in_window = stats["significant_in_window"]
         significant.extend(in_window)
-        result = assign(in_window, predicted_bins)
+        result = assign(stats["significant_in_sensitivity_window"], predicted_bins)
         stats["attribution"] = result
         unattributed.extend(result["unattributed"])
+        full_curve = assign(stats["significant_lags"], predicted_bins)
+        stats["unattributed_significant_full_curve"] = full_curve["unattributed"]
+        full_curve_unattributed.extend(full_curve["unattributed"])
     report["unattributed_lags"] = sorted(set(unattributed))
+    report["unattributed_significant_full_curve"] = sorted(set(full_curve_unattributed))
+    report["full_curve_disclosure_note"] = (
+        "full-curve unattributed significant lags are DISCLOSED, not "
+        "verdict-gating: at pointwise 95% bands over max_lag lags, "
+        "~0.05*max_lag false exceedances are expected; the verdict-gating "
+        "attribution scope is the [p10,p90] sensitivity window (pre-run "
+        "clarification of the prereg's 'every significant ACF lag', whose "
+        "significance concept is window-scoped throughout)."
+    )
 
     usable = [s for s in pools.values() if "refusal" not in s]
     if not usable:

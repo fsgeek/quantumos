@@ -250,7 +250,7 @@ def _analyze_command(args: argparse.Namespace) -> int:
         report = analyze_t3(args.run_dir)
     _print_analysis(report)
     print(f"report: {Path(args.run_dir) / 'analysis'}")
-    return 0
+    return 0 if report.get("verdict") is not None else 1
 
 
 def _sweep_command(args: argparse.Namespace) -> int:

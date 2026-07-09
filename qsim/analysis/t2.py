@@ -52,7 +52,11 @@ def analyze_t2(run_dir: Path, bin_s_override: float | None = None,
                            "utilization >= 1",
             "arrival_rate_rule": "backlog increments / steady_state horizon",
             "warmup_trim": "bins before steady_state.warmup_cutoff_s dropped",
+            "attribution_scope": "verdict-gating attribution over the T2 "
+                                  "window; full-curve unattributed lags "
+                                  "disclosed non-gating",
         },
+        "n_shuffles": n_shuffles,
     }
     if steady.get("status") == "DIVERGENT":
         report["verdict"] = "TRANSIENT"
@@ -122,5 +126,7 @@ def analyze_t2(run_dir: Path, bin_s_override: float | None = None,
         report["attribution"] = result
         report["verdict"] = ("T2-ATTRIBUTION-FAILED" if result["unattributed"]
                               else "T2-STRUCTURE-ATTRIBUTED")
+    full_curve = assign(stats["significant_lags"], committed["lag_bins"])
+    report["unattributed_significant_full_curve"] = full_curve["unattributed"]
     write_report(run_dir, "t2_report", report)
     return report

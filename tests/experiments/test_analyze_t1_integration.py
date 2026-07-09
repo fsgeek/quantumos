@@ -14,6 +14,7 @@ from qsim.experiments.run import run
 _CONSUMED = {
     "pool.deposited",
     "pool.withdrawn",
+    "pool.expired",
     "reservation.acquired",
     "round.arrived",
 }

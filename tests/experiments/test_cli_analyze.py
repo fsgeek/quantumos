@@ -50,3 +50,19 @@ def test_analyze_parser_rejects_bad_mode(tmp_path):
     import pytest
     with pytest.raises(SystemExit):
         main(["analyze", "t1", str(tmp_path), "--mode", "sideways"])
+
+
+def test_analyze_t3_refusal_exits_nonzero(tmp_path):
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    (run_dir / "events.jsonl").write_text("")
+    import json
+    (run_dir / "header.json").write_text(json.dumps({
+        "run_id": "r", "run_seed": 1, "git_sha": "deadbeef",
+        "schema_version": 1, "filtering": {"enabled": False},
+        "steady_state": {"status": "CONVERGED", "warmup_cutoff_s": 0.0,
+                          "evidence": {"horizon_s": 1.0}},
+        "config": {"scheduler": "S1",
+                    "epoch": {"decay_rate_per_class": {"messenger": 0.01}}},
+    }))
+    assert main(["analyze", "t3", str(run_dir)]) == 1

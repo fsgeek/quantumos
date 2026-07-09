@@ -43,7 +43,9 @@ def analyze_t3(run_dir: Path) -> dict:
         "conventions": {
             "projection_time": "each lease's own terminal event time from the "
                                 "trace; fidelity analytic, never observed",
-            "censoring": "leases without a terminal are excluded and counted",
+            "censoring": "leases without a terminal are excluded and counted"
+                         "; censored leases are counted per decision-point "
+                         "occurrence, not per lease",
         },
     }
 

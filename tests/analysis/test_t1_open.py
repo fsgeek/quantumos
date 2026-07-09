@@ -86,6 +86,9 @@ def test_open_attribution_failed_on_unpredicted_lag(tmp_path):
     assert report["verdict"] == "ATTRIBUTION-FAILED"
     assert "mechanism probe" in report["caveat"]
     assert report["unattributed_lags"]
+    assert "unattributed_significant_full_curve" in report
+    assert 3 in report["unattributed_significant_full_curve"]
+    assert report["conventions"]["attribution_scope"].startswith("verdict-gating")
 
 
 def test_open_field_blocked_carries_flat_sweep_caveat(tmp_path):
@@ -125,6 +128,23 @@ def test_companion_config_differs_only_in_arrival_rate():
         if f.name == "arrival_rate_hz":
             continue
         assert getattr(open_cfg, f.name) == getattr(companion_cfg, f.name), f.name
+
+
+def test_open_companion_divergent_is_flagged(tmp_path):
+    """A DIVERGENT companion still produces a verdict, but its comparison
+    statistics are flagged as a transient snapshot, non-gating."""
+    primary = _write_run_dir(tmp_path, "primary",
+                             _periodic_rows(100, 0.8, 0.2, 0.6))
+    companion = _write_run_dir(tmp_path, "companion",
+                               _periodic_rows(50, 1.6, 0.2, 0.6))
+    header_path = companion / "header.json"
+    header = json.loads(header_path.read_text())
+    header["steady_state"]["status"] = "DIVERGENT"
+    header_path.write_text(json.dumps(header))
+
+    report = analyze_t1(primary, mode="open", companion_dir=companion)
+    assert report["verdict"] is not None
+    assert any("companion run is DIVERGENT" in r for r in report["refusals"])
 
 
 def test_open_all_pools_refused_withholds_verdict(tmp_path):

@@ -1,0 +1,48 @@
+{
+  "analysis_wall_seconds_post_swap": 3.8203163500875235,
+  "backend_post": "numpy",
+  "failures": [],
+  "git_sha_at_bridge": "5297386b3646870061159f44d4d820ad9ad1bcba",
+  "git_sha_pre_swap": "264b684d9792383f520e5836309c18c3d77c66aa",
+  "max_abs_acf_deviation": 2.220446049250313e-16,
+  "max_abs_surrogate_band_deviation": 2.42861286636753e-16,
+  "numpy_version": "2.5.1",
+  "per_pool": {
+    "((('M0', 0), ('M1', 0)), 'messenger')": {
+      "lag1_acf_post": -0.24353984499933215,
+      "lag1_acf_pre": -0.24353984499933193,
+      "max_abs_acf_deviation": 2.220446049250313e-16,
+      "max_abs_surrogate_band_deviation": 2.42861286636753e-16
+    },
+    "((('M0', 0), ('M3', 0)), 'messenger')": {
+      "lag1_acf_post": -0.27056277056277056,
+      "lag1_acf_pre": -0.27056277056277056,
+      "max_abs_acf_deviation": 0.0,
+      "max_abs_surrogate_band_deviation": 6.938893903907228e-18
+    },
+    "((('M1', 0), ('M2', 0)), 'messenger')": {
+      "lag1_acf_post": -0.2905824559944448,
+      "lag1_acf_pre": -0.2905824559944449,
+      "max_abs_acf_deviation": 1.457167719820518e-16,
+      "max_abs_surrogate_band_deviation": 1.734723475976807e-16
+    },
+    "((('M2', 0), ('M3', 0)), 'messenger')": {
+      "lag1_acf_post": -0.23840185190654828,
+      "lag1_acf_pre": -0.23840185190654814,
+      "max_abs_acf_deviation": 1.734723475976807e-16,
+      "max_abs_surrogate_band_deviation": 2.1510571102112408e-16
+    }
+  },
+  "postswap_report_sha256": "d695d4699b590df6f4a08cf1dc47d3653feafdb3d06bf45eb69f4ad1b1754411",
+  "predicted_lags_reused": true,
+  "preswap_report": {
+    "path": "t1_report_preswap_pure_python.json",
+    "sha256": "c9b6a311feab47a66dcaca46fcbef3119d5075c7024c32eedb698f23d5433e61"
+  },
+  "purpose": "calibration bridge for the numpy numerics swap: the instrument change between control and open runs is measured, not assumed (decision doc ab5040e)",
+  "reproduction": "PASS",
+  "run_id": "f230668e-3fbd-4016-bd7a-e7bac2e47688",
+  "verdict_post": "PASS",
+  "verdict_pre": "PASS",
+  "working_tree_dirty_at_bridge": true
+}

@@ -1,0 +1,22 @@
+{
+  "backend": "numpy",
+  "machine": "x86_64",
+  "numpy_version": "2.5.1",
+  "purpose": "open-scale wall-time fact for the numpy backend (decision doc ab5040e, decision 2, point 5); the T1 analysis runs one ACF + one 1000-shuffle surrogate band PER POOL (4 pools in the control run)",
+  "python": "3.14.3",
+  "results_by_n_bins": {
+    "20000": {
+      "acf_wall_s": 0.726,
+      "max_lag": 5000,
+      "per_pool_total_s": 655.8,
+      "surrogate_band_wall_s_1000_shuffles": 655.1
+    },
+    "4000": {
+      "acf_wall_s": 0.003,
+      "max_lag": 1000,
+      "per_pool_total_s": 2.3,
+      "surrogate_band_wall_s_1000_shuffles": 2.3
+    }
+  },
+  "series": "seeded white gaussian (random.Random(1))"
+}

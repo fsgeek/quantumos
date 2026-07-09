@@ -247,3 +247,65 @@ def shared_key_fraction(events_path_a: Path, events_path_b: Path,
         intersection = keys_a & keys_b
         result.append((window_start, len(intersection) / len(union)))
     return result
+
+
+def replenishment_latency_samples(events_path: Path) -> list[float]:
+    """POOL_REPLENISH issue → pool deposit latency samples (prereg T1 lag
+    definition). Issue is the replenish reservation acquisition: the ONLY
+    reservation.acquired with round_id=None is the §8.2 replenish holder
+    (engine.py: holder_id is the request id, lease_id "<request_id>:L");
+    the matching deposit is pool.deposited(source="replenish") with the
+    same lease_id. Measured from events that are NOT the ACF (prereg
+    attribution rule)."""
+    issued_at: dict[str, float] = {}
+    samples: list[float] = []
+    for record in iter_events(events_path):
+        event_type = record["event_type"]
+        payload = record["payload"]
+        if (event_type == "reservation.acquired"
+                and payload.get("round_id") is None
+                and "request_id" in payload):
+            issued_at[payload["lease_id"]] = record["sim_time"]
+        elif (event_type == "pool.deposited"
+                and payload.get("source") == "replenish"):
+            t0 = issued_at.pop(payload["lease_id"], None)
+            if t0 is not None:
+                samples.append(record["sim_time"] - t0)
+    return samples
+
+
+def inter_withdrawal_times(events_path: Path) -> dict[tuple, list[float]]:
+    """Per-pool-key gaps between successive pool.withdrawn events (the
+    low-water oscillation cycle basis: mean gap x L, prereg attribution)."""
+    last_at: dict[tuple, float] = {}
+    gaps: dict[tuple, list[float]] = {}
+    for record in iter_events(events_path):
+        if record["event_type"] != "pool.withdrawn":
+            continue
+        key = _to_hashable(record["payload"]["key"])
+        t = record["sim_time"]
+        prev = last_at.get(key)
+        if prev is not None:
+            gaps.setdefault(key, []).append(t - prev)
+        last_at[key] = t
+    return gaps
+
+
+def retry_cadence_samples(events_path: Path) -> list[float]:
+    """Retry lineage cycle times. `round.retried` exists in the taxonomy but
+    is NEVER published (2026-07-09 plan finding #1): a retry is a fresh
+    round.arrived with incremented payload.retry_ordinal on the SAME
+    entity_id (the stable round_id). A sample is the gap between consecutive
+    arrivals of one lineage where the later arrival is a retry."""
+    last_arrival: dict[str, float] = {}
+    samples: list[float] = []
+    for record in iter_events(events_path):
+        if record["event_type"] != "round.arrived":
+            continue
+        round_id = record["entity_id"]
+        t = record["sim_time"]
+        prev = last_arrival.get(round_id)
+        if prev is not None and record["payload"].get("retry_ordinal", 0) >= 1:
+            samples.append(t - prev)
+        last_arrival[round_id] = t
+    return samples

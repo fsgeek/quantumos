@@ -1,4 +1,7 @@
-# The five physicist questions (instrument-earned, threshold-framed)
+# The physicist questions (instrument-earned, threshold-framed)
+
+*(Retitled 2026-07-10: the spatial battery earned a sixth question and
+sharpened Q4 — see the dated amendments below and the S1 run note.)*
 
 **Date:** 2026-07-09
 **Status:** Drafted after the first open-regime battery results (T1
@@ -88,6 +91,15 @@ retry cadence (0.68 s) entering T1-open's prediction surface as a named
 cycle. Retry discipline is a load-bearing de-rigging knob; its real cost
 is invented in the model and must come from hardware.
 
+**Sharpened by the spatial battery (added 2026-07-10):** the same quantity
+carries a second decision. The attempt price relative to deadline slack
+decides whether path-quality awareness can matter in OUTCOMES at all:
+under retry-with-reassignment, per-path heterogeneity averages out of the
+outcome column at first order, and only an attempt price comparable to
+slack lets a poor path cost anything a deadline can see (S1: outcome-flat
+across three orders of magnitude of operating point; mechanism
+code-confirmed; run note 2026-07-10).
+
 ## Q5 — Port-level topology envelope
 
 **Ask:** simultaneous entangling links per memory module, switch radix,
@@ -102,6 +114,30 @@ fabric. These bound the entire resource model.
 battery ever ran (S1 crash, inert pregen, uncalibrated-path guard) — the
 instrument could not be built coherently without inventing answers to
 this question. It is the position paper's next section.
+
+## Q6 — Is a switch reconfiguration a budgeted operation? (added 2026-07-10)
+
+**Ask:** does an actuation of the photonic switch fabric carry a cost the
+OS must ration — power/thermal budget, duty-cycle limit, component wear —
+or are actuations free at OS-relevant rates?
+
+**Threshold that flips a decision:** the sustainable actuation rate (or
+per-actuation wear) vs the actuation-rate difference between quality-blind
+and quality-aware routing. The spatial battery found that when
+reconfiguration is fast relative to deadlines, path-quality-aware routing
+is outcome-equivalent to blind rotation and its ENTIRE payoff is churn:
+−39% switch reservations and −96% pool wastage at the widest feasible
+quality spread. If actuations are free, that saving is worthless and the
+OS should not represent per-path quality for routing in this regime; if
+the fabric has an actuation budget, the churn currency is real and the
+representation earns admission (the admission rule reads through: the
+quantity's reading decision is "route by quality or don't").
+
+**Instrument grounding:** S1+S2 (2026-07-10, runs committed bd4615c /
+1baa246, S2 prediction committed pre-run). Rigged-result caveat carried:
+one frozen epoch — this licenses comparative reading at fixed quality
+only, not prediction over time (that half stays with B2/T4 and the Q7/Q8
+rulings in the battery prereg).
 
 ---
 

@@ -63,3 +63,17 @@ def test_dose_response_rows_sorted_by_delta_regardless_of_request_order(tmp_path
               deltas=(0.2, 0.0), max_sim_time_s=5.0)
     dose = json.loads((tmp_path / "dose_response.json").read_text())
     assert [r["delta"] for r in dose["rows"]] == [0.0, 0.2]
+
+
+def test_dose_response_monotonicity_reports_both_directions(tmp_path):
+    """Direction-blind monotonicity misleads when the swept policy expects an
+    INCREASING dose (argmax policies improve with spread at fixed mean) —
+    review round 3, 2026-07-10. The artifact reports both directions and
+    leaves expectation to the reader/prereg."""
+    run_sweep("examples/t1-open.toml", tmp_path,
+              deltas=(0.0, 0.2), max_sim_time_s=5.0)
+    dose = json.loads((tmp_path / "dose_response.json").read_text())
+    mono = dose["monotonicity"]
+    assert "monotone_nonincreasing" in mono
+    assert "monotone_nondecreasing" in mono
+    assert "direction" in mono["note"]

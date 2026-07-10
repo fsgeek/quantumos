@@ -1,0 +1,23 @@
+{
+  "cells_bh_vs_rr": {
+    "0.0": {
+      "bh_only": 17,
+      "both": 1520,
+      "neither": 29,
+      "net_bh_advantage_lineages": 3,
+      "paired": 1580,
+      "rr_only": 14
+    },
+    "0.3": {
+      "bh_only": 39,
+      "both": 1514,
+      "neither": 25,
+      "net_bh_advantage_lineages": 37,
+      "paired": 1580,
+      "rr_only": 2
+    }
+  },
+  "design": "paired policy-by-spread interaction, T_retry=0.25s slack=2.0s",
+  "difference_in_differences_lineages": 34,
+  "reading": "delta=0 cell isolates concentration (no quality signal exists); DiD isolates the quality-specific advantage"
+}

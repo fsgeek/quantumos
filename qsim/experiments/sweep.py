@@ -138,8 +138,15 @@ def run_sweep(base_config_path: Path, out_root: Path,
         "monotonicity": {
             "metric": "completed_in_deadline",
             "values": values,
+            # Both directions reported (review round 3, 2026-07-10): the
+            # expected direction belongs to the swept POLICY, not this
+            # artifact — round-robin under spread expects nonincreasing,
+            # argmax policies expect nondecreasing (a wider spread at fixed
+            # mean improves the best path).
             "monotone_nonincreasing": all(a >= b for a, b in zip(values, values[1:])),
-            "note": "non-monotonicity triggers a mechanism audit under the "
+            "monotone_nondecreasing": all(a <= b for a, b in zip(values, values[1:])),
+            "note": "expected direction depends on the swept policy; "
+                    "deviation from it triggers a mechanism audit under the "
                     "attribution rule, not automatic failure (prereg S1)",
         },
     }

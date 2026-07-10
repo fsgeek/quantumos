@@ -19,5 +19,6 @@
   },
   "design": "paired policy-by-spread interaction, T_retry=0.25s slack=2.0s",
   "difference_in_differences_lineages": 34,
-  "reading": "delta=0 cell isolates concentration (no quality signal exists); DiD isolates the quality-specific advantage"
+  "pseudoreplication_caveat": "all lineages share one DES trajectory (heap, pools, decoder, reservations); McNemar p-values treat them as independent paired units and may be pseudoreplicated. Direction is persuasive; population-level inference awaits the multi-seed battery (see run note).",
+  "reading": "delta=0 cell shows concentration produced no detectable net outcome advantage in that arm (14v17, balanced); the DiD (+34) shows the policy advantage appears almost entirely when quality differences exist. NOT full causal isolation: argmax at delta=0.3 also changes path identity, pool age dynamics, and draw keys; isolation would need a counterbalanced sticky-quality-blind comparator (round 4 wording)."
 }

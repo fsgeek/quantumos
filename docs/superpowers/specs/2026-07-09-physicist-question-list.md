@@ -92,17 +92,28 @@ model branch is built and waiting on one scalar.
 **Ask:** after a heralding failure, is the slot/port blocked, for how
 long, and is any resource destroyed? How fast can a retry be issued?
 
-**Threshold that flips a decision:** retry cost relative to the aging
-rate of everything waiting behind it. Cheap-and-fast retries at high
-failure rates → the OS MUST ration retries (S0's unbounded-retry
-congestion-aging spiral is self-defeating: retries age the very leases
-they are trying to serve). Expensive/blocking retries → admission control
-dominates and retry discipline is secondary.
+**Two retries, two thresholds (separated in round 4 — the original text
+grounded an in-place-herald question in a round-lineage finding):**
 
-**Instrument grounding:** the first RUN finding (retry spiral) plus the
-retry cadence (0.68 s) entering T1-open's prediction surface as a named
-cycle. Retry discipline is a load-bearing de-rigging knob; its real cost
-is invented in the model and must come from hardware.
+*Round-lineage retry* (a failed ROUND re-enters as a new arrival,
+re-choosing paths): threshold is marginal retry occupancy vs remaining
+slack and the opportunity cost to waiting work. S0's unbounded-retry
+congestion-aging spiral (the first RUN finding) lives at THIS level —
+cheap lineage re-injection at high failure rates aged the very leases it
+served, so lineage-retry discipline interacts with admission control. The
+0.68 s cadence in T1-open's prediction surface is this level's
+re-injection delay, not herald recovery.
+
+*In-place herald retry* (a failed ATTEMPT on a still-configured path):
+threshold is the failure-to-next-attempt time vs deadline slack — the
+spatial battery's regime knob. Bounded by the round deadline in our
+model; whether real hardware permits retain-and-retry at all is the
+protocol branch below.
+
+**Instrument grounding:** the retry spiral (lineage level, S0) and the
+spatial battery's bracketed two-regime result (herald level, 2026-07-10
+run note). Both costs are invented in the model and must come from
+hardware; they interact but are not the same retry.
 
 **Sharpened by the spatial battery (added 2026-07-10; mechanism corrected
 same day, external review — see run-note correction):** the same quantity
@@ -145,17 +156,19 @@ this question. It is the position paper's next section.
 OS must ration — power/thermal budget, duty-cycle limit, component wear —
 or are actuations free at OS-relevant rates?
 
-**Threshold that flips a decision:** the sustainable actuation rate (or
-per-actuation wear) vs the actuation-rate difference between quality-blind
-and quality-aware routing. The spatial battery found that when
-reconfiguration is fast relative to deadlines, path-quality-aware routing
-is outcome-equivalent to blind rotation and its ENTIRE payoff is churn:
-−39% switch reservations and −96% pool wastage at the widest feasible
-quality spread. If actuations are free, that saving is worthless and the
-OS should not represent per-path quality for routing in this regime; if
-the fabric has an actuation budget, the churn currency is real and the
-representation earns admission (the admission rule reads through: the
-quantity's reading decision is "route by quality or don't").
+**Threshold that flips a decision (rewritten round 4 — the original
+paragraph restated the pre-correction mechanism; its narrowing note below
+is retained as history):** the sustainable actuation rate (or
+per-actuation cost of any constrained resource) vs the actuation-rate
+difference between quality-blind and quality-aware routing. In the
+low-attempt-price regime the spatial battery tested (failure-to-next-
+attempt spacing of 100 µs against second-scale slacks, retain-and-retry
+protocol), quality-aware routing showed no detectable outcome advantage
+and its measured payoff was churn: −39% switch reservations and −96% pool
+wastage at the widest feasible quality spread. In that regime the churn
+currency is the only currency, and whether it has value is this question.
+(At binding attempt prices the payoff moves into outcomes — Q4's regime
+question — and this question then prices the SECONDARY savings.)
 
 **Instrument grounding:** S1+S2 (2026-07-10, runs committed bd4615c /
 1baa246, S2 prediction committed pre-run). Rigged-result caveat carried:

@@ -1,7 +1,10 @@
 # The physicist questions (instrument-earned, threshold-framed)
 
 *(Retitled 2026-07-10: the spatial battery earned a sixth question and
-sharpened Q4 — see the dated amendments below and the S1 run note.)*
+sharpened Q4. Same day, external adversarial review corrected the
+mechanism attribution — Q4 re-sharpened with protocol branches, Q1 scoped,
+Q6 narrowed, Q7 added restoring the displaced rank-persistence ask. See
+the dated amendments below and the S1 run note's correction section.)*
 
 **Date:** 2026-07-09
 **Status:** Drafted after the first open-regime battery results (T1
@@ -38,6 +41,16 @@ replenishment cycle imprinting on pool dynamics at exactly its own
 timescale (lag-1 ACF, 5–9× the null band, attributed, surrogate-surviving).
 The coupling mechanism survives de-rigging; it is not an artifact of model
 wiring. This is the highest-priority measurement.
+
+**Scope caveat (added 2026-07-10, external review):** the replenishment
+cadence is partly OS-created (low-water policy), not purely physical. What
+hardware can supply is the distribution of constituent service times
+(actuation, settling, herald attempt, reset, communication). CoV also
+cannot distinguish heavy tails from multimodality or state dependence; the
+operational form of the ask is a QUANTILE threshold — is the upper-tail
+configuration-plus-generation latency small enough that a replenishment
+issued at the scheduler's lead time completes before its reserve margin
+expires?
 
 ## Q2 — Instantaneous fidelity spread across coexisting pairs
 
@@ -91,14 +104,23 @@ retry cadence (0.68 s) entering T1-open's prediction surface as a named
 cycle. Retry discipline is a load-bearing de-rigging knob; its real cost
 is invented in the model and must come from hardware.
 
-**Sharpened by the spatial battery (added 2026-07-10):** the same quantity
-carries a second decision. The attempt price relative to deadline slack
-decides whether path-quality awareness can matter in OUTCOMES at all:
-under retry-with-reassignment, per-path heterogeneity averages out of the
-outcome column at first order, and only an attempt price comparable to
-slack lets a poor path cost anything a deadline can see (S1: outcome-flat
-across three orders of magnitude of operating point; mechanism
-code-confirmed; run note 2026-07-10).
+**Sharpened by the spatial battery (added 2026-07-10; mechanism corrected
+same day, external review — see run-note correction):** the same quantity
+carries a second decision. The failed-attempt CYCLE TIME relative to
+deadline slack decides whether path-quality awareness can matter in
+OUTCOMES at all: the per-round heralding penalty is (E[1/p] − 1/p̄) ×
+T_attempt, microseconds in our model against seconds of slack. The
+minimum-sufficient asks are therefore protocol-branched:
+- After a heralding failure, can another attempt run ON the already
+  configured path, reservation retained — or must some/all of the optical
+  path be released, reset, or reconfigured?
+- What is the complete failure-to-next-attempt cycle time
+  (emission + propagation + detection window + herald return + reset)?
+- Do the answers differ between on-demand generation and speculative
+  replenishment? (Our simulator currently implements retain-and-retry for
+  rounds but release-and-reacquire for replenishment — a design choice,
+  not a physics-earned asymmetry; the hardware answer decides which is
+  real.)
 
 ## Q5 — Port-level topology envelope
 
@@ -138,6 +160,39 @@ quantity's reading decision is "route by quality or don't").
 one frozen epoch — this licenses comparative reading at fixed quality
 only, not prediction over time (that half stays with B2/T4 and the Q7/Q8
 rulings in the battery prereg).
+
+**Narrowed (2026-07-10, external review):** "actuations free implies the
+saving is worthless" is too strong — even unbudgeted actuations can cost
+fabric occupancy, controller traffic, thermal transients, cross-path
+contention, calibration disturbance, and tail latency; all absent or
+negligible at this experiment's ~0.4% utilization. The defensible
+inference: at THIS operating point the simulator gives saved reservations
+no currency except counted churn. The ask stands, broadened one notch:
+does an actuation/reservation consume ANY constrained resource at the
+relevant rate?
+
+## Q7 — Path-rank persistence at scheduling lead time (added 2026-07-10)
+
+**Ask:** how long does "the best path" remain best? The autocorrelation
+time (or rank-inversion rate) of comparative path quality, measured at the
+lead times an OS would act on — after measurement, publication, queueing,
+and actuation delays.
+
+**Threshold that flips a decision:** rank persistence vs decision lead
+time. If the best path stays best for many lead times, a comparative read
+of the calibration table is durable state worth publishing; if ranks
+reshuffle faster than the OS can act, quality-aware routing is chasing a
+ghost and the comparative representation fails admission even when the
+churn currency (Q6) has value.
+
+**Instrument grounding:** the battery prereg's original spatial question
+(its Q6, the "QOS-shaped" ask) — displaced when this list's Q6 slot took
+the actuation-budget question, restored here after external review flagged
+the gap. S2's rigged-result warning is exactly this question's shadow:
+one frozen epoch makes rank persistence infinite by construction, which is
+why S2 licenses comparative reading only. Q7 is what B2's epoch sequences
+would probe in-model; the hardware answer supersedes anything the
+simulator can author.
 
 ---
 

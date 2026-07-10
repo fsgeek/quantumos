@@ -1,0 +1,135 @@
+{
+  "arms": [
+    {
+      "config_sha256": "519b63fe07680c616a1ae940a7f0b59dac26021843e8240466791c2156256361",
+      "delta": 0.0,
+      "run_dir": "runs/sweep-s1-attempt-price/ebad5925-9ebd-4fa6-ade1-b9fe9378c861",
+      "run_id": "ebad5925-9ebd-4fa6-ade1-b9fe9378c861",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1598.2915950563013,
+          "offered": 1580,
+          "q3_mean_backlog": 0.34373772525623675,
+          "q3_mean_relative_backlog": 0.00021755552231407388,
+          "q3_window_s": [
+            799.1457975281506,
+            1198.718696292226
+          ],
+          "q4_mean_backlog": 0.28874283140049445,
+          "q4_mean_relative_backlog": 0.00018274862746866738,
+          "q4_window_s": [
+            1198.718696292226,
+            1598.2915950563013
+          ],
+          "relative_slope": -3.4806894845406506e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.1457975281506
+      }
+    },
+    {
+      "config_sha256": "edebf4c94354451099d0b2ec32e9a0d7ef600049dbeda33476babb8da3f10d19",
+      "delta": 0.1,
+      "run_dir": "runs/sweep-s1-attempt-price/50296182-c8fb-427b-bbe0-3c9766fcfadc",
+      "run_id": "50296182-c8fb-427b-bbe0-3c9766fcfadc",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1598.2915950563013,
+          "offered": 1580,
+          "q3_mean_backlog": 0.3369601186323242,
+          "q3_mean_relative_backlog": 0.00021326589786855964,
+          "q3_window_s": [
+            799.1457975281506,
+            1198.718696292226
+          ],
+          "q4_mean_backlog": 0.29951931553132527,
+          "q4_mean_relative_backlog": 0.00018956918704514259,
+          "q4_window_s": [
+            1198.718696292226,
+            1598.2915950563013
+          ],
+          "relative_slope": -2.3696710823417052e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.1457975281506
+      }
+    },
+    {
+      "config_sha256": "69e2a6f6130b646a83b9458739ff1515427f7f5124f35ca20cd75799ccf04d7c",
+      "delta": 0.2,
+      "run_dir": "runs/sweep-s1-attempt-price/9b801ab2-cbc1-475e-b238-e70d0475b894",
+      "run_id": "9b801ab2-cbc1-475e-b238-e70d0475b894",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1597.7915950563013,
+          "offered": 1580,
+          "q3_mean_backlog": 0.36929248402576786,
+          "q3_mean_relative_backlog": 0.00023372942026947334,
+          "q3_window_s": [
+            798.8957975281506,
+            1198.343696292226
+          ],
+          "q4_mean_backlog": 0.31032094292114404,
+          "q4_mean_relative_backlog": 0.00019640566007667344,
+          "q4_window_s": [
+            1198.343696292226,
+            1597.7915950563013
+          ],
+          "relative_slope": -3.73237601927999e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 798.8957975281506
+      }
+    },
+    {
+      "config_sha256": "22171c5058d3657be767ccc411005bb2b1232d55cb33bc8787f483ecd7673637",
+      "delta": 0.3,
+      "run_dir": "runs/sweep-s1-attempt-price/5f16e221-8f09-45d7-ba53-fa2d4e2e94a6",
+      "run_id": "5f16e221-8f09-45d7-ba53-fa2d4e2e94a6",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1597.7915950563013,
+          "offered": 1580,
+          "q3_mean_backlog": 0.3885701165506838,
+          "q3_mean_relative_backlog": 0.000245930453513091,
+          "q3_window_s": [
+            798.8957975281506,
+            1198.343696292226
+          ],
+          "q4_mean_backlog": 0.3425881122030109,
+          "q4_mean_relative_backlog": 0.00021682791911582967,
+          "q4_window_s": [
+            1198.343696292226,
+            1597.7915950563013
+          ],
+          "relative_slope": -2.910253439726134e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 798.8957975281506
+      }
+    },
+    {
+      "delta": 0.4,
+      "reason": "delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]",
+      "recommend": "prereg amendment: delta=0.4 is infeasible at p_bar=0.7 (delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]); widest feasible half-spread is delta=0.3",
+      "status": "infeasible"
+    }
+  ],
+  "base_config": "/tmp/claude-1000/-home-tony-projects-quantumos/c1f10f2f-bd38-474f-b970-5cdb633f644b/scratchpad/s1-attempt-price.toml"
+}

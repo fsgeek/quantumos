@@ -1,0 +1,135 @@
+{
+  "arms": [
+    {
+      "config_sha256": "d97e1b448a8c41f34903fe8a9165ed3603ef631c6e41f3abb7d69b4eb89e10bb",
+      "delta": 0.0,
+      "run_dir": "runs/sweep-s1-stress-load/c3ebc1b0-23fb-4a9f-8e95-cd5907d79b76",
+      "run_id": "c3ebc1b0-23fb-4a9f-8e95-cd5907d79b76",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 3,
+          "final_relative_backlog": 0.0018987341772151898,
+          "horizon_s": 399.83817729334964,
+          "offered": 1580,
+          "q3_mean_backlog": 4.679551937980856,
+          "q3_mean_relative_backlog": 0.002961741732899276,
+          "q3_window_s": [
+            199.91908864667482,
+            299.87863297001223
+          ],
+          "q4_mean_backlog": 3.5079762790495272,
+          "q4_mean_relative_backlog": 0.002220238151297169,
+          "q4_window_s": [
+            299.87863297001223,
+            399.83817729334964
+          ],
+          "relative_slope": -0.0007415035816021069,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.91908864667482
+      }
+    },
+    {
+      "config_sha256": "aef9634ae6c07473387a0e5d8d970682150ed646cde92d857cbca9ba6f11bcf8",
+      "delta": 0.1,
+      "run_dir": "runs/sweep-s1-stress-load/9216c83f-48e3-4fce-9834-fd29286deccd",
+      "run_id": "9216c83f-48e3-4fce-9834-fd29286deccd",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 3,
+          "final_relative_backlog": 0.0018987341772151898,
+          "horizon_s": 399.83817729334964,
+          "offered": 1580,
+          "q3_mean_backlog": 4.773749700172048,
+          "q3_mean_relative_backlog": 0.0030213605697291443,
+          "q3_window_s": [
+            199.91908864667482,
+            299.87863297001223
+          ],
+          "q4_mean_backlog": 3.5631994277913352,
+          "q4_mean_relative_backlog": 0.0022551895112603386,
+          "q4_window_s": [
+            299.87863297001223,
+            399.83817729334964
+          ],
+          "relative_slope": -0.0007661710584688057,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.91908864667482
+      }
+    },
+    {
+      "config_sha256": "e6f3697ff45b7c18e3646dfb1bc7b1fc71287885f3642ced3e95b277d28b5dc7",
+      "delta": 0.2,
+      "run_dir": "runs/sweep-s1-stress-load/2ce77973-1c0c-4825-b498-872b3fe2aead",
+      "run_id": "2ce77973-1c0c-4825-b498-872b3fe2aead",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 3,
+          "final_relative_backlog": 0.0018987341772151898,
+          "horizon_s": 399.83817729334964,
+          "offered": 1580,
+          "q3_mean_backlog": 4.777890796618335,
+          "q3_mean_relative_backlog": 0.0030239815168470476,
+          "q3_window_s": [
+            199.91908864667482,
+            299.87863297001223
+          ],
+          "q4_mean_backlog": 3.5466436519611637,
+          "q4_mean_relative_backlog": 0.002244711172127319,
+          "q4_window_s": [
+            299.87863297001223,
+            399.83817729334964
+          ],
+          "relative_slope": -0.0007792703447197288,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.91908864667482
+      }
+    },
+    {
+      "config_sha256": "b8e14433287e544c0ea6ca7d0ad32080e05ae0dab69782a66f8fbcbb7ab2da2a",
+      "delta": 0.3,
+      "run_dir": "runs/sweep-s1-stress-load/b3527bf5-a7b0-4752-be95-b2fc8548a1fa",
+      "run_id": "b3527bf5-a7b0-4752-be95-b2fc8548a1fa",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 3,
+          "final_relative_backlog": 0.0018987341772151898,
+          "horizon_s": 399.83817729334964,
+          "offered": 1580,
+          "q3_mean_backlog": 4.915072416614111,
+          "q3_mean_relative_backlog": 0.0031108053269709563,
+          "q3_window_s": [
+            199.91908864667482,
+            299.87863297001223
+          ],
+          "q4_mean_backlog": 3.5538232645229257,
+          "q4_mean_relative_backlog": 0.0022492552307107126,
+          "q4_window_s": [
+            299.87863297001223,
+            399.83817729334964
+          ],
+          "relative_slope": -0.0008615500962602437,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.91908864667482
+      }
+    },
+    {
+      "delta": 0.4,
+      "reason": "delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]",
+      "recommend": "prereg amendment: delta=0.4 is infeasible at p_bar=0.7 (delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]); widest feasible half-spread is delta=0.3",
+      "status": "infeasible"
+    }
+  ],
+  "base_config": "/tmp/claude-1000/-home-tony-projects-quantumos/c1f10f2f-bd38-474f-b970-5cdb633f644b/scratchpad/s1-stress-load.toml"
+}

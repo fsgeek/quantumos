@@ -1,0 +1,135 @@
+{
+  "arms": [
+    {
+      "config_sha256": "2c03baa37b0292ba82816c660aa21d57f67b8375db178f516623dd70765c4734",
+      "delta": 0.0,
+      "run_dir": "runs/sweep-s1-stress-slack/66294c58-eca3-41ef-9010-185953154717",
+      "run_id": "66294c58-eca3-41ef-9010-185953154717",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.87562600458546,
+          "offered": 384,
+          "q3_mean_backlog": 0.1870821258639432,
+          "q3_mean_relative_backlog": 0.0004871930361040188,
+          "q3_window_s": [
+            199.43781300229273,
+            299.1567195034391
+          ],
+          "q4_mean_backlog": 0.2731120814296101,
+          "q4_mean_relative_backlog": 0.0007112293787229429,
+          "q4_window_s": [
+            299.1567195034391,
+            398.87562600458546
+          ],
+          "relative_slope": 0.00022403634261892417,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43781300229273
+      }
+    },
+    {
+      "config_sha256": "2cbf37df34d91fe3cad24c6c6ca893ce86ed3557c92b37e00eeb34cccc7a50a7",
+      "delta": 0.1,
+      "run_dir": "runs/sweep-s1-stress-slack/bd25f809-5633-4465-ab35-97df40f43c7c",
+      "run_id": "bd25f809-5633-4465-ab35-97df40f43c7c",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.87562600458546,
+          "offered": 384,
+          "q3_mean_backlog": 0.18727767554137342,
+          "q3_mean_relative_backlog": 0.00048770228005565994,
+          "q3_window_s": [
+            199.43781300229273,
+            299.1567195034391
+          ],
+          "q4_mean_backlog": 0.27323566382382236,
+          "q4_mean_relative_backlog": 0.0007115512078745374,
+          "q4_window_s": [
+            299.1567195034391,
+            398.87562600458546
+          ],
+          "relative_slope": 0.00022384892781887746,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43781300229273
+      }
+    },
+    {
+      "config_sha256": "74b4575822090552f65cc61b6ca89b98784758f1b99c4ecf38265735d57a4062",
+      "delta": 0.2,
+      "run_dir": "runs/sweep-s1-stress-slack/a212e76e-0ca2-44ba-a337-d1497db792f4",
+      "run_id": "a212e76e-0ca2-44ba-a337-d1497db792f4",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.87562600458546,
+          "offered": 384,
+          "q3_mean_backlog": 0.18718240774980566,
+          "q3_mean_relative_backlog": 0.00048745418684845225,
+          "q3_window_s": [
+            199.43781300229273,
+            299.1567195034391
+          ],
+          "q4_mean_backlog": 0.2730351000520992,
+          "q4_mean_relative_backlog": 0.000711028906385675,
+          "q4_window_s": [
+            299.1567195034391,
+            398.87562600458546
+          ],
+          "relative_slope": 0.00022357471953722276,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43781300229273
+      }
+    },
+    {
+      "config_sha256": "8defb98ea05e17a50610e8097e573a6802cef49dfaec830181c89fdd871d298d",
+      "delta": 0.3,
+      "run_dir": "runs/sweep-s1-stress-slack/5db47765-9e45-41da-bd43-b8eba31d72c6",
+      "run_id": "5db47765-9e45-41da-bd43-b8eba31d72c6",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.87562600458546,
+          "offered": 384,
+          "q3_mean_backlog": 0.18729071218653504,
+          "q3_mean_relative_backlog": 0.000487736229652435,
+          "q3_window_s": [
+            199.43781300229273,
+            299.1567195034391
+          ],
+          "q4_mean_backlog": 0.2735495461265659,
+          "q4_mean_relative_backlog": 0.0007123686097045987,
+          "q4_window_s": [
+            299.1567195034391,
+            398.87562600458546
+          ],
+          "relative_slope": 0.00022463238005216368,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43781300229273
+      }
+    },
+    {
+      "delta": 0.4,
+      "reason": "delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]",
+      "recommend": "prereg amendment: delta=0.4 is infeasible at p_bar=0.7 (delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]); widest feasible half-spread is delta=0.3",
+      "status": "infeasible"
+    }
+  ],
+  "base_config": "/tmp/claude-1000/-home-tony-projects-quantumos/c1f10f2f-bd38-474f-b970-5cdb633f644b/scratchpad/s1-stress-slack.toml"
+}

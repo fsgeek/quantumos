@@ -1,0 +1,115 @@
+{
+  "monotonicity": {
+    "metric": "completed_in_deadline",
+    "monotone_nonincreasing": false,
+    "note": "non-monotonicity triggers a mechanism audit under the attribution rule, not automatic failure (prereg S1)",
+    "values": [
+      0.8405063291139241,
+      0.8310126582278481,
+      0.839240506329114,
+      0.8341772151898734
+    ]
+  },
+  "rows": [
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.8405063291139241,
+        "completed_late": 0.014556962025316455,
+        "dropped": 0.1449367088607595,
+        "failed": 0.5620253164556962
+      },
+      "delta": 0.0,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9491979934196285,
+          "n": 34
+        },
+        "success|consumed": {
+          "mean": 0.9493804750146274,
+          "n": 1351
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.1798346965660052,
+        "M0:0|M3:0": 0.1848422030252901,
+        "M1:0|M2:0": 0.18233782429519077,
+        "M2:0|M3:0": 0.1835888877594178
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.8310126582278481,
+        "completed_late": 0.00949367088607595,
+        "dropped": 0.15949367088607594,
+        "failed": 0.6170886075949367
+      },
+      "delta": 0.1,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9492514117302931,
+          "n": 35
+        },
+        "success|consumed": {
+          "mean": 0.9493657371322057,
+          "n": 1328
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.18984658198229024,
+        "M0:0|M3:0": 0.18234026374697293,
+        "M1:0|M2:0": 0.1798356348166908,
+        "M2:0|M3:0": 0.1873398263504542
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.839240506329114,
+        "completed_late": 0.012025316455696202,
+        "dropped": 0.14873417721518986,
+        "failed": 0.5829113924050633
+      },
+      "delta": 0.2,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9492033801423663,
+          "n": 36
+        },
+        "success|consumed": {
+          "mean": 0.9493670300352792,
+          "n": 1345
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.19413476033150986,
+        "M0:0|M3:0": 0.18350028466175375,
+        "M1:0|M2:0": 0.16849135712478408,
+        "M2:0|M3:0": 0.1747411278173358
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.8341772151898734,
+        "completed_late": 0.0189873417721519,
+        "dropped": 0.1468354430379747,
+        "failed": 0.5873417721518988
+      },
+      "delta": 0.3,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.949292290079444,
+          "n": 39
+        },
+        "success|consumed": {
+          "mean": 0.9493735524892373,
+          "n": 1348
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.19580622523735575,
+        "M0:0|M3:0": 0.18328051603407147,
+        "M1:0|M2:0": 0.1785820693506358,
+        "M2:0|M3:0": 0.17482737775685758
+      }
+    }
+  ]
+}

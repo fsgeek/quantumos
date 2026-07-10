@@ -1,0 +1,135 @@
+{
+  "arms": [
+    {
+      "config_sha256": "5eca71f534fbe89517481819a79d634d581f279f48049b7b1b6bac33f84c3ccb",
+      "delta": 0.0,
+      "run_dir": "runs/sweep-s1/605836e1-5280-4050-96de-50c710f4ebb8",
+      "run_id": "605836e1-5280-4050-96de-50c710f4ebb8",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.86562600458547,
+          "offered": 384,
+          "q3_mean_backlog": 0.18707181465565903,
+          "q3_mean_relative_backlog": 0.00048716618399911204,
+          "q3_window_s": [
+            199.43281300229273,
+            299.1492195034391
+          ],
+          "q4_mean_backlog": 0.27249458431062057,
+          "q4_mean_relative_backlog": 0.0007096213133089077,
+          "q4_window_s": [
+            299.1492195034391,
+            398.86562600458547
+          ],
+          "relative_slope": 0.00022245512930979566,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43281300229273
+      }
+    },
+    {
+      "config_sha256": "4a7f2b1032b6bbf8eb8eb28dbadbc2f823b05a39d3e54b5d34d4b80b74f057a4",
+      "delta": 0.1,
+      "run_dir": "runs/sweep-s1/723b4d6b-f5ec-4cea-97d4-bfe145dbc114",
+      "run_id": "723b4d6b-f5ec-4cea-97d4-bfe145dbc114",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.86562600458547,
+          "offered": 384,
+          "q3_mean_backlog": 0.18735862803977119,
+          "q3_mean_relative_backlog": 0.0004879130938535708,
+          "q3_window_s": [
+            199.43281300229273,
+            299.1492195034391
+          ],
+          "q4_mean_backlog": 0.27096654805185094,
+          "q4_mean_relative_backlog": 0.0007056420522183618,
+          "q4_window_s": [
+            299.1492195034391,
+            398.86562600458547
+          ],
+          "relative_slope": 0.00021772895836479105,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43281300229273
+      }
+    },
+    {
+      "config_sha256": "17cfe4915ea19245f46a6885c2986cbfe947d51753058cde9b40f0cc19d63555",
+      "delta": 0.2,
+      "run_dir": "runs/sweep-s1/e3529476-6444-4adc-9b4c-b5ed8774d2a7",
+      "run_id": "e3529476-6444-4adc-9b4c-b5ed8774d2a7",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.87562600458546,
+          "offered": 384,
+          "q3_mean_backlog": 0.1861357274531096,
+          "q3_mean_relative_backlog": 0.0004847284569091396,
+          "q3_window_s": [
+            199.43781300229273,
+            299.1567195034391
+          ],
+          "q4_mean_backlog": 0.2726144874347683,
+          "q4_mean_relative_backlog": 0.0007099335610280424,
+          "q4_window_s": [
+            299.1567195034391,
+            398.87562600458546
+          ],
+          "relative_slope": 0.0002252051041189028,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43781300229273
+      }
+    },
+    {
+      "config_sha256": "d5d686534d341692a173e29d718e0ec475342cec60061e4a8130e44e8007602f",
+      "delta": 0.3,
+      "run_dir": "runs/sweep-s1/05592334-d55a-4f39-a8fc-e84f63594603",
+      "run_id": "05592334-d55a-4f39-a8fc-e84f63594603",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 398.87562600458546,
+          "offered": 384,
+          "q3_mean_backlog": 0.188386834295004,
+          "q3_mean_relative_backlog": 0.0004905907143099062,
+          "q3_window_s": [
+            199.43781300229273,
+            299.1567195034391
+          ],
+          "q4_mean_backlog": 0.2720135632638488,
+          "q4_mean_relative_backlog": 0.0007083686543329395,
+          "q4_window_s": [
+            299.1567195034391,
+            398.87562600458546
+          ],
+          "relative_slope": 0.00021777794002303332,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 199.43781300229273
+      }
+    },
+    {
+      "delta": 0.4,
+      "reason": "delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]",
+      "recommend": "prereg amendment: delta=0.4 is infeasible at p_bar=0.7 (delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]); widest feasible half-spread is delta=0.3",
+      "status": "infeasible"
+    }
+  ],
+  "base_config": "examples/t1-open.toml"
+}

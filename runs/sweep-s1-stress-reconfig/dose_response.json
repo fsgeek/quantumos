@@ -1,0 +1,115 @@
+{
+  "monotonicity": {
+    "metric": "completed_in_deadline",
+    "monotone_nonincreasing": false,
+    "note": "non-monotonicity triggers a mechanism audit under the attribution rule, not automatic failure (prereg S1)",
+    "values": [
+      0.9791666666666666,
+      0.9869791666666666,
+      0.9713541666666666,
+      0.9817708333333334
+    ]
+  },
+  "rows": [
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.9791666666666666,
+        "completed_late": 0.0,
+        "dropped": 0.018229166666666668,
+        "failed": 0.3802083333333333
+      },
+      "delta": 0.0,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9493906739226282,
+          "n": 3
+        },
+        "success|consumed": {
+          "mean": 0.948584048013056,
+          "n": 376
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.16655949900191208,
+        "M0:0|M3:0": 0.1640551179429139,
+        "M1:0|M2:0": 0.17532646071889466,
+        "M2:0|M3:0": 0.16405737211128346
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.9869791666666666,
+        "completed_late": 0.0,
+        "dropped": 0.0078125,
+        "failed": 0.3671875
+      },
+      "delta": 0.1,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9481333799980003,
+          "n": 5
+        },
+        "success|consumed": {
+          "mean": 0.9484078380346131,
+          "n": 379
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.16257047744705092,
+        "M0:0|M3:0": 0.1900788414864254,
+        "M1:0|M2:0": 0.17882024738363053,
+        "M2:0|M3:0": 0.15381109766038625
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.9713541666666666,
+        "completed_late": 0.0,
+        "dropped": 0.026041666666666668,
+        "failed": 0.3828125
+      },
+      "delta": 0.2,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.948571057086243,
+          "n": 4
+        },
+        "success|consumed": {
+          "mean": 0.948544055343286,
+          "n": 373
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.19036281327784152,
+        "M0:0|M3:0": 0.1703227505235159,
+        "M1:0|M2:0": 0.15278356297043338,
+        "M2:0|M3:0": 0.17156805362823158
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.9817708333333334,
+        "completed_late": 0.005208333333333333,
+        "dropped": 0.010416666666666666,
+        "failed": 0.3203125
+      },
+      "delta": 0.3,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9486434476195544,
+          "n": 2
+        },
+        "success|consumed": {
+          "mean": 0.9485614404430944,
+          "n": 379
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.17785668402911436,
+        "M0:0|M3:0": 0.1828449094179977,
+        "M1:0|M2:0": 0.16781260818331847,
+        "M2:0|M3:0": 0.15528719326704205
+      }
+    }
+  ]
+}

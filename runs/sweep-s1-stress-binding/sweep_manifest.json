@@ -1,0 +1,135 @@
+{
+  "arms": [
+    {
+      "config_sha256": "85d8d8c0e36342837f8058a34aca2543b4e20e28ec02c299eebbd460fd50df3b",
+      "delta": 0.0,
+      "run_dir": "runs/sweep-s1-stress-binding/131da788-bc35-4178-9ca2-901557c93273",
+      "run_id": "131da788-bc35-4178-9ca2-901557c93273",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1598.7198549000523,
+          "offered": 1580,
+          "q3_mean_backlog": 0.4442075147368219,
+          "q3_mean_relative_backlog": 0.00028114399666887463,
+          "q3_window_s": [
+            799.3599274500261,
+            1199.0398911750392
+          ],
+          "q4_mean_backlog": 0.422125155142357,
+          "q4_mean_relative_backlog": 0.0002671678197103525,
+          "q4_window_s": [
+            1199.0398911750392,
+            1598.7198549000523
+          ],
+          "relative_slope": -1.3976176958522125e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.3599274500261
+      }
+    },
+    {
+      "config_sha256": "7b636b4375b5327ca3deeb1bc7ab0c6cab88eaa05e861e2c7a4ebc963318ec92",
+      "delta": 0.1,
+      "run_dir": "runs/sweep-s1-stress-binding/657be14d-02ab-4a11-a8bc-3f0d8717241a",
+      "run_id": "657be14d-02ab-4a11-a8bc-3f0d8717241a",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1598.7198549000523,
+          "offered": 1580,
+          "q3_mean_backlog": 0.44640816330067146,
+          "q3_mean_relative_backlog": 0.00028253681221561487,
+          "q3_window_s": [
+            799.3599274500261,
+            1199.0398911750392
+          ],
+          "q4_mean_backlog": 0.4166663869068307,
+          "q4_mean_relative_backlog": 0.00026371290310558905,
+          "q4_window_s": [
+            1199.0398911750392,
+            1598.7198549000523
+          ],
+          "relative_slope": -1.8823909110025818e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.3599274500261
+      }
+    },
+    {
+      "config_sha256": "10e8f52f96b1da9a2b334b663a9ffc3f38b70e4eac68d9c416c7951fa231ed47",
+      "delta": 0.2,
+      "run_dir": "runs/sweep-s1-stress-binding/1a6e99ea-626f-45f8-ac49-c8057d1c5457",
+      "run_id": "1a6e99ea-626f-45f8-ac49-c8057d1c5457",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1599.5146849010487,
+          "offered": 1580,
+          "q3_mean_backlog": 0.4516049909921105,
+          "q3_mean_relative_backlog": 0.00028582594366589274,
+          "q3_window_s": [
+            799.7573424505243,
+            1199.6360136757864
+          ],
+          "q4_mean_backlog": 0.41089547577133956,
+          "q4_mean_relative_backlog": 0.00026006042770337944,
+          "q4_window_s": [
+            1199.6360136757864,
+            1599.5146849010487
+          ],
+          "relative_slope": -2.5765515962513296e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.7573424505243
+      }
+    },
+    {
+      "config_sha256": "ebd811ef45579758e192473fdd323c0cbbe27716f5d376692b43f3fad9572e58",
+      "delta": 0.3,
+      "run_dir": "runs/sweep-s1-stress-binding/dc59460c-ff6a-40cc-9c00-1e9b3da95b7c",
+      "run_id": "dc59460c-ff6a-40cc-9c00-1e9b3da95b7c",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1598.7198549000523,
+          "offered": 1580,
+          "q3_mean_backlog": 0.45312531271203454,
+          "q3_mean_relative_backlog": 0.0002867881726025535,
+          "q3_window_s": [
+            799.3599274500261,
+            1199.0398911750392
+          ],
+          "q4_mean_backlog": 0.4111780449859621,
+          "q4_mean_relative_backlog": 0.000260239268978457,
+          "q4_window_s": [
+            1199.0398911750392,
+            1598.7198549000523
+          ],
+          "relative_slope": -2.6548903624096492e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.3599274500261
+      }
+    },
+    {
+      "delta": 0.4,
+      "reason": "delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]",
+      "recommend": "prereg amendment: delta=0.4 is infeasible at p_bar=0.7 (delta=0.4 at p_bar=0.7 yields heralding_p=1.100 outside [0, 1]); widest feasible half-spread is delta=0.3",
+      "status": "infeasible"
+    }
+  ],
+  "base_config": "/tmp/claude-1000/-home-tony-projects-quantumos/c1f10f2f-bd38-474f-b970-5cdb633f644b/scratchpad/s1-stress-binding.toml"
+}

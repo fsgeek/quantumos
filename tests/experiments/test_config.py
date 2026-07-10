@@ -90,3 +90,24 @@ def test_runconfig_accepts_best_heralding_path_policy():
 def test_runconfig_rejects_unknown_path_policy():
     with pytest.raises(ValueError, match="path_policy"):
         RunConfig(**_base_kwargs(path_policy="fastest_first"))
+
+
+def test_runconfig_herald_retry_interval_defaults_to_engine_constant():
+    # The knob's default IS the old hard-coded constant: existing configs
+    # must reproduce their traces byte-identically (2026-07-10
+    # mechanism-correction note). Drift guard: the two literals live in
+    # different layers (engine cannot import experiments.config).
+    from qsim.core.engine import HERALD_RETRY_INTERVAL_S
+
+    config = RunConfig(**_base_kwargs())
+    assert config.herald_retry_interval_s == HERALD_RETRY_INTERVAL_S == 1e-4
+
+
+def test_runconfig_accepts_herald_retry_interval_override():
+    config = RunConfig(**_base_kwargs(herald_retry_interval_s=0.25))
+    assert config.herald_retry_interval_s == 0.25
+
+
+def test_runconfig_rejects_nonpositive_herald_retry_interval():
+    with pytest.raises(ValueError, match="herald_retry_interval_s"):
+        RunConfig(**_base_kwargs(herald_retry_interval_s=0.0))

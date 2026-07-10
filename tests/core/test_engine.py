@@ -34,25 +34,10 @@ LEASES_PER_ROUND = 1
 DEADLINE_SLACK_S = 10.0
 
 
-# The frozen contract locates RunConfig in qsim/experiments/config.py, but that
-# package does not exist yet and this unit is not permitted to create it. The
-# engine references RunConfig only under TYPE_CHECKING, so a structurally
-# compatible local stand-in is sufficient for the engine's duck-typed reads
-# (run_seed, arrival_rate_hz, epoch, switch_capacity_c, reconfig_delay_s,
-# hold_until_consumption). Flagged: replace with the real RunConfig when
-# experiments/config.py lands.
-@dataclass(frozen=True)
-class RunConfig:
-    run_seed: int
-    scheduler: str
-    epoch: CalibrationEpoch
-    arrival_rate_hz: float
-    leases_per_round: int
-    deadline_slack_s: float
-    switch_capacity_c: int
-    reconfig_delay_s: float
-    max_sim_time_s: float
-    hold_until_consumption: bool = False
+# The flagged stand-in RunConfig that lived here (pre-experiments/config.py)
+# is replaced by the real class per its own flag (executed 2026-07-10, after
+# the herald_retry_interval_s field exposed the stand-in's drift risk).
+from qsim.experiments.config import RunConfig  # noqa: E402
 
 
 def make_epoch():

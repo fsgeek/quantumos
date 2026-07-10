@@ -68,6 +68,8 @@ _RETRY_STREAM = "retry"
 # attempts on the same path. Heralding is Bernoulli-per-attempt; a failed
 # attempt reschedules the next one a short positive interval later so the DES
 # makes forward progress (a zero-delay retry loop would busy-spin under p<1).
+# Promoted to RunConfig.herald_retry_interval_s (2026-07-10 mechanism
+# correction): this module constant remains as the default's single source.
 HERALD_RETRY_INTERVAL_S = 1e-4
 
 
@@ -630,7 +632,8 @@ class Engine:
                 path_id=payload.path_id, endpoints=payload.endpoints,
                 attempt_no=payload.attempt_no + 1, causal_parent_id=draw_id,
             )
-            self._heap.push(self._state.now + HERALD_RETRY_INTERVAL_S, next_attempt)
+            self._heap.push(
+                self._state.now + self._config.herald_retry_interval_s, next_attempt)
 
     def _release_reservation(self, path_id: PathId, causal_parent_id: EventId) -> None:
         if self._state.hold_until_consumption:

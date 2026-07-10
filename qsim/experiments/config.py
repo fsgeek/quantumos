@@ -34,6 +34,15 @@ class RunConfig:
     #                                            defaulted field: existing construction
     #                                            sites and events.jsonl are untouched; the
     #                                            field reaches header.json via _json_safe.
+    herald_retry_interval_s: float = 1e-4      # Failed-herald attempt cycle time (the
+    #                                            in-place retry spacing on a configured
+    #                                            path). Default IS the old hard-coded
+    #                                            engine constant so existing configs
+    #                                            reproduce traces byte-identically. The
+    #                                            binding knob for whether path-quality
+    #                                            spread can reach outcomes: penalty per
+    #                                            round ~ (E[1/p]-1/p_bar) * this value
+    #                                            (2026-07-10 mechanism-correction note).
 
     def __post_init__(self) -> None:
         if self.path_policy not in _VALID_PATH_POLICIES:
@@ -43,6 +52,10 @@ class RunConfig:
         if self.scheduler not in _VALID_SCHEDULERS:
             raise ValueError(
                 f"scheduler must be one of {_VALID_SCHEDULERS}, got {self.scheduler!r}"
+            )
+        if self.herald_retry_interval_s <= 0.0:
+            raise ValueError(
+                f"herald_retry_interval_s must be positive, got {self.herald_retry_interval_s!r}"
             )
         if self.retry_cap is not None and (not isinstance(self.retry_cap, int) or self.retry_cap < 0):
             raise ValueError(

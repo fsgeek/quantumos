@@ -52,7 +52,9 @@ def test_run_sweep_records_infeasible_arm_and_runs_feasible(tmp_path):
 
 
 def test_default_grid_is_the_prereg_grid():
-    assert S1_DELTAS == (0.0, 0.1, 0.2, 0.4)
+    # As amended 2026-07-10 (pre-run): delta=0.3 is the widest feasible
+    # half-spread at p_bar=0.7; delta=0.4 stays so the refusal is recorded.
+    assert S1_DELTAS == (0.0, 0.1, 0.2, 0.3, 0.4)
 
 
 def test_dose_response_rows_sorted_by_delta_regardless_of_request_order(tmp_path):

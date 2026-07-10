@@ -337,6 +337,16 @@ spread δ ∈ {0, 0.1, 0.2, 0.4} across the four paths at fixed mean p̄=0.7 (e.
 deadline compliance and fidelity-at-outcome distributions. δ=0 is the homogeneity
 anchor (any effect at δ=0 is a bug, not a curve).
 
+**Grid amendment (added 2026-07-10, before any S1 run exists):** the δ=0.4 arm is
+infeasible at p̄=0.7 — by this document's own δ=0.2 example fixing δ as half-spread,
+δ=0.4 yields heralding_p = 1.1 > 1. Amended grid: δ ∈ {0, 0.1, 0.2, 0.3}, where
+δ=0.3 is the widest feasible half-spread at p̄=0.7 (→ {0.4, 0.6, 0.8, 1.0}). The
+δ=0.4 arm stays in the sweep request and is recorded in the manifest as an
+in-artifact refusal, so the original precommitment and its correction are both
+visible in the run record. (Infeasibility found by the sweep-runner plan, recorded
+in `qsim/experiments/sweep.py` and the 2026-07-09 open-run-decisions note, both
+predating this amendment and any S1 data.)
+
 **Dose-response reading (added 2026-07-07, external review):** expected direction is
 degradation increasing with δ, but strict per-metric monotonicity is NOT required —
 deadline compliance and fidelity interact nonlinearly (e.g. a starved path can shed

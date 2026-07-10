@@ -7,7 +7,9 @@ mechanism audit under the attribution rule).
 Plan finding #2: the prereg's delta=0.4 arm is infeasible at p_bar=0.7
 (heralding_p 1.1 > 1, by the prereg's own delta=0.2 example fixing delta as
 half-spread). The arm is recorded in the manifest as an in-artifact refusal
-with a recommended amendment; feasible arms still run.
+with a recommended amendment; feasible arms still run. Amendment stamped
+2026-07-10 (pre-run): delta=0.3 added as the widest feasible half-spread;
+delta=0.4 retained in the request so the refusal stays in the artifact.
 """
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ from qsim.observe.views import (
     resource_utilization,
 )
 
-S1_DELTAS = (0.0, 0.1, 0.2, 0.4)
+S1_DELTAS = (0.0, 0.1, 0.2, 0.3, 0.4)
 HOMOGENEITY_UTILIZATION_TOLERANCE = 0.1  # disclosed convention (delta=0 anchor)
 
 

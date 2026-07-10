@@ -1,0 +1,22 @@
+{
+  "arms": {
+    "delta_0.0": "runs/sweep-s1-attempt-price/ebad5925-9ebd-4fa6-ade1-b9fe9378c861",
+    "delta_0.3": "runs/sweep-s1-attempt-price/5f16e221-8f09-45d7-ba53-fa2d4e2e94a6"
+  },
+  "discordant": {
+    "b_only_delta0": 36,
+    "c_only_delta03": 18,
+    "mcnemar_chi2_cc": 5.351851851851852
+  },
+  "paired_lineages": 1580,
+  "table": {
+    "both_in_deadline": 1498,
+    "in_deadline_only_at_delta0": 36,
+    "in_deadline_only_at_delta03": 18,
+    "neither": 28
+  },
+  "unpaired": {
+    "only_delta0": 0,
+    "only_delta03": 0
+  }
+}

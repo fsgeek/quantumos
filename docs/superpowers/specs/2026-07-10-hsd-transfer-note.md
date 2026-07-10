@@ -14,21 +14,31 @@ correction. Routed by point of use, per the Chertov transfer pattern.
 
 For HSD the answer was yes (reads silently spent future media stability),
 which made current-contents + free-space an incomplete state description.
-For qsim TODAY the answer is no BY CONSTRUCTION — every cost is immediate,
-decay is observable in fidelity, wear is applied where the OS can see it.
-That "no" is a property of the model, not of the machine. The mechanisms
-that would flip it are exactly the ones parked or blocked: QND read wear
-(Q3's ε branch, built and waiting on a scalar), calibration drift (B2,
-blocked on Q7/Q8 rulings), and any hardware answer to Q4/Q6 that carries
-duty-cycle or fatigue terms.
+For qsim, distinguish two claims (sharpened by review round 2, which
+caught the first version conflating them):
+- The FULL simulator microstate is Markov by construction — every cost is
+  immediate, no hidden substrate accumulates. That part is true today.
+- The state exposed to each OS DECISION is already an open question NOW,
+  no latent physics required: `decide_admission` sees decoder backlog
+  COUNT but not residual service time (`_decoder_free_at` is
+  engine-private, verified 2026-07-10), and pool DEPTH hides the age
+  distribution of its residents — equal depths with different age mixes
+  have different futures.
 
-**Method rule this adds — sweep HISTORY, not just operating points:** when
-any history-dependent mechanism lands, the battery gains a new test class:
-drive two runs to identical instantaneous observables (load, pool depth,
-quality table) via different histories (clean start vs prolonged churn) and
-diff their futures. If futures diverge, the scheduler's exposed Markov
-state is incomplete, and the missing history term must pass the admission
-cascade like any other quantity.
+**Two separable items this yields:**
+1. **Present-tense audit (actionable now):** for each decision interface,
+   enumerate represented-but-unexposed state (lease ages, residual decoder
+   service, deadline headroom, in-flight events) and ask which omissions
+   the decision can feel. This is an admission-interface audit, not a
+   history experiment.
+2. **Method rule for later — sweep HISTORY, not just operating points:**
+   when a history-dependent mechanism lands (QND read wear = Q3's ε
+   branch; calibration drift = B2, blocked on Q7/Q8; any Q4/Q6 answer with
+   fatigue terms), the test class is: (i) fix the decision interface under
+   test, (ii) match ALL state currently exposed to it, (iii) couple future
+   stochastic draws, (iv) diff conditional futures across histories.
+   Skipping (ii) rediscovers item 1's omissions and calls them latent
+   damage.
 
 ## Instrument-earned TODAY: the maintenance-dominated regime
 
@@ -41,21 +51,28 @@ analogue already sitting in the committed S1 anchor run (rr, δ=0, calm):
 - pool wastage: 334 deposited, 243 withdrawn, 85 expired — **25.4% of
   manufactured entanglement ages out unconsumed**.
 
-At this operating point, demand is sparse enough that most inventory
-perishes, but not sparse enough to quiet the low-water replenishment. This
-is the perishable-good economics in its purest visible form — maintenance
-work amplified by a small live demand ("quantum garbage collection" is the
-reviewer's phrase; adopt with the caveat that nothing here pins domains or
-fragments — expiry is purely temporal).
+The precise finding (wording corrected after review round 2): most
+inventory does NOT perish — 73% of deposits are withdrawn — yet
+maintenance still dominates fabric activity 3:1. That is **maintenance
+amplification, not wholesale inventory loss**: a modest wastage rate
+sustained by low-water triggering keeps the fabric mostly busy on upkeep.
+This is the perishable-good economics in its purest visible form
+("quantum garbage collection" is the reviewer's phrase; adopt with the
+caveat that nothing here pins domains or fragments — expiry is purely
+temporal).
 
 **Candidate excursion (not run, not precommitted):** sweep arrival rate
 downward from the calm point and map maintenance-to-useful actuation ratio
 and pool wastage vs demand. Expected shape: a hump — the ratio worsens as
 demand thins (fixed low-water maintenance amortized over fewer useful
 events) until demand is sparse enough that admission/pregen should
-arguably turn OFF, which is itself an OS decision (pregen hysteresis) that
-currently has no policy. The decision that reads the curve: when should an
-OS stop maintaining inventory it will probably never use?
+arguably turn OFF — an OS decision that currently has no policy. Name the
+DECISION, not the mechanism (review round 2, and the premature-collapse
+lesson): the missing policy is **pregen gating / adaptive inventory
+control** — whether and how much inventory to maintain; hysteresis is one
+candidate mechanism, not the earned name. The decision that reads the
+curve: when should an OS stop maintaining inventory it will probably
+never use?
 
 ## Candidate questions — parked, NOT added to the committed list
 

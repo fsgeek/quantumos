@@ -107,9 +107,11 @@ is invented in the model and must come from hardware.
 **Sharpened by the spatial battery (added 2026-07-10; mechanism corrected
 same day, external review — see run-note correction):** the same quantity
 carries a second decision. The failed-attempt CYCLE TIME relative to
-deadline slack decides whether path-quality awareness can matter in
-OUTCOMES at all: the per-round heralding penalty is (E[1/p] − 1/p̄) ×
-T_attempt, microseconds in our model against seconds of slack. The
+deadline slack decides whether path quality can matter in OUTCOMES at all.
+Two distinct first-order quantities scale with it (review round 2): the
+blind-policy heterogeneity penalty (E[1/p] − 1/p̄) × T_attempt, and the
+larger quality-awareness payoff (E[1/p] − 1/p_max) × T_attempt — both
+microseconds in our model against seconds of slack. The
 minimum-sufficient asks are therefore protocol-branched:
 - After a heralding failure, can another attempt run ON the already
   configured path, reservation retained — or must some/all of the optical

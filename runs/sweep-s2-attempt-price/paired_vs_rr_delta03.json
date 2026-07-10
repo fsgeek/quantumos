@@ -1,0 +1,11 @@
+{
+  "comparison": "rr vs bh at delta=0.3, T_attempt=0.25s, slack=2.0s",
+  "mcnemar_chi2_cc": 31.609756097560975,
+  "paired_lineages": 1580,
+  "table": {
+    "bh_only": 39,
+    "both": 1514,
+    "neither": 25,
+    "rr_only": 2
+  }
+}

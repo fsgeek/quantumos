@@ -1,0 +1,103 @@
+{
+  "all_arms_converged": true,
+  "clause_a": {
+    "did_positive_seeds": 10,
+    "pass": true,
+    "required": 8,
+    "sign_test_two_sided_p": 0.001953125
+  },
+  "clause_b": {
+    "mean_did": 42.2,
+    "pass": true,
+    "window": [
+      17,
+      68
+    ]
+  },
+  "clause_c": {
+    "delta0_effects": [
+      -20,
+      -14,
+      -9,
+      -8,
+      -8,
+      -7,
+      -6,
+      -2,
+      -2,
+      6
+    ],
+    "honest_nuance": "leans negative (9/10 seeds, mean -7.0): concentration alone slightly hurts outcomes at this operating point; quality-specific advantage understated by raw bh-vs-rr",
+    "pass": true,
+    "straddles_zero": true
+  },
+  "per_seed": [
+    {
+      "did_lineages": 41,
+      "policy_effect_delta03_lineages": 39,
+      "policy_effect_delta0_lineages": -2,
+      "seed": 101
+    },
+    {
+      "did_lineages": 33,
+      "policy_effect_delta03_lineages": 31,
+      "policy_effect_delta0_lineages": -2,
+      "seed": 102
+    },
+    {
+      "did_lineages": 47,
+      "policy_effect_delta03_lineages": 41,
+      "policy_effect_delta0_lineages": -6,
+      "seed": 103
+    },
+    {
+      "did_lineages": 44,
+      "policy_effect_delta03_lineages": 30,
+      "policy_effect_delta0_lineages": -14,
+      "seed": 104
+    },
+    {
+      "did_lineages": 46,
+      "policy_effect_delta03_lineages": 38,
+      "policy_effect_delta0_lineages": -8,
+      "seed": 105
+    },
+    {
+      "did_lineages": 28,
+      "policy_effect_delta03_lineages": 34,
+      "policy_effect_delta0_lineages": 6,
+      "seed": 106
+    },
+    {
+      "did_lineages": 32,
+      "policy_effect_delta03_lineages": 25,
+      "policy_effect_delta0_lineages": -7,
+      "seed": 107
+    },
+    {
+      "did_lineages": 51,
+      "policy_effect_delta03_lineages": 42,
+      "policy_effect_delta0_lineages": -9,
+      "seed": 108
+    },
+    {
+      "did_lineages": 51,
+      "policy_effect_delta03_lineages": 31,
+      "policy_effect_delta0_lineages": -20,
+      "seed": 109
+    },
+    {
+      "did_lineages": 49,
+      "policy_effect_delta03_lineages": 41,
+      "policy_effect_delta0_lineages": -8,
+      "seed": 110
+    }
+  ],
+  "prereg": "commit 2906426; 10 seeds x {rr,bh} x {0,0.3}, T_retry=0.25s slack=2.0s h=1600s; unit=seed",
+  "seed_level_t": {
+    "mean": 42.2,
+    "n": 10,
+    "sd": 8.390470785361213,
+    "t": 15.904723426477032
+  }
+}

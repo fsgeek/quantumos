@@ -1,0 +1,67 @@
+{
+  "arms": [
+    {
+      "config_sha256": "30396bebed23a72d6c11438a5991f7a7e340544a0e84c8d3f9c57bd00ef2ce54",
+      "delta": 0.0,
+      "run_dir": "runs/seed-battery/round_robin-seed108/f7085d2e-6168-4593-96a0-08676fd7b169",
+      "run_id": "f7085d2e-6168-4593-96a0-08676fd7b169",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1599.1554612202394,
+          "offered": 1542,
+          "q3_mean_backlog": 0.30820710956816905,
+          "q3_mean_relative_backlog": 0.0001998749089287737,
+          "q3_window_s": [
+            799.5777306101197,
+            1199.3665959151795
+          ],
+          "q4_mean_backlog": 0.3130529734482842,
+          "q4_mean_relative_backlog": 0.00020301749250861492,
+          "q4_window_s": [
+            1199.3665959151795,
+            1599.1554612202394
+          ],
+          "relative_slope": 3.1425835798412215e-06,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.5777306101197
+      }
+    },
+    {
+      "config_sha256": "441c303c7aa1966fef66ff4683e864140e70a571bd9849e6d01a496d7f1aa59b",
+      "delta": 0.3,
+      "run_dir": "runs/seed-battery/round_robin-seed108/d258cacf-6c8b-4893-9e16-806a956fe5a9",
+      "run_id": "d258cacf-6c8b-4893-9e16-806a956fe5a9",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 1,
+          "final_relative_backlog": 0.0006485084306095979,
+          "horizon_s": 1599.9931146882345,
+          "offered": 1542,
+          "q3_mean_backlog": 0.3408786968634469,
+          "q3_mean_relative_backlog": 0.00022106270873115884,
+          "q3_window_s": [
+            799.9965573441173,
+            1199.994836016176
+          ],
+          "q4_mean_backlog": 0.35783584749269487,
+          "q4_mean_relative_backlog": 0.00023205956387334296,
+          "q4_window_s": [
+            1199.994836016176,
+            1599.9931146882345
+          ],
+          "relative_slope": 1.099685514218413e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.9965573441173
+      }
+    }
+  ],
+  "base_config": "/tmp/claude-1000/-home-tony-projects-quantumos/c1f10f2f-bd38-474f-b970-5cdb633f644b/scratchpad/sb-round_robin-108.toml"
+}

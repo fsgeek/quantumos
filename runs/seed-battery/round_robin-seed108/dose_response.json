@@ -1,0 +1,64 @@
+{
+  "monotonicity": {
+    "metric": "completed_in_deadline",
+    "monotone_nondecreasing": false,
+    "monotone_nonincreasing": true,
+    "note": "expected direction depends on the swept policy; deviation from it triggers a mechanism audit under the attribution rule, not automatic failure (prereg S1)",
+    "values": [
+      0.9766536964980544,
+      0.9604409857328146
+    ]
+  },
+  "rows": [
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.9766536964980544,
+        "completed_late": 0.0025940337224383916,
+        "dropped": 0.020752269779507133,
+        "failed": 0.07846952010376135
+      },
+      "delta": 0.0,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9494204623435486,
+          "n": 29
+        },
+        "success|consumed": {
+          "mean": 0.9494582630449339,
+          "n": 1510
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.02301214665640692,
+        "M0:0|M3:0": 0.01933520583195861,
+        "M1:0|M2:0": 0.023643730029313654,
+        "M2:0|M3:0": 0.023962648366128204
+      }
+    },
+    {
+      "deadline_compliance": {
+        "completed_in_deadline": 0.9604409857328146,
+        "completed_late": 0.004539559014267186,
+        "dropped": 0.03437094682230869,
+        "failed": 0.10959792477302205
+      },
+      "delta": 0.3,
+      "fidelity_at_outcome": {
+        "failure|scoring_failure": {
+          "mean": 0.9493973909374145,
+          "n": 31
+        },
+        "success|consumed": {
+          "mean": 0.9494425958091467,
+          "n": 1488
+        }
+      },
+      "resource_utilization": {
+        "M0:0|M1:0": 0.08345660914047927,
+        "M0:0|M3:0": 0.032906391606724594,
+        "M1:0|M2:0": 0.015725067669992307,
+        "M2:0|M3:0": 0.0043937689077893725
+      }
+    }
+  ]
+}

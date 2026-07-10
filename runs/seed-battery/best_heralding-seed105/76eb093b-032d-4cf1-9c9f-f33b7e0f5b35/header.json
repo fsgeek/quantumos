@@ -1,0 +1,92 @@
+{
+  "config": {
+    "admission_theta": 0.5,
+    "arrival_rate_hz": 1.0,
+    "deadline_slack_s": 2.0,
+    "decay_control_enabled": true,
+    "epoch": {
+      "decay_rate_per_class": {
+        "memory": 0.001,
+        "messenger": 0.01
+      },
+      "decoder_service_rate": 5.0,
+      "epoch_id": "t1-open",
+      "heralded_fidelity_per_path": {
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M1\", \"port_index\": 0}]": 0.95,
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.95,
+        "[{\"module_id\": \"M1\", \"port_index\": 0}, {\"module_id\": \"M2\", \"port_index\": 0}]": 0.95,
+        "[{\"module_id\": \"M2\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.95
+      },
+      "heralding_p_per_path": {
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M1\", \"port_index\": 0}]": 0.7,
+        "[{\"module_id\": \"M0\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.7,
+        "[{\"module_id\": \"M1\", \"port_index\": 0}, {\"module_id\": \"M2\", \"port_index\": 0}]": 0.7,
+        "[{\"module_id\": \"M2\", \"port_index\": 0}, {\"module_id\": \"M3\", \"port_index\": 0}]": 0.7
+      },
+      "memory_access_channel_s": 0.001,
+      "memory_access_wear_rate": 0.01,
+      "round_success_logistic_midpoint": 0.5,
+      "round_success_logistic_slope": 10.0,
+      "round_success_slack_penalty_per_s": 1.0
+    },
+    "herald_retry_interval_s": 0.25,
+    "hold_until_consumption": false,
+    "leases_per_round": 1,
+    "max_sim_time_s": 1600.0,
+    "memory_cost_control_enabled": true,
+    "path_policy": "best_heralding",
+    "pregen_low_water_mark": 2,
+    "reconfig_delay_s": 0.01,
+    "retry_cap": 4,
+    "run_seed": 105,
+    "scheduler": "S1",
+    "switch_capacity_c": 2
+  },
+  "filtering": {
+    "declared_omissions": [
+      {
+        "kind": "workload_interarrival_draws",
+        "reason": "WorkloadGenerator's frozen __init__ signature has no TraceBus, so its \u00a79 exponential interarrival draws are not emitted to events.jsonl.",
+        "recovery": "Regenerable from run_seed via draw_uniform(run_seed, 'workload', ('arrival', arrival_index)) for arrival_index = 1, 2, ...",
+        "stream": "workload"
+      }
+    ],
+    "enabled": true,
+    "model_guards": [
+      {
+        "guard": "heralding.success_probability / heralded_fidelity return 0.0 for any path absent from the epoch (never heralds, zero projected fidelity), mirroring core/engine.py's own documented p=0.0 KeyError guard so engine physics and admission projection agree.",
+        "kind": "uncalibrated_path_heralding",
+        "reason": "core/engine.py synthesizes fabric PathIds (_synthesize_ports + the injected PathChoice chooser, B1 seam) that a CalibrationEpoch need not enumerate. Both the engine's \u00a75 heralding attempt and the \u00a78.1 S1 admission projection may look up such a path in the epoch's per-path heralding tables.",
+        "stream": "heralding"
+      }
+    ]
+  },
+  "git_sha": "05f11191d05831761bc20041b52cf55b11ea51df",
+  "run_id": "76eb093b-032d-4cf1-9c9f-f33b7e0f5b35",
+  "run_seed": 105,
+  "schema_version": 1,
+  "steady_state": {
+    "evidence": {
+      "final_in_flight": 0,
+      "final_relative_backlog": 0.0,
+      "horizon_s": 1599.7093050731453,
+      "offered": 1618,
+      "q3_mean_backlog": 0.30747788158438405,
+      "q3_mean_relative_backlog": 0.00019003577353793823,
+      "q3_window_s": [
+        799.8546525365726,
+        1199.781978804859
+      ],
+      "q4_mean_backlog": 0.2760343410995375,
+      "q4_mean_relative_backlog": 0.00017060218856584518,
+      "q4_window_s": [
+        1199.781978804859,
+        1599.7093050731453
+      ],
+      "relative_slope": -1.943358497209305e-05,
+      "relative_slope_tolerance": 0.02
+    },
+    "status": "CONVERGED",
+    "warmup_cutoff_s": 799.8546525365726
+  }
+}

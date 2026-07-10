@@ -1,0 +1,67 @@
+{
+  "arms": [
+    {
+      "config_sha256": "2e08d54a1463cd965c0d8ca2498e0fc5225d7743373d01e42df37cc2acf76f17",
+      "delta": 0.0,
+      "run_dir": "runs/seed-battery/best_heralding-seed105/76eb093b-032d-4cf1-9c9f-f33b7e0f5b35",
+      "run_id": "76eb093b-032d-4cf1-9c9f-f33b7e0f5b35",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1599.7093050731453,
+          "offered": 1618,
+          "q3_mean_backlog": 0.30747788158438405,
+          "q3_mean_relative_backlog": 0.00019003577353793823,
+          "q3_window_s": [
+            799.8546525365726,
+            1199.781978804859
+          ],
+          "q4_mean_backlog": 0.2760343410995375,
+          "q4_mean_relative_backlog": 0.00017060218856584518,
+          "q4_window_s": [
+            1199.781978804859,
+            1599.7093050731453
+          ],
+          "relative_slope": -1.943358497209305e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.8546525365726
+      }
+    },
+    {
+      "config_sha256": "c34dc13ec187164a1b831ea0a3192de23a662ba521473bd00d7cd440e25bbf74",
+      "delta": 0.3,
+      "run_dir": "runs/seed-battery/best_heralding-seed105/0237d14f-54a8-4dec-b319-ee63ca3053dc",
+      "run_id": "0237d14f-54a8-4dec-b319-ee63ca3053dc",
+      "status": "ran",
+      "steady_state": {
+        "evidence": {
+          "final_in_flight": 0,
+          "final_relative_backlog": 0.0,
+          "horizon_s": 1599.6993050731453,
+          "offered": 1618,
+          "q3_mean_backlog": 0.2587388956073087,
+          "q3_mean_relative_backlog": 0.00015991279085742196,
+          "q3_window_s": [
+            799.8496525365726,
+            1199.774478804859
+          ],
+          "q4_mean_backlog": 0.2396625963864621,
+          "q4_mean_relative_backlog": 0.0001481227418952176,
+          "q4_window_s": [
+            1199.774478804859,
+            1599.6993050731453
+          ],
+          "relative_slope": -1.1790048962204348e-05,
+          "relative_slope_tolerance": 0.02
+        },
+        "status": "CONVERGED",
+        "warmup_cutoff_s": 799.8496525365726
+      }
+    }
+  ],
+  "base_config": "/tmp/claude-1000/-home-tony-projects-quantumos/c1f10f2f-bd38-474f-b970-5cdb633f644b/scratchpad/sb-best_heralding-105.toml"
+}

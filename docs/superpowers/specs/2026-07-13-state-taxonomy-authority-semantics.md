@@ -23,18 +23,22 @@ time, not clone count. Exclusivity is not enforced on the data; it is enforced o
 by a consume-once recovery authority. The scarce, schedulable, protectable object is the
 authority, not the state.
 
-## 2. The structural correction: two ontologies, not one taxonomy
+## 2. The structural correction: split by kind, not one taxonomy
 
-A flat state list (live / encrypted potential / spent / lost …) mixes two
+A flat state list (live / encrypted potential / spent / lost …) mixes
 **different-kinded** objects and repeats the commensuration error (method lesson,
 2026-07-05: a knob that commensurates different-kinded things is premature collapse). The
-taxonomy splits:
+taxonomy splits by kind:
 
-- **Carrier states** — where and what the physical presence is.
-- **Claim states** — the condition of the recovery authority.
+- **Carrier states** — where and what the physical presence is (quantum-physical kind).
+- **Claim states** — the condition of physical recoverability (quantum-physical kind,
+  distinct object).
+- **Warrant states** — the classical permission-and-control binding (classical kind; see
+  2.2 — added in revision after an external review question exposed the conjunction).
 
-In the pre-cloning world (all of qsim today) each good has exactly one carrier and the
-claim is implicit in possession of it. **The two objects coincide in the degenerate case —
+In the pre-cloning world (all of qsim today) each good has exactly one carrier, the
+claim is implicit in possession of it, and the warrant is implicit in scheduler control.
+**The objects coincide in the degenerate case —
 which is why the 07-05 abstraction was hard to name: it is two objects that look like one
 until a mechanism pulls them apart.** Encrypted cloning is that mechanism, now demonstrated
 on hardware.
@@ -49,18 +53,39 @@ on hardware.
 | spent residue | the n−1 sites after materialization: provably worthless, still occupying hardware | **reclamation** (garbage collection) |
 | dead | terminal, with death-KIND preserved (see 2.3) | **accounting / cause-tagged terminals** (fidelity_at_outcome pattern) |
 
-### 2.2 Claim states
+### 2.2 Claim and warrant states
 
 The claim is **relational and physical**, not a classical bearer token (scout-map
-correction, adopted): {designated clone + the full n-qubit noise bundle + the decryption
-operation + control-path ability to execute it}. Losing any element loses the claim.
+correction, adopted): {designated clone + the full n-qubit noise bundle + a physically
+executable decryption operation}. It is the physical fact of recoverability, and it decays
+monotonically and irreversibly.
+
+The classical permission-and-control binding — who is authorized to attempt
+materialization, over which control path — is a **different-kinded third object**,
+provisionally the **warrant**. A warrant is everything the claim is not: revocable,
+re-grantable, transferable, duplicable. An earlier draft of this note conjoined the two
+into one object; that repeats the commensuration error one level down — a single lifecycle
+cannot govern components with opposite reversibility. *(Seam exposed by an external review
+question, Codex 2026-07-13: "does claim mean physical decodability, classical permission
+to decrypt, or deliberately the conjunction?" The honest answer was "the conjunction," and
+the conjunction was the wrong collapse.)*
+
+**Exercise = a warrant applied to a claim.** The classical linearization point (below) is
+precisely the warrant-application event. Physics fences only *after* a successful
+exercise (no mutual exclusion, no authentication, no split-brain prevention beforehand),
+so the OS invariant is: **at most one in-flight warrant-application per claim.**
+
+Loss semantics follow the kinds: losing a physical element (key qubit, designated clone,
+executability) **destroys** the claim, irreversibly; losing the control path merely
+**orphans** it — the claim persists, unreachable, and re-attaching a warrant is a
+recovery decision.
 
 | State | Description | Read by |
 |---|---|---|
-| intact | all key qubits coherent; custody resolved | **exercise authorization** — who may attempt materialization. Physics does NOT provide this: no mutual exclusion, no authentication, no split-brain prevention. Classical control must serialize attempts. |
-| decaying | held but aging. The option has a theta, empirically priced: waiting through one extra clone generation before exercising dropped Fe 0.569 → 0.355 (paper Table III, l=2 vs l=2*) | **exercise timing** — hold vs. exercise now |
+| intact (always decaying) | all key qubits coherent; recovery physically executable. Decay is not a separate state but the standing dynamics of this one — the option has a theta, empirically priced: waiting through one extra clone generation before exercising dropped Fe 0.569 → 0.355 (paper Table III, l=2 vs l=2*) | **exercise timing** (hold vs. exercise now) and **binding** (which site) |
+| orphaned | physically intact; no valid warrant / control path | **re-attach** — restore a control path, or write the claim off |
 | consumed | exercised; provides *post-action fencing* (all other presences are dead by physics) | nothing — that is the point; at-most-once is free after the fact |
-| torn *(speculation)* | interrupted or partial decryption: neither materialized nor recoverable. Not examined by the paper | **crash consistency / failure handling** — flagged, no reader designed |
+| torn *(speculation)* | a warrant-application that failed mid-flight: neither materialized nor recoverable. Not examined by the paper | **crash consistency / failure handling** — flagged, no reader designed |
 
 Two claim facts with OS weight:
 
@@ -104,8 +129,10 @@ split is the right cut, not a new layer of structure:
 
 ## 4. Provisional naming (THE veto item)
 
-Proposed: **carrier** and **claim**. The perishable good = one claim + one-or-more
-carriers; the OS tracks claims, carriers are where claims can be exercised.
+Proposed: **carrier**, **claim**, and **warrant**. The perishable good = one claim +
+one-or-more carriers; a warrant is what the OS grants, revokes, and serializes; the OS
+tracks claims, carriers are where claims can be exercised, and exercise is a warrant
+applied to a claim.
 
 Alternatives rejected (one line each, per grounding norm):
 - *capability / token* — implies a classical, copyable-or-at-least-durable bearer object;
@@ -121,7 +148,7 @@ Alternatives rejected (one line each, per grounding norm):
 | Register | Content |
 |---|---|
 | Paper-demonstrated | plural encrypted presence survives hardware noise; degradation tracks depth/idle, not clone count; entanglement witness to n=7 direct, 27 iterated; CHSH violation through clone-and-decrypt to n=3; clones individually maximally mixed; idle-cost priced (l=2*) |
-| Systems mapping (ours, defensible) | two-ontology taxonomy; claim as consume-once relational authority; classical linearization point; late binding; spent-residue reclamation; theta on held claims |
+| Systems mapping (ours, defensible) | kind-split taxonomy (carrier / claim / warrant); claim as consume-once physical recoverability; warrant as its classical, revocable counterpart; classical linearization point = warrant application; late binding; spent-residue reclamation; theta on held claims |
 | Speculation (flagged) | torn materialization; conservation of fragility; option-portfolio placement; death-kind of encrypted potential; any coupling into decoder backlog (Register 3 of 07-05, still parked) |
 
 ## 6. What this note does not do
@@ -131,4 +158,4 @@ Alternatives rejected (one line each, per grounding norm):
   → FIELD-EARNED).
 - Does not touch deadline semantics, duration separation, or the backlog coupling (07-05
   next-instance instructions remain in force).
-- Does not finalize names — carrier/claim is standing for veto.
+- Does not finalize names — carrier/claim/warrant is standing for veto.

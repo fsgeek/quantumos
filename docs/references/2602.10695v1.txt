@@ -1,0 +1,2543 @@
+Experimental demonstration that qubits can be cloned at will, if encrypted with a
+single-use decryption key
+
+Koji Yamaguchi,1, ∗ Leon Rullkötter,2, ∗ Ibrahim Shehzad,3
+Sean J. Wagner,4 Christian Tutschku,2 and Achim Kempf5, 6, 7, 8
+1Department of Informatics, Faculty of Information Science and Electrical Engineering,
+Kyushu University, 744 Motooka, Nishi-ku, Fukuoka, 819-0395, Japan
+2Fraunhofer Institute for Industrial Engineering (IAO), Nobelstraße 12, 70569 Stuttgart, Germany
+3IBM Quantum, Thomas J. Watson Research Center,
+1101 Kitchawan Rd, Yorktown Heights, NY 10598, USA
+4IBM, Markham, ON L6G 1C7, Canada
+5Department of Applied Mathematics, University of Waterloo, Waterloo, ON N2L 3G1, Canada
+6Department of Physics, University of Waterloo, Waterloo, ON N2L 3G1, Canada
+7Institute for Quantum Computing, University of Waterloo, Waterloo, ON N2L 3G1, Canada
+8Perimeter Institute for Theoretical Physics, Waterloo, Ontario N2L 2Y5, Canada
+
+The no-cloning theorem forbids the creation of identical copies of qubits, thereby imposing strong
+limitations on quantum technologies. A recently-proposed protocol, encrypted cloning, showed,
+however, that the creation of perfect clones is theoretically possible - if the clones are simultaneously
+encrypted with a single-use decryption key. It has remained an open question, however, whether
+encrypted cloning is stable under hardware noise and thus practical as a quantum primitive. This is
+nontrivial because spreading quantum information widely could dilute it until barely exceeding the
+noise level, leading to catastrophic fidelity decay. Given the complexity of hardware noise, theory
+and classical simulation are insuﬀicient to settle this. Here, we settle this question experimentally,
+on IBM Heron-R2 superconducting processors using up to 154 qubits. We find that encrypted
+cloning is stable under hardware noise, even when used as a module, namely in parallel, series or
+interleaved, while preserving pre-existing entanglement. This establishes it as a versatile quantum
+primitive for practical use, and it necessitates a refinement to our understanding of the no-cloning
+theorem: quantum information can be spread at will, in theory and in practice, without dilution
+or degradation, if encrypted or obscured. The actual constraint is that the decryption mechanism
+must be single-use.
+
+The ability to copy data is essential in classical com-
+puting and is also routinely used, for example, for re-
+dundant cloud storage. In contrast, the no-cloning theo-
+rem, a foundational result of quantum mechanics, estab-
+lishes the impossibility of creating exact copies of quan-
+tum data [1, 2]. Since this prohibition against perfect
+duplication presents a significant obstacle in quantum
+information processing, various strategies for achieving
+at least some level of approximate quantum cloning have
+been developed [3–10].
+
+Among these, the universal quantum cloning ma-
+chine [3] enables deterministic generation of two ap-
+proximate copies of an arbitrary qubit with a fidelity
+of 5/6. This value was proven to be approximate
+cloning’s maximum [4, 6]. Even this maximum perfor-
+mance is incapable, however, to provide the clones with
+suﬀicient quantumness. For example, they cannot vio-
+late the Clauser–Horne–Shimony–Holt (CHSH) inequal-
+ities [11, 12] (see Supplementary Information).
+
+Subsequent studies have extended approximate cloning
+to include schemes that exploit prior knowledge of the
+states to be copied, such as state-dependent [5] and prob-
+abilistic [7, 8] cloning, as well as phase-covariant gen-
+eralizations [9, 10] (see, e.g., Refs. [13, 14] for review).
+
+∗ These authors contributed equally to this work
+
+These theoretical developments have been followed by
+a series of experimental demonstrations across different
+physical platforms [15–22]. While these experiments have
+confirmed the practical feasibility of these methods, the
+problem has remained that all of these methods are pro-
+viding either limited fidelity or possess limited success
+probability or can only replicate subsets of states.
+
+In this context, a recent theoretical proposal, termed
+encrypted cloning [23], has shown that, in theory, it is
+possible to deterministically create any number of perfect
+clones of an arbitrary state if, during the cloning process,
+the clones are encrypted with a quantum single-use de-
+cryption key (see Methods): among the encrypted clones,
+one can freely choose any one to decrypt and thereby re-
+covers the original state with fidelity up to 1. The de-
+cryption process consumes the decryption key, thereby
+rendering all remaining encrypted clones indecipherable,
+which ensures consistency with the no-cloning theorem.
+For example, encrypted cloning enables, therefore, re-
+dundant quantum cloud storage: a quantum cloud stor-
+age provider hosts encrypted clones of a client’s quantum
+data on separate servers. As long as at least one of the
+servers survives, the client can recover all of their data
+perfectly by decrypting the surviving clones. Quantum
+cloud storage could serve as a platform also for quantum
+cloud computing.
+
+More generally, encrypted cloning could serve as a ver-
+
+6
+2
+0
+2
+
+b
+e
+F
+1
+1
+
+]
+h
+p
+-
+t
+n
+a
+u
+q
+[
+
+1
+v
+5
+9
+6
+0
+1
+.
+2
+0
+6
+2
+:
+v
+i
+X
+r
+a
+
+ 
+ 
+ 
+ 
+ 
+ 
+satile new redundancy-providing quantum primitive for
+quantum technologies. We use the term quantum prim-
+itive here to denote basic quantum algorithmic building
+blocks (such as quantum teleportation or entanglement
+swapping) that can be inserted as modules, in parallel,
+in series or interleaved - while respecting any pre-existing
+entanglement of its inputs.
+
+It has remained an open question, however, whether
+encrypted cloning is stable under hardware noise and
+thus viable as a practical quantum primitive. This is a
+nontrivial question because spreading quantum informa-
+tion widely could, intuitively speaking, dilute the quan-
+tum information until it barely exceeds the noise, po-
+tentially leading to a catastrophic decay of entanglement
+fidelity. If the vulnerability of encrypted cloning to noise
+were to grow fast enough with the number of encrypted
+clones, encrypted cloning could be unstable even on fu-
+ture error-corrected hardware.
+
+To determine the vulnerability of encrypted cloning to
+hardware noise either by theoretical analysis or by clas-
+sical simulation would be unreliable due to the complex
+nature of hardware noise. For example, perturbative rea-
+soning, or the use of factorized noise models, would be
+insuﬀicient. And even if the ideal circuits are simulat-
+able using only Clifford gates, realistic noise generically
+breaks the stabilizer picture and precludes eﬀicient clas-
+sical simulation at scale.
+
+Therefore, we here address this question experimen-
+tally on a standard IBM Heron R2 superconducting
+quantum processor. Our experiments show that en-
+crypted cloning is not catastrophically sensitive to hard-
+ware noise.
+Instead, its sensitivity to hardware noise
+scales particularly favorably: we find that the fidelity of
+encrypted cloning is essentially insensitive to the number
+of encrypted clones created. Instead, the fidelity decay is
+merely incremental and dominated by any quantum al-
+gorithm’s minimum inevitable fidelity decay that comes
+with increasing circuit depth on non-error-corrected ma-
+chines.
+
+This allows us to experimentally establish that en-
+crypted cloning can be used as a quantum primitive al-
+ready on present non-error-corrected quantum hardware,
+i.e., as a module that can be used in series, in parallel or
+interleaved, while it respects pre-existing two-partite and
+multi-partite entanglement of its input qubits.
+
+To demonstrate that encrypted cloning can be used
+as a quantum primitive in the presence of hardware
+noise, i.e., as a versatile module, we performed encrypted
+cloning experiments that (1) measure its sensitivity to
+hardware noise, (2) demonstrate interleaving, (3) demon-
+strate operation in series and (4) demonstrate operation
+in parallel. These experiments also establish the preser-
+vation of pre-existing two-partite and multi-partite en-
+tanglement in the inputs.
+
+Experiment 1: Measurement of sensitivity to
+hardware noise and demonstration that prior en-
+tanglement persists through encrypted cloning
+and decryption.
+
+2
+
+We prepare a qubit A in a Bell state with an ancilla, ˜A.
+Then, we encrypted-clone the qubit A into n encrypted
+clones S1, . . . , Sn. Next, we decrypt a chosen clone (we
+use S1 without loss of generality by symmetry).
+
+Then, to test whether encrypted cloning and decryp-
+tion respects the prior entanglement, i.e., whether the
+decrypted clone is entangled with ˜A, we measure its en-
+tanglement fidelity Fe [24–26], i.e., its fidelity with the
+original Bell state, see Fig. 1. Across n = 2 to n = 15,
+the observed fidelity decreases gradually as the circuit
+depth increases, rather than dropping catastrophically.
+In particular, entanglement is witnessed (Fe > 1/2) up
+to n = 7, and the signal remains above the maximally
+mixed noise floor (Fe > 1/4) up to approximately n ≈ 13
+(Fig. 1; Extended Data Table I). The dependence of Fe
+on hardware-induced depth overhead (two-qubit gate lay-
+ers) further indicates that the dominant degradation is
+tracking accumulated experimental error rather than an
+intrinsic exponential instability with clone number.
+
+This addresses the key screening question for modular-
+ity: even on current non-error corrected hardware, prior
+entanglement persists through encrypted cloning and de-
+cryption, supporting encrypted cloning as a viable can-
+didate quantum primitive.
+
+FIG. 1: Experiment 1: Proof on hardware that
+encrypted cloning can serve as a quantum primitive in
+the sense that it respects its input’s pre-existing
+entanglement: pre-existing entanglement of qubit A is
+measurably recovered after decrypting one of up to
+seven encrypted clones of A. The drop in entanglement
+fidelity is dominated by the number of 2-qubit gate
+layers. Results depend on when and which chip is used,
+but on a fixed chip, for a given time, the sampling errors
+(for 1000s of shots) are very small (see Extended Data:
+Table I, Extended Data: Fig. 4, and Supplementary
+Information). Results confirmed with two independent
+measurement methods: Bell state measurement (BSM)
+and parity oscillations method (POM) (see Methods).
+They possess similar circuit depths and correspondingly
+similar entanglement fidelities.
+
+23456789101112131415Encrypted cloning parameter n0.00.20.40.60.81.0Entanglement fidelity Fe020406080100120140160# of 2-qubit gate layers L2qEntanglement witness thresholdNoise floorFe BSMFe POML2q BSML2q POMExperiment 2: Feasibility of interleaving encryp-
+tion and decryption
+For encrypted cloning to be able to serve as a candi-
+date quantum primitive, its two parts (encrypted cloning
+and decryption) should, in practice, be reliably usable as
+modules that can be separated in time and interleaved
+with other operations, such as measurements, while still
+respecting the prior entanglement of its input registers.
+To test this, we again start from a Bell pair of qubits A
+and ˜A, apply encrypted cloning to A, and then implement
+three distinct measurement orderings within one circuit
+(Fig. 2a). In Scenario 2-1, we measure ˜A first and decrypt
+and measure a clone later; in Scenario 2-2, we decrypt
+and then measure ˜A and the decrypted clone at the same
+time; in Scenario 2-3, we decrypt and measure the clone
+first and measure ˜A later. These orderings probe whether
+intermediate measurements and idling between the two
+stages destroy the recovered nonlocal correlations.
+
+We quantify recovered nonclassicality by the CHSH
+parameter S [11, 12] between ˜A and the decrypted clone
+(Fig. 2b; Extended Data Table II). We observe a vio-
+lation |S| > 2 for up to n = 3 (corresponding to up
+to three encrypted clones), demonstrating that encryp-
+tion followed by later decryption can restore correlations
+strong enough to rule out local hidden-variable models in
+the accessible regime.
+
+These tests demonstrate that encrypted cloning can
+be used in a modular fashion in the sense that encrypted
+cloning and decryption can be separated in time and even
+interleaved with measurements. In particular, the mea-
+surement of ˜A can be chosen to occur before, after, or
+simultaneously (and therefore, in principle, also spacelike
+separated) from the choice of which clone is decrypted,
+i.e., encrypted cloning is compatible with delayed choices
+of measurement or decryption.
+
+These results show that separating and interleaving
+encrypted cloning and its decryption are feasible in prac-
+tice, supporting encrypted cloning as a flexible quantum
+primitive.
+
+Experiment 3: Operation in series: Feasibility of
+iterating encrypted cloning
+A further criterion for a quantum operation to be a us-
+able primitive is composability with itself.
+In theory,
+encrypted cloning admits an iterated construction [23]
+in which the number of encrypted clones grows expo-
+nentially, while the decryption key required to recover a
+chosen final clone grows only linearly with the number
+of iterations. In practice, in the presence of noise, iter-
+ating encrypted cloning provides a stringent stress test
+of operational stability, because iteration increases both
+circuit depth and the size of the multipartite entangled
+state.
+
+We implement this iterated scheme on hardware by
+starting again with a Bell pair, A, ˜A. We then create
+three encrypted clones of A and of the all subsequent
+encrypted clones,
+iterating l times. Eventually, after
+decrypting a selected final clone, we measure its entan-
+glement fidelity Fe with ˜A (Extended Data Table III).
+
+3
+
+With maximal chip use (154 qubits), generating 77 en-
+crypted clones, we still observe recoverability above the
+noise floor (Fe > 1/4). Moreover, we retain an entangle-
+ment witness (Fe > 1/2) for up to 27 encrypted clones.
+These results support treating encrypted cloning as a
+composable quantum primitive since they show that it-
+eration of encrypted cloning does not induce an abrupt
+loss of recoverability. To the contrary, we find that since,
+by iteration, the number of encrypted clones grows ex-
+ponentially with the circuit depth,
+iterated encrypted
+cloning is in practice preferable over large n direct en-
+crypted cloning. The much shorter key length and shal-
+lower circuit depth of iterated encrypted cloning allow
+the creation of more encrypted clones for any desired fi-
+delity than through large n one-off encrypted cloning on
+the same processor.
+
+Experiment 4: Operation in parallel: Feasibility
+of encrypted cloning inside multipartite circuits
+In practice, in quantum algorithms, qubits participate
+in larger entangled registers. For encrypted cloning to
+be useful as a practical quantum primitive it should,
+therefore, preserve the embedding of its input qubit in
+a multi-partite entangled structure. The operational re-
+quirement is that decrypting an encrypted clone of A re-
+stores A’s prior correlations with the rest of the system,
+even though the encryption stage had spread information
+across many encrypted clones. In addition, as a practical
+quantum primitive, encrypted cloning should be applica-
+ble in parallel to multiple qubits.
+
+We test this strongest modularity criterion using r-
+qubit Greenberger–Horne–Zeilinger (GHZ) states [27].
+We prepare GHZ states for r up to 15, then indepen-
+dently create three encrypted clones of each GHZ qubit,
+producing r groups of three encrypted clones and keys.
+We subsequently decrypt one clone from each group. The
+challenge is to determine whether these decrypted clones
+are then in the original GHZ state. To this end, we
+measure the fidelity Fr of the recovered r-qubit state
+with the original GHZ state (Fig. 3; Extended Data Ta-
+ble IV). Across the tested range, the recovered GHZ fi-
+delity remains well above the maximally mixed noise floor
+2−r, and genuine multipartite entanglement is witnessed
+(Fr > 1/2) up to r = 4.
+
+This experiment demonstrates two aspects of modu-
+larity at once. First, encrypted cloning can be applied
+independently and in parallel to multiple qubits such as
+those in a GHZ state. Second, decrypting each selected
+clone restores the multipartite correlation structure of
+the qubits’ original multi-partite state, showing that en-
+crypted cloning respects the operational role of a qubit
+within an entangled register. This supports viewing en-
+crypted cloning as a quantum primitive that provides ex-
+perimentally feasible modules that can be inserted into
+multipartite algorithms: after decryption, the qubits re-
+turn to the algorithm with their intended global correla-
+tions intact.
+
+A common finding of Experiments 1–4 is that the
+degradation of the fidelity of encrypted cloning is merely
+
+1
+
+2
+
+3
+
+˜A, A
+
+S, N
+
+enc
+
+n
+
+n
+
+dec
+
+(a)
+
+4
+
+(b)
+
+FIG. 2: Experiment 2: (a) Setup to test if the two parts of encrypted cloning, namely the creation of encrypted
+clones on one hand and the choosing and decrypting of one of the encrypted clones on the other can be treated, as a
+quantum primitive on hardware, as independent modules that can be interleaved, for example, with a measurement
+operation. To this end, the measurement on the ancilla ˜A (top rail) is performed either before, at the same time or
+after choosing and decrypting an encrypted clone, i.e., at time 1, 2 or 3 for experiment Scenarios 2-1, 2-2 or 2-3
+respectively. Notice that this is a nontrivial test because, for example, in Scenario 2-1, the measurement on ˜A to test
+for the preservation of its pre-existing entanglement with A is performed even before the choice is made which
+encrypted clone to decrypt and then measure. (b) The results show in each scenario that encrypted cloning respects
+pre-existing entanglement of its input, in the sense that the CHSH inequality is violated, proving quantumness of
+the correlations, on the given hardware, for up to three encrypted clones. The deterioration of the performance is
+dominated by the duration of the circuit. For example, the lower performance in Scenario 2-1 arises from the extra
+idling time during the measurement of ˜A. The statistical error bars from 10, 000 shots are very small (see also
+Extended Data: Table II).
+
+incremental and is governed not by the number of en-
+crypted clones but by the circuit depth, which is the bare
+minimum degradation on non-error-corrected hardware.
+This implies that the fidelity of encrypted cloning scales
+exceedingly well with respect to the number of encrypted
+clones created on the non-error corrected hardware. This
+is because the number of encrypted clones can be made
+to grow exponentially with the circuit depth through it-
+erated encrypted cloning as, e.g., in Experiment 3. This
+reflects the fact that quantum information does not be-
+come diluted when encrypted cloned.
+
+Conclusion
+Collectively, these four experiments establish that en-
+crypted cloning is favorably robust to hardware noise
+in the sense that even already on current non-error-
+corrected processors, encrypted cloning can be used as
+a module, i.e., in parallel, in series or interleaved, while
+measurably preserving pre-existing entanglement of its
+input qubits. This establishes encrypted cloning as a
+versatile quantum primitive for practical use in quan-
+tum technologies, including quantum infrastructure, for
+example, to enable parallel quantum storage and, poten-
+tially, also parallel quantum computing.
+
+The experiments also necessitate a refinement to our
+understanding of the no-cloning theorem: quantum infor-
+mation can be spread at will, in theory and in practice,
+without dilution or degradation, namely if encrypted or
+obscured. The actual constraint is that the decryption
+
+mechanism must be single-use.
+
+Acknowledgments
+K.Y. acknowledges support from JSPS Grants-in-Aid
+for Scientific Research No. JP24KJ0085. A.K. acknowl-
+edges support through the Dieter Schwarz Foundation,
+a Discovery Grant of the National Science and Engi-
+neering Council of Canada (NSERC), an Applied Quan-
+tum Computing Challenge Grant from the National Re-
+search Council of Canada (NRC), a Discovery Project
+grant of the Australian Research Council (ARC) and sup-
+port from Perimeter Institute which is supported in part
+by the Government of Canada through the Department
+of Innovation, Science and Industry Canada and by the
+Province of Ontario through the Ministry of Colleges and
+Universities. The contribution of L.R. and C. K. has been
+supported by the Fraunhofer Heilbronn Research and In-
+novation Centers HNFIZ.
+
+Data availability
+The data that support the findings of this study are avail-
+able in the Supplementary Information and from the au-
+thors upon reasonable request.
+
+Code availability
+The codes used to generate the results of this study are
+available from the authors upon reasonable request.
+
+Author Contributions
+K.Y., L.R., and A.K. designed the experiments and an-
+alyzed data; L.R. developed the code and implemented
+
+23456Encrypted cloning parameter n1.01.52.02.522CHSH parameter SScenario 2-1Scenario 2-2Scenario 2-3Theoretical value, quantum upper boundThreshold for ruling out  local hidden variables5
+
+the experiments; I.S. and S.J.W. provided technical guid-
+ance on the implementation on the quantum processor;
+C.T. contributed to early-stage discussions on the study
+design; K.Y. and A.K. wrote Main Body, Methods, and
+Supplementary Information; L.R. and I.S. contributed
+Supplementary Information.
+
+FIG. 3: Experiment 4: We prepare GHZ states for r up
+to 15. We then independently create 3 encrypted clones
+of each of the r qubits, i.e., we produce r independent
+groups of three encrypted clones. After the encrypted
+cloning, in each group, one of the clones is decrypted.
+Finally, the fidelity Fr between the recovered GHZ state
+and the initial GHZ state is measured using the POM
+with 10 000 shots per measurement setting. The signal
+always remains well above the noise floor and reaches
+fidelities above the entanglement witness threshold for
+GHZ states with up to 4 qubits. These results support
+that encrypted cloning can serve as a candidate
+quantum primitive in the sense that it respects not only
+bipartite but also genuine multipartite entanglement of
+input qubits embedded in larger circuits, and encrypted
+cloning is a quantum primitive in the sense that it can
+also be applied in true modular fashion in parallel to
+multiple qubits.
+
+Competing interests
+The authors declare no competing interests.
+
+[1] W. K. Wootters and W. H. Zurek, Nature 299, 802
+
+Modern Physics 77, 1225 (2005).
+
+(1982).
+
+[2] D. Dieks, Physics Letters A 92, 271 (1982).
+[3] V. Bužek and M. Hillery, Physical Review A 54, 1844
+
+(1996).
+
+[14] H. Fan, Y.-N. Wang, L. Jing, J.-D. Yue, H.-D. Shi, Y.-L.
+Zhang, and L.-Z. Mu, Physics Reports Quantum cloning
+machines and the applications, 544, 241 (2014).
+
+[15] A. Lamas-Linares, C. Simon, J. C. Howell, and
+
+[4] N. Gisin and S. Massar, Physical Review Letters 79, 2153
+
+D. Bouwmeester, Science 296, 712 (2002).
+
+(1997).
+
+[16] F. Sciarrino and F. De Martini, Physical Review A 72,
+
+[5] D. Bruß, D. P. DiVincenzo, A. Ekert, C. A. Fuchs,
+C. Macchiavello, and J. A. Smolin, Physical Review A
+57, 2368 (1998).
+
+[6] R. F. Werner, Physical Review A 58, 1827 (1998).
+[7] L.-M. Duan and G.-C. Guo, Physical Review Letters 80,
+
+4999 (1998).
+
+062313 (2005).
+
+[17] J. Du, T. Durt, P. Zou, H. Li, L. C. Kwek, C. H. Lai,
+C. H. Oh, and A. Ekert, Physical Review Letters 94,
+040505 (2005).
+
+[18] H. Chen, X. Zhou, D. Suter, and J. Du, Physical Review
+
+A 75, 012317 (2007).
+
+[8] A. K. Pati, Physical Review Letters 83, 2849 (1999).
+[9] H. Fan, K. Matsumoto, X.-B. Wang, and M. Wadati,
+
+Physical Review A 65, 012304 (2001).
+
+[10] Y.-N. Wang, H.-D. Shi, Z.-X. Xiong, L. Jing, X.-J. Ren,
+L.-Z. Mu, and H. Fan, Physical Review A 84, 034302
+(2011).
+
+[11] J. S. Bell, Physics Physique Fizika 1, 195 (1964).
+[12] J. F. Clauser, M. A. Horne, A. Shimony, and R. A. Holt,
+
+Physical Review Letters 23, 880 (1969).
+
+[19] E. Nagali, L. Sansoni, F. Sciarrino, F. De Martini,
+L. Marrucci, B. Piccirillo, E. Karimi, and E. Santamato,
+Nature Photonics 3, 720 (2009).
+
+[20] X.-Y. Pan, G.-Q. Liu, L.-L. Yang, and H. Fan, Applied
+
+Physics Letters 99, 051113 (2011).
+
+[21] L.-C. Peng, D. Wu, H.-S. Zhong, Y.-H. Luo, Y. Li, Y. Hu,
+X. Jiang, M.-C. Chen, L. Li, N.-L. Liu, K. Nemoto, W. J.
+Munro, B. C. Sanders, C.-Y. Lu, and J.-W. Pan, Physical
+Review Letters 125, 210502 (2020).
+
+[13] V. Scarani, S. Iblisdir, N. Gisin, and A. Acín, Reviews of
+
+[22] Z.-B. Yang, P.-R. Han, X.-J. Huang, W. Ning, H. Li,
+
+123456789101112131415Number r of qubits in GHZ state105104103102101100Fidelity FrEach GHZ qubit encrypted cloned with n=2Entanglement witness thresholdNoise floor6
+
+K. Xu, D. Zheng, H. Fan, and S.-B. Zheng, npj Quantum
+Information 7, 44 (2021).
+
+[23] K. Yamaguchi and A. Kempf, Physical Review Letters
+
+136, 010801 (2026).
+
+[24] B. Schumacher, Physical Review A 54, 2614 (1996).
+[25] M. Horodecki, P. Horodecki, and R. Horodecki, Physical
+
+Review A 60, 1888 (1999).
+
+[26] M. A. Nielsen, Physics Letters A 303, 249 (2002).
+[27] D. M. Greenberger, M. A. Horne, A. Shimony, and
+A. Zeilinger, American Journal of Physics 58, 1131
+(1990).
+
+[28] A. Javadi-Abhari, M. Treinish, K. Krsulich, C. J.
+Wood, J. Lishman, J. Gacon, S. Martiel, P. D. Nation,
+L. S. Bishop, A. W. Cross, B. R. Johnson, and J. M.
+Gambetta, Quantum computing with Qiskit (2024),
+arXiv:2405.08810 [quant-ph].
+
+[29] G. Tóth and O. Gühne, Physical Review Letters 94,
+
+060501 (2005).
+
+[30] O. Gühne, C.-Y. Lu, W.-B. Gao, and J.-W. Pan, Physical
+
+Review A 76, 030305 (2007).
+
+[31] O. Gühne and G. Tóth, Physics Reports 474, 1 (2009).
+[32] N. Ezzell, B. Pokharel, L. Tewala, G. Quiroz, and D. A.
+
+Lidar, Phys. Rev. Appl. 20, 064027 (2023).
+
+[33] Error mitigation
+
+and
+
+suppression
+
+techniques,
+
+https://quantum.cloud.ibm.com/docs/en/guides/
+error-mitigation-and-suppression-techniques
+(2025), accessed: October 29, 2025.
+
+Methods
+
+Encrypted cloning protocol
+The encrypted cloning protocol [23] provides a unitary
+method for creating encrypted copies of an arbitrary
+qubit A. The process is divided into two stages: the
+creation of encrypted clones and the decryption of an
+encrypted clone, which recovers the original state.
+
+We start by preparing n qubits Si, i = 1, . . . , n, called
+signal qubits, and n qubits Ni, i = 1, . . . , n, called noise
+qubits with each pair (Si, Ni), initialized in the maxi-
+mally entangled state
+
+|ϕ⟩
+
+SiNi
+
+:=
+
+(
+
+1√
+2
+
+|0⟩
+
+Si
+
+|0⟩
+
+Ni
+
++ |1⟩
+
+|1⟩
+
+Ni
+
+Si
+
+)
+
+(1)
+
+We then set aside and isolate the noise qubits {Ni}.
+Through their entanglement with the {Si}, the role of
+the noise qubits {Ni} is to provide the noise to the sig-
+nal qubits which will be used for encryption. The fact
+that the noise qubits keep a record of this quantum noise
+will later allow the noise qubits to serve as the decryption
+key.
+
+Next, in order to turn the signal qubits {Si} into n en-
+crypted clones of a qubit A that is in an unknown state,
+we let A interact with the signal qubits {Si} through
+a suitable unitary U (n)
+enc . Since we have set aside the
+noise qubits, the unitary U (n)
+enc acts as the identity on
+the Hilbert space of the noise qubits, i.e., the noise qubits
+{Ni} remain unaffected during encrypted cloning. There-
+fore, the noise qubits can carry neither classical nor quan-
+tum information about A.
+
+Later, any one of the encrypted clones {Si}, which we
+denote by Sj, can then be decrypted to reproduce the
+original state of qubit A. The decryption, or “denois-
+ing,” of Sj is accomplished by a unitary U (n)
+dec that acts
+nontrivially only on Sj and on the noise qubits {Ni},
+thereby recovering the original state of A on Sj.
+
+The encryption is performed by applying a unitary op-
+enc that acts on qubit A and all n signal qubits.
+
+erator U (n)
+This operator is given by:
+
+U (n)
+
+enc := e
+
+− πi
+
+4 σ(A)
+
+1
+
+(⊗
+
+⊗
+
+n
+
+i=1 σ(Si )
+
+1
+
+)
+
+e
+
+− πi
+
+4 σ(A)
+
+3
+
+(⊗
+
+⊗
+
+n
+
+i=1 σ(Si )
+
+3
+
+)
+
+. (2)
+
+Here, the superscript of each Pauli operator denotes the
+subsystem that this Pauli operator acts on. The decryp-
+tion is performed by applying a unitary operator U (n)
+dec
+that acts on an arbitrarily chosen clone Sj and the en-
+tire set of noise qubits {Ni}n
+i=1, which constitute the key.
+Specifically, the decryption unitary is given by
+
+U (n)
+
+dec :=
+
+3∑
+
+µ=0
+
+(
+
+αµ
+
+|ϕµ⟩ ⟨ϕµ|
+
+Sj Nj
+
+
+
+
+ ,
+
+σ(Ni)⊤
+µ
+
+(3)
+
+
+
+
+
+
+)
+
+⊗
+
+n⊗
+
+i=1
+i̸=j
+
+where |ϕµ⟩
+, ⊤ denotes
+the transpose with respect to the computational basis
+
+µ ⊗ I(Ni) |ϕ⟩
+
+:= σ(Si)
+
+SiNi
+
+SiNi
+
+7
+
+{|0⟩ , |1⟩}, and the coeﬀicients are defined by α0 := 1,
+α1 = α3 := i and α2 := −in+1.
+
+enc and U (n)
+As was shown in [23], the properties of U (n)
+dec
+justify the specific terminology encrypted cloning:
+(a)
+each encrypted clone is encrypted in the sense that, on
+its own, it is in the maximally mixed state and reveals
+no information about the initial state of A and (b) each
+encrypted clone is a clone in the sense that, by decrypt-
+ing it, the original unknown state of A can be recovered
+deterministically and with perfect fidelity.
+
+Gate decomposition
+A gate decomposition of the encryption unitary operation
+(Eq. (2)) is provided in Extended Data Figure 5. In this
+figure, each CNOT gate can be implemented by using the
+cz and the Hadamard gate H, which can be implemented
+X · Rz (π) (up to
+by using rz and sx as H = Rz
+irrelevant global phase), where Rz(t) := e−iθ θ
+2 σz .
+
+√
+
+π
+2
+
+)
+
+(
+
+·
+
+To decompose the decryption operation (Eq. (3)), we
+
+introduce a unitary operator
+
+V := (H ⊗ H)CZ(I ⊗ H),
+
+(4)
+
+satisfying V |ϕµ⟩ = |µ1⟩ |µ1 ⊕ µ2⟩ for µ = 0, 1, 2, 3, where
+and µ = µ1µ2 is the binary representation of µ, and ⊕
+denotes the addition modulo two. A gate decomposition
+of (V ⊗IN2···Nn )U (n)
+dec (V ⊗IN2···Nn )† is shown in Extended
+Data Figure 6.
+
+Experimental implementation
+All experiments in this work were performed on an IBM
+Heron R2 generation superconducting quantum proces-
+sor, specifically the ibm_kingston backend, accessed
+In Sup-
+through the IBM Quantum Platform service.
+plementary Information, we also made a comparison to
+the performance of the ibm_aachen Heron R2 proces-
+sor for Experiment 1. IBM Heron R2 processors feature
+156 physical fixed-frequency transmon qubits coupled via
+tunable couplers arranged in a heavy-hex topology. Rep-
+resentative values at the time of experiments for a mea-
+sured median relaxation time (T1) and median dephasing
+time (T2) of qubits on the ibm_kingston are 263 µs and
+149 µs, respectively.
+
+The quantum circuits used to implement the protocol
+were first designed at the logical level (given by Extended
+Data Figures 5 and 6) and then transpiled to the native
+gate set of the IBM Heron processor, {rz, sx, x, id, cz},
+using the transpiler from Qiskit [28] with optimization
+level 3. Transpilation was performed to account for
+the gate directionality, and the heavy-hex topology of
+the ibm_kingston backend. The final gate counts and
+circuit depths of the transpiled circuits are reported in
+Extended Data. Limited qubit connectivity on the Heron
+processor requires use of SWAP gates in the transpiled
+circuits, hence reported gate counts and circuit depths for
+each experiment include SWAP operations implemented
+in the native gate set by the transpiler.
+
+Fidelity estimation
+
+We employ two methods to evaluate the performance of
+the encrypted cloning protocol via fidelity estimation of
+Bell states and r-qubit GHZ states. The fidelity of some
+experimental state ρexp in relation to a desired state |ϕ⟩
+is defined as
+
+Fϕ = ⟨ϕ|ρexp|ϕ⟩ .
+
+(5)
+
+Firstly, the fidelity of a Bell state is measured by per-
+forming a Bell state measurement (BSM) using the fol-
+lowing circuit
+
+H
+
+˜A
+
+A
+
+and measuring both qubits in the σz-basis. The fidelity
+of the two-qubit decrypted state ρexp of A and ˜A with
+respect to the Bell state |ϕ⟩ = (|00⟩ + |11⟩)/
+2 can be
+estimated through sampling, given by
+
+√
+
+F =
+
+N00
+Nshots
+
+,
+
+(6)
+
+where N00 is the number of times the outcome 00 is reg-
+istered and Nshots is the total number of experimental
+samples. Error bars are calculated using the experimen-
+tal shot noise. The standard deviation σF of the fidelity
+F is given by
+
+√
+
+σF =
+
+Var(F ) =
+
+√
+
+F (F − 1)
+Nshots
+
+(7)
+
+since F is the probability of measuring the outcome 00.
+An alternative approach developed in [29, 30] is the
+parity oscillations method (POM). The POM can be ad-
+vantageous because it requires only local measurements
+and therefore requires fewer swaps to move qubits. The
+goal is to determine the fidelity between a state ρ with
+the r-partite GHZ state:
+
+Fr = ⟨GHZr|ρ|GHZr⟩ = Tr(ρ|GHZr⟩⟨GHZr|),
+
+(8)
+
+be
+
+|GHZr⟩⟨GHZr|
+
+decomposed
+
+where
+into
+can
+2 |GHZr⟩⟨GHZr| = |0⟩⟨0|⊗r + |1⟩⟨1|⊗r + |0⟩⟨1|⊗r + |1⟩⟨0|⊗r.
+The first two terms P = |0⟩⟨0|⊗r + |1⟩⟨1|⊗r are measured
+by sampling the circuit using the measurement setting
+σ⊗r
+and assigning the terms to the probabilities of the
+z
+measurement outcomes 0⊗r and 1⊗r. Subsequently, the
+r measurement settings
+
+[
+
+(
+
+Mk =
+
+cos
+
+)
+
+kπ
+r
+
+σx + sin
+
+(
+
+kπ
+r
+
+)
+
+]⊗r
+
+σy
+
+, k = 1, ..., r
+
+(9)
+are used to measure |0⟩⟨1|⊗r + |1⟩⟨0|⊗r using the relation
+
+χ = |0⟩⟨1|⊗r + |1⟩⟨0|⊗r =
+
+1
+r
+
+r∑
+
+k=1
+
+(−1)kMk .
+
+(10)
+
+8
+
+In the experiment, we measure ⟨Mk⟩ by rotating into the
+correct basis using an Rz-rotation with angle θ = kπ/r,
+a subsequent Hadamard gate and measuring Ek = ⟨σ⊗r
+⟩
+z
+in the σz setting. This amounts to
+
+Fr =
+
+1
+2
+
+(⟨P ⟩ + ⟨χ⟩) .
+
+(11)
+
+The POM fidelity estimation protocol for the case of r-
+qubit GHZ states requires in total r + 1 measurement
+settings. Errors are a combination of sampling in the
+σz-basis and expectation values in the x-y-plane. The
+variance of P is calculated using the same method as in
+equation (7) and amounts to
+
+Var(P ) =
+
+p00(p00 − 1)
+Nshots
+
++
+
+p11(p11 − 1)
+Nshots
+
+,
+
+(12)
+
+where p00 and p11 are the probabilities of measuring 00
+and 11 in the σz-basis measurement. On the other hand
+
+Var(χ) =
+
+1
+r2
+
+r∑
+
+k=1
+
+Var(Ek) =
+
+1
+r2Nshots
+
+r∑
+
+k=1
+
+(1 − E2
+
+k) , (13)
+
+since the Ek is derived from Bernoulli trials. Finally,
+
+√
+
+σF =
+
+Var(P ) + Var(χ) ,
+
+(14)
+
+provides the standard deviation of the fidelity.
+
+Experiment 1: Measurement of sensitivity to
+hardware noise and demonstration that prior en-
+tanglement persists through encrypted cloning
+and decryption.
+The first experiment implements the original encrypted
+cloning protocol. To quantify the output quality after
+cloning and decryption, we entangle the input qubit with
+an ancilla in a Bell state and observe the entanglement
+fidelity Fe relative to that state. This metric is directly
+related to the channel’s average fidelity [24–26].
+
+√
+
+We begin by preparing a qubit A and an ancilla ˜A in
+the Bell state |ϕ⟩ = (|00⟩ + |11⟩)/
+In addition, we
+initialize n pairs of signal and noise qubits {(Si, Ni)}i
+in the Bell state defined in Eq. (1), where n = 2–15.
+We then apply the encryption unitary U (n)
+enc in Eq. (2) to
+AS1 . . . Sn, thereby transforming the signal qubits {Si}i
+into n encrypted clones of A.
+
+2.
+
+Subsequently, we decrypt one encrypted clone, S1, us-
+ing the full set of noise qubits {Ni}i by applying the
+decryption unitary U (n)
+dec specified in Eq. (3). Then Fe is
+measured by using the BSM and the POM.
+
+Due to the symmetry of U (n)
+
+enc , all signal qubits are
+equivalent. Therefore, experimentally successful decryp-
+tion of S1 certifies the decryptability of any Sj for j =
+1, . . . , n.
+
+Experiment 2: Feasibility of interleaving encryp-
+tion and decryption
+In this experiment, we again perform encrypted cloning
+of qubit A that is initially maximally entangled with ˜A,
+
+for varying n, but we now explore the effect of the relative
+timing of the measurements on ˜A and a decrypted clone
+of A, and we use a new figure of merit, to determine
+the quantumness of the result, namely the amount of
+violation of the CHSH inequality.
+
+For the motivation, let us consider that when a qubit
+A, initially maximally entangled with an ancilla ˜A, un-
+dergoes encrypted cloning, the ancilla ˜A acquires multi-
+ple potential Bell partners—namely, the systems that are
+maximally entangled with ˜A. In particular, each set of
+one Sj and all noise qubits is maximally entangled with
+˜A. The subsequent decryption of any encrypted clone Sj
+renders Sj the sole Bell pair partner of ˜A. Since a mea-
+surement on one subsystem can, in principle, induce state
+collapse on its Bell state partner, this structure allows us
+to demonstrate a delayed-choice form of state collapse
+within the encrypted-cloning framework.
+
+Specifically, we perform an experiment demonstrating
+a violation of the CHSH inequality under three distinct
+measurement orderings within a single quantum circuit
+(see Fig. 2a).
+In Scenario 2-1, after encrypted cloning
+of A, we first measure ˜A and then decrypt and measure
+an encrypted clone S1. The measurement of ˜A induces
+state collapse on its entangled partner; however, which
+of the encrypted clones Sj ultimately serves as that part-
+ner is determined only later, when S1 is decrypted. In
+Scenario 2-2, after decrypting S1, we measure ˜A and S1
+simultaneously.
+In Scenario 2-3, the order is reversed
+compared to Scenario 2-1: we first decrypt and measure
+S1, and subsequently measure ˜A. In this case, the de-
+cryption operation determines which encrypted clone can
+induce state collapse on ˜A.
+
+As a quantifier for identifying violations of the CHSH
+inequality, and therefore proof of quantumness, we adopt
+the standard CHSH parameter S between ˜A and S1, de-
+fined as
+⟨
+
+⟩
+
+⟨
+
+⟩
+
+S :=
+
+σ( ˜A)
+
+3
+
+⟨
+
++
+
+σ( ˜A)
+
+1
+
+⊗ σ(S1)
+
+3 + σ(S1)
+1√
+2
+3 + σ(S1)
+1√
+2
+
+⊗ σ(S1)
+
++
+
+⟨
+
+⟩
+
+⊗ σ(S1)
+
+3
+
+σ( ˜A)
+
+3
+
+− σ(S1)
+1√
+2
+
+−
+
+σ( ˜A)
+
+1
+
+⊗ σ(S1)
+
+3
+
+− σ(S1)
+1√
+2
+
+⟩
+
+.
+
+(15)
+
+Here, ⟨O⟩ denotes the expectation value of an observable
+O evaluated on the state after decrypting S1. In theory,
+the decrypted clone fully recovers the entanglement with
+˜A, and the CHSH parameter attains its maximal value
+√
+2. As is well known, a value of |S| > 2 rules out any
+2
+description based on local hidden-variable theories [12].
+Figure 2b shows that on the given hardware, the vio-
+lation of the CHSH inequalities is visible for up to three
+encrypted clones. It also compares the CHSH parameters
+for each of the relative timings of the measurements of
+the ancilla ˜A and a decrypted clone of A. In theory, the
+timing has no influence on the resulting CHSH violation.
+In the experiments, we find that in Scenarios 2-2 and 2-3,
+where only qubit ˜A idles while the signal and noise qubits
+
+9
+
+are processed, the performance is better than in Scenario
+(2-1). In Scenario 2-1, all the encrypted clones and noise
+qubits idle, and accumulate noise, while qubit ˜A is be-
+ing measured. This idling time, i.e., the time to measure
+qubit ˜A, is about 3 µs, which is about three times the
+duration, about 1 µs, of the full circuit that decrypts an
+encrypted clone.
+
+We also experimentally simultaneously measured ˜A
+and an undecrypted encrypted clone S2 (n = 2) and ob-
+tained S = 0.014 ± 0.020, which is consistent with the
+theoretical expectation and the simulated result of S = 0.
+This demonstrates that encrypted clones (before decryp-
+tion) are uncorrelated with qubit ˜A, which justifies the
+terminology “encrypted” clone.
+
+Experiment 3: Operation in series: Feasibility of
+iterating encrypted cloning
+For the encrypted cloning protocol with even n, the orig-
+inal qubit A can also serve as an encrypted clone [23],
+producing a total of n + 1 encrypted clones. By iterat-
+ing the encryption l times, where each clone from the
+previous round is further cloned into n + 1 new ones,
+the total number Nclones of clones grows exponentially
+as Nclones = (n + 1)l+1.
+
+A notable feature of this scheme is that decrypting any
+single final clone does not require all intermediate noise
+qubits. Instead, the nested decryption procedure requires
+only n noise qubits from each iteration level, amounting
+to a total of n(l + 1) noise qubits. This represents an
+exponential reduction in the decryption resources: the
+original encrypted cloning protocol, when producing the
+same number of clones, requires (n + 1)l+1 noise qubits
+for decryption.
+
+As an experimental demonstration of
+
+iterated en-
+crypted cloning, we implement the encrypted cloning
+protocol iteratively with n = 2, yielding 3l+1 encrypted
+clones of qubit A, which is initially prepared in the max-
+imally entangled state |ϕ⟩ with ˜A. Since a IBM Heron
+R2 processor contains 156 qubits, up to l = 2 full iter-
+ations, requiring a total of 54 qubits and producing 27
+encrypted clones, can be realized. However, by apply-
+ing the encrypted cloning protocol to a subset of these
+27 clones, the number of encrypted clones can be further
+increased until all available qubits on the IBM Heron R2
+chip are exhausted.
+
+Table III (in Extended Data) shows the total num-
+ber of qubits involved, the number of encrypted clones,
+the entanglement fidelity Fe, the number of 2-qubit gate
+containing layers L2q and the total number of 2-qubit
+gate operations N2q for n = 2 encrypted cloning that is
+iterated l times: For example, the experiment l = 0, con-
+tains no iteration and produced 3 encrypted clones, and
+decrypted one, while the l = 1 experiment iterated once,
+i.e., it created three new clones for each clone, yielding
+a second generation of encrypted clones and decrypted
+one of them. Similarly, the l = 2 experiment created a
+third generation of in total 27 clones and decrypted one
+of them. In the experiment labeled 3‡, we exhausted the
+Heron R2 chip’s capacity of 156 qubits by creating as
+
+ered GHZ state and the initial GHZ state is measured
+using the POM.
+
+10
+
+many fourth generation encrypted clones as possible. A
+full fourth generation would have yielded 81 encrypted
+clones with a total of 162 qubits. With the capacity of
+156 qubits on the chip, we created a total of 77 encrypted
+clones of which 2 are of the third generation and 75 are
+of the fourth generation. We decrypted a clone of the
+fourth generation.
+
+We observe that, when iterating encrypted cloning
+with n = 2 on the given hardware, we have an entan-
+glement witness for up to 27 encrypted clones and that
+the entanglement fidelity stays above the noise floor for
+up to 77 encrypted clones.
+
+As an intermediary experiment, labeled l = 2∗, we
+also created 27 third generation qubits of which we then
+encrypted cloned 11 to obtain a total of 49 encrypted
+clones (16 of the third generation and 33 of the fourth
+generation). We decrypted one of the encrypted clones
+of the third generation. The entanglement fidelity drop
+from experiment 2 to experiment 2∗ demonstrates the
+deleterious effect of the increased time to decryption in
+experiment 2∗ compared to experiment 2.
+
+We can read off that in l times iterated cloning, en-
+tanglement can be witnessed, for n = 2, for up to l = 2,
+which produces 27 encrypted clones. Let us compare this
+with non-iterated cloning. In comparison, in Experiment
+1, we saw that the entanglement fidelity stays above the
+noise floor up to n = 11, while we have an entanglement
+witness only up to n = 7.
+
+We can conclude, therefore, that at least on the hard-
+ware that we used, large scale encrypted cloning is better
+performed iteratively, i.e., it is significantly more eﬀi-
+ciently performed by raising l than by raising n.
+
+In Supplementary Information, we describe a further
+investigation of iterating encrypted cloning, where we re-
+peatedly cloned each time just one of the created clones.
+Given that the noise floor of the fidelity is at 0.25, we
+there read off from the experimental results that in l
+times iterated cloning a signal can be observed for n = 2
+up to l = 5, which would produce 729 encrypted clones.
+
+Experiment 4: Operation in parallel: Feasibility
+of encrypted cloning inside multipartite circuits
+As a demonstration of the ability to create encrypted
+clones of genuine multipartite entanglement, we tested
+whether the protocol preserves the entanglement of r-
+partite GHZ state |GHZr⟩ = (|0⟩⊗r + |1⟩⊗r)/
+2. This
+family includes |+⟩ = (|0⟩ + |1⟩)/
+2 and the Bell state
+|ϕ⟩ = (|00⟩ + |11⟩)/
+2 as the cases r = 1 and r = 2,
+respectively, while r ≥ 3 corresponds to genuinely mul-
+tipartite entangled states.
+
+√
+
+√
+
+√
+
+We prepared GHZ states for r up to 15. Each of the r
+qubits is independently cloned using the n = 2 encrypted
+cloning protocol, with its own distinct set of signal and
+noise qubits. This produces a system comprising r in-
+dependent groups of three encrypted clones. After the
+encrypted cloning, in each group, one of the clones (we
+chose S1) is decrypted using all of the noise qubits in
+that group. Finally, the fidelity Fr between the recov-
+
+11
+
+Extended Data
+
+TABLE I: Measured entanglement fidelity Fe of the reconstructed state and the number of 2-qubit gate layers L2q in
+Experiment 1 using either BSM or POM to measure the fidelity, as plotted in Fig. 1. The table also lists the number
+of qubits Nqubits on the chip used for each case.
+
+Encrypted cloning
+parameter n
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+
+Nqubits
+6
+8
+10
+12
+14
+16
+18
+20
+22
+24
+26
+28
+30
+32
+
+L2q
+BSM
+21
+33
+44
+52
+60
+64
+95
+97
+105
+115
+130
+143
+158
+152
+
+Fidelity Fe
+BSM
+0.823 ± 0.004
+0.839 ± 0.004
+0.693 ± 0.005
+0.679 ± 0.005
+0.558 ± 0.005
+0.548 ± 0.005
+0.359 ± 0.005
+0.405 ± 0.005
+0.278 ± 0.004
+0.327 ± 0.005
+0.278 ± 0.004
+0.289 ± 0.005
+0.263 ± 0.004
+0.270 ± 0.004
+
+L2q
+POM
+18
+25
+37
+40
+57
+60
+78
+96
+107
+112
+101
+123
+155
+134
+
+Fidelity Fe
+POM
+0.875 ± 0.008
+0.810 ± 0.008
+0.785 ± 0.009
+0.730 ± 0.009
+0.648 ± 0.009
+0.551 ± 0.009
+0.399 ± 0.010
+0.320 ± 0.010
+0.351 ± 0.010
+0.278 ± 0.010
+0.316 ± 0.010
+0.295 ± 0.009
+0.250 ± 0.009
+0.259 ± 0.009
+
+TABLE II: Measured CHSH parameter S between the ancillary qubit ˜A and the decrypted encrypted clone in
+Experiment 2, as plotted in Fig. 2b.
+
+n
+2
+3
+4
+5
+6
+
+Scenario 2-1
+2.147 ± 0.017
+1.695 ± 0.018
+1.474 ± 0.019
+0.703 ± 0.020
+0.432 ± 0.020
+
+CHSH parameter S
+Scenario 2-2
+2.377 ± 0.016
+2.164 ± 0.017
+1.929 ± 0.018
+1.449 ± 0.019
+1.345 ± 0.019
+
+Scenario 2-3
+2.331 ± 0.016
+2.087 ± 0.017
+1.901 ± 0.018
+1.293 ± 0.019
+1.200 ± 0.019
+
+TABLE III: Measured entanglement fidelities Fe of the channels obtained from l iterations of the n = 2 encrypted
+cloning protocol and subsequent decryption in Experiment 3. The table also reports the number of qubits on the
+chip used in each case (Nqubits), the number of two-qubit gate layers (L2q), and the number of two-qubit gates
+(N2q). In the case l = 2∗, we created 16 third generation clones (l = 2) plus 33 fourth generation clones, after which
+we decrypted a third generation clone. The result shows the deterioration of the fidelity in decrypting a third
+generation clone that is due to the extra wait time due to the creation of fourth generation clones. In the case
+l = 3‡, we generated fourth generation clones until the processor was filled and then decrypted one of these fourth
+generation encrypted clones.
+
+l
+
+0
+1
+2
+2∗
+3‡
+
+Nqubits
+
+6
+18
+54
+98
+154
+
+Number of
+clones
+3
+9
+27
+49
+77
+
+L2q
+
+18
+38
+63
+90
+137
+
+N2q
+
+21
+81
+299
+655
+1422
+
+Fidelity Fe
+0.875 ± 0.008
+0.723 ± 0.009
+0.569 ± 0.009
+0.355 ± 0.009
+0.286 ± 0.009
+
+12
+
+TABLE IV: Measured fidelity Fr of the reconstructed state with the original GHZ state in Experiment 4, as plotted
+in Fig. 3. The table also reports the number of qubits on the chip used in each case (Nqubits), the number of
+two-qubit gate layers (L2q), and the number of two-qubit gates (N2q).
+
+Number of GHZ state qubits r
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+
+Nqubits
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+55
+60
+65
+70
+75
+
+L2q
+19
+20
+25
+27
+36
+42
+49
+54
+69
+63
+73
+81
+87
+95
+116
+
+N2q
+21
+41
+71
+98
+128
+163
+198
+225
+248
+312
+350
+341
+368
+481
+519
+
+Fidelity Fr
+0.928 ± 0.009
+0.786 ± 0.009
+0.709 ± 0.008
+0.575 ± 0.008
+0.451 ± 0.008
+0.353 ± 0.007
+0.322 ± 0.007
+0.258 ± 0.006
+0.193 ± 0.006
+0.170 ± 0.006
+0.134 ± 0.005
+0.123 ± 0.005
+0.065 ± 0.004
+0.049 ± 0.004
+0.039 ± 0.004
+
+(a)
+
+(b) EM
+
+FIG. 4: Entanglement fidelities Fe of Experiment 1 under the influence of hardware variability and error mitigation
+methods (a) Comparison between multiple transpilation runs on ibm_kingston and ibm_aachen by averaging over 3
+unique transpilation runs. Error bars are the standard deviation over the 3 runs. (b) Comparison between
+Experiment 1 using no error mitigation, dynamical decoupling and Pauli twirling in combination with dynamical
+decoupling.
+
+23456789101112131415Encrypted cloning parameter n0.00.20.40.60.81.0Entanglement fidelity Feibm_aachenibm_kingstonNoise floorEntanglement witness threshold23456789101112131415Encrypted cloning parameter n0.00.20.40.60.81.0Entanglement fidelity Feno EMDDDD+PTNoise floorEntanglement witness thresholdA
+
+S1
+
+S2
+
+Sm−2
+
+Sm−1
+
+Sm
+
+Sm+1
+
+Sm+2
+
+S2m−2
+
+S2m−1
+
+S2m
+
+. . .
+
+. . .
+
+)
+
+(
+
+π
+2
+
+Rz
+
+. . .
+
+. . .
+
+13
+
+)
+
+when n = 2m with
+
+FIG. 5: Gate decomposition of first exponential factor of Eq. (2), i.e., e
+
+m ∈ Z>0. When n = 2m + 1, the encrypted cloning operation requires two additional CNOT gates applied to S2m+1
+
+and S2m. The second exponential factor, e
+i=1 σ(Si )
+
+4 σ(A)
+
+(⊗
+
+−i π
+
+⊗
+
+n
+
+1
+
+1
+
+e
+
+, can be implemented in the similar way, since
+⊗
+
+(⊗
+
+)
+
+n
+
+−i π
+
+4 σ(A)
+
+3
+
+i=1 σ(Si )
+
+3
+
+H ⊗(n+1).
+
+(⊗
+
+)
+
+n
+
+i=1 σ(Si )
+
+1
+
+4 σ(A)
+
+1
+
+⊗
+
+−i π
+)
+
+= H ⊗(n+1)e
+
+−i π
+
+4 σ(A)
+
+3
+
+(⊗
+
+⊗
+
+n
+
+i=1 σ(Si )
+
+3
+
+S1
+
+N1
+
+N2
+
+N3
+
+N4
+
+Nn
+
+Z
+
+. . .
+
+. . .
+
+. . .
+
+. . .
+
+. . .
+
+. . .
+
+. . .
+
+Z
+
+Z
+
+S
+
+S
+
+Z
+
+.
+
+FIG. 6: Gate decomposition of (V ⊗ IN2···Nn )U (n)
+(
+
+untiary operator V are given in Eqs. (3) and (4), respectively. Here, S denotes the phase gate, realized as
+
+dec (V ⊗ IN2···Nn )†, where the decryption operation U (n)
+
+dec (for S1) and
+
+S = Rz
+
+up to a global phase.
+
+)
+
+π
+2
+
+Supplementary Information
+
+Simulation of experiments
+While Experiments 1–4 were performed on the IBM
+Heron R2 processor ibm_kingston, we also simulated all
+experiments that have a total qubit number of ≤ 27 us-
+ing Qiskit-Aer with the statevector method, in the ab-
+sence of noise. In each case, we confirmed that encrypted
+cloning followed by decryption always yielded fidelity and
+entanglement fidelity values of 1. Simulating the Bell
+state experiment also yielded the theoretically expected
+2. The simulations using Qiskit-
+CHSH parameter of 2
+Aer, therefore, confirmed the theoretical result that the
+decryption of an encrypted clone perfectly recovers the
+quantum state that was encrypted cloned.
+
+√
+
+Entanglement witness
+An entanglement witness [31] is an observable W that
+allows the detection of entanglement in a quantum state,
+satisfying Tr(W ρsep) ≥ 0 for all separable states ρsep,
+while for a given entangled state ρ, Tr(W ρ) < 0.
+
+In the case of the r-qubit GHZ state, a commonly used
+
+entanglement witness takes the form
+
+WGHZr =
+
+1
+2
+
+I − |GHZr⟩⟨GHZr|,
+
+(16)
+
+where I denotes the identity operator on the 2r-
+dimensional Hilbert space. This form of witness detects
+entanglement if Tr(WGHZr ρ) < 0.
+
+The expectation value of the witness can be ex-
+pressed in terms of the fidelity Fr = ⟨GHZr|ρ|GHZr⟩
+− Fr. Consequently, the condition
+as Tr(WGHZr ρ) = 1
+2
+for detecting entanglement becomes Fr > 1
+2 . In experi-
+mental contexts, this relation provides a practical crite-
+rion for detecting GHZ-type multipartite entanglement
+by measuring the fidelity of the prepared state with re-
+spect to the ideal GHZ state.
+
+Comparison with imperfect cloning
+Theoretically, the encrypted cloning protocol enables per-
+fect recovery of the original quantum state from any clone
+In practice, however, the fidelity of
+after decryption.
+the recovered state is degraded by experimental imper-
+fections arising from the finite coherence time and gate
+infidelity of current quantum hardware. Despite these
+limitations, our experimental results demonstrate a clear
+advantage of the encrypted cloning protocol over the uni-
+versal quantum cloning machine (UQCM) [3], which rep-
+resents the theoretical limit of imperfect cloning.
+
+The 1 → M UQCM [4, 6] is defined as
+)
+
+(
+
+T (ρ) :=
+
+2
+M + 1
+
+Π(M )
+sym
+
+ρ ⊗ I⊗(M −1)
+
+Π(M )
+sym ,
+
+(17)
+
+where I denotes the identity operator on a single-qubit
+system, and Π(M )
+sym represents the projection operator onto
+the symmetric subspace of the M -qubit system.
+
+Define a channel Λ by Λ := Tr2,··· ,M ◦ T , which is
+obtained by tracing out M − 1 qubits after applying T .
+
+14
+
+It is known that the resulting channel is the depolarizing
+channel
+
+Λ(ρ) = ηρ + (1 − η)
+
+I
+
+2
+
+(18)
+
+with η = M +2
+
+3M (see, e.g., [6]).
+
+Let us first calculate the entanglement fidelity of Λ.
+A + |1⟩ ˜A
+A), the correspond-
+
+For |ϕ⟩ ˜AA = 1√
+ing density operator, ϕ ˜AA := |ϕ⟩ ⟨ϕ| ˜AA is expanded as
+
+(|0⟩ ˜A
+
+|0⟩
+
+|1⟩
+
+2
+
+ϕ ˜AA =
+
+1
+4
+
+(I ⊗ I + σ1 ⊗ σ1 − σ2 ⊗ σ2 + σ3 ⊗ σ1) ,
+
+(19)
+
+implying that
+
+I ˜A
+
+=
+
+⊗ Λ(ϕ ˜AA)
+1
+4
+
+(I ⊗ I + ησ1 ⊗ σ1 − ησ2 ⊗ σ2 + ησ3 ⊗ σ1) .
+
+(20)
+
+Therefore, the entanglement fidelity of Λ is given by
+
+Fe (ϕ, I ˜A
+
+⊗ Λ(ϕ ˜AA)) =
+
+1
+4
+
+(1 + 3η) =
+
+M + 1
+2M
+
+.
+
+(21)
+
+On the other hand, since Λ†(σi) = ησi holds for the dual
+channel Λ†, the CHSH parameter for I ˜A
+⊗ Λ(ϕ ˜AA) is
+given by
+
+√
+
+S = η2
+
+2 =
+
+√
+2
+
+2,
+
+M + 2
+3M
+
+√
+
+(22)
+
+where we have used the fact S = 2
+
+2 for ϕ ˜AA.
+
+the CHSH parameter
+
+From the above calculations, for M = 3, 5, 7, the en-
+tanglement fidelity is given by Fe = 0.667, 0.6, 0.571,
+while
+is given by S =
+1.57135, 1.31993, 1.21218. We compare these theoretical
+values for UQCM with experimental results in Figs. 1 and
+2b for encrypted cloning with n = 2, 3, 4, 5, 6, yielding
+M = 3, 5, 7 clones, since A also serves as an encrypted
+clone when n is even. The observed entanglement fi-
+delity of the encrypted cloning protocol in Experiment 1
+exceeds the maximal theoretical value achievable by the
+UQCM for n = 2, 3, 4, 5. Similarly, the experimentally
+observed CHSH parameter for encrypted cloning, at least
+in the Scenario (2-3), is higher than the theoretical val-
+ues for the UQCM for n = 2, 3, 4, 5, 6. Notably, the
+encrypted cloning protocol experimentally violates the
+CHSH inequality, whereas the UQCM cannot do so even
+under ideal, error-free conditions. This finding highlights
+a fundamental distinction between the two approaches:
+while the UQCM inevitably degrades quantum correla-
+tions and cannot reproduce nonlocal quantum statistics,
+the encrypted cloning protocol fully preserves the un-
+derlying entanglement structure through encryption and
+subsequent decryption.
+
+We conclude with a comparison to the results of [21],
+which reported on an experimental implementation of
+the UQCM protocol, i.e., of imperfect cloning, for a Bell
+state in a photonic system, with two imperfect clones
+
+produced of each half of the Bell pair. There, the theoret-
+ical fidelity upper bounded by 0.583 and the experimen-
+tally achieved fidelity of imperfectly cloned Bell state was
+≈ 0.569±0.007. In comparison, in our Experiment 4 with
+r = 2, we start with a Bell state and create 3 encrypted
+clones of each half of the Bell pair. After decrypting one
+of each triplet of encrypted clones, we measure for the re-
+sulting pair decrypted clones the fidelity to the original
+Bell pair. While the theoretical fidelity is of course 1, the
+experimentally achieved fidelity in our experiments was
+0.786 ± 0.009, which is well above even the theoretical
+upper bound of the UQCM protocol.
+
+Relativistic Considerations for Delayed-Choice
+Experiments
+Experiment 2 introduces a novel framework for a delayed-
+choice experiment. After preparing the entangled pair
+(A, ˜A) and creating n encrypted clones of qubit A, the
+qubit ˜A is no longer maximally entangled with any indi-
+vidual qubit nor with A itself.
+
+Instead, ˜A possesses delocalized entanglement across
+the entire system of clones and the decryption key. The
+subsequent measurement of ˜A then nonlocally updates
+the global state of the system of encrypted clones and
+the key, without a locally observable effect.
+
+By choosing and then decrypting an encrypted clone
+Sj, the entanglement of ˜A becomes re-localized in the
+sense that the chosen Sj becomes the Bell partner qubit
+of ˜A, whose state was collapsed by the measurement of ˜A.
+This demonstrates a novel kind of control over where and
+when the consequences of a local measurement within a
+spatially spread-out entangled system appear.
+
+Alternatively, if a clone Sj is decrypted and measured
+first, that measurement then collapses the state of the
+distant ancilla ˜A. This reversed measurement order-
+ing highlights that, following encryption, we can choose
+which clone to decrypt and by decrypting it we ensure
+that exclusively its measurement will then non-locally
+collapse the state of ˜A. This demonstrates a new way to
+effectively re-localize entanglement among multiple po-
+tential endpoints.
+
+Our experiment in the Scenarios 2-1, 2-2 and 2-3
+proved that pre-existing Bell state entanglement between
+qubits ˜A and A is indeed preserved through the de-
+localizing and then re-localizing encryption-decryption
+channel and, therefore, is accessible in the controllable,
+delayed-choice manner discussed above.
+
+In particular, by measuring correlations in these
+delayed-choice setups, we tested the violation of the
+CHSH inequality between a decrypted clone and the an-
+cilla ˜A, in order to confirm the recovery of genuine quan-
+tumness in the decryption process.
+
+In principle, in future experiments with a suﬀiciently
+distant ancilla ˜A, the measurements on ˜A and an en-
+crypted clone could be performed spacelike separated, so
+that the very same scenario is then a case of 2-1, 2-2 or
+2-3, dependent on the observer’s state of motion.
+
+This scenario then generalizes a well-known phe-
+
+15
+
+nomenon of quantum entanglement: when measurements
+of two qubits A and ˜A in a Bell state are performed in
+a spacelike separated way, then the observer’s state of
+motion determines whether the measurement outcome
+of either A or ˜A is predetermined. This is because for
+an observer where the measurement of A occurs before
+˜A, A’s measurement determines ˜A’s outcome, making it
+predetermined due to state collapse, or vice versa for an
+observer in whose frame ˜A is measured first.
+
+The key novelty now is that, in addition to choosing an
+observer, encrypted cloning introduces a second choice:
+which encrypted clone of A to decrypt. Therefore, bring-
+ing encrypted cloning into this scenario allows one to
+choose which is the partner qubit to ˜A that ends up in a
+Bell state.
+
+Crucially, this choice can also be spacelike separated
+from the measurement of ˜A, leading to a delayed choice
+phenomenon. For an observer who measures ˜A first, the
+choice of which encrypted clone to decrypt (and thus
+which clone is the partner to ˜A) may not have been made
+yet, i.e., can be made after ˜A is measured, thereby mak-
+ing a delayed choice of which specific clone will be the
+one whose state was collapsed by the prior measurement
+of ˜A.
+
+Vice versa, we can consider observers for whom the
+choice of which encrypted clone, Sj, is being decrypted
+and measured occurs before the measurement of ˜A. For
+these observers, the choice of which Sj to decrypt deter-
+mines which signal qubit has the power to collapse the
+state of ˜A when measured.
+
+Introducing encrypted cloning, therefore, offers an in-
+triguing new perspective on the interplay between causal-
+ity and quantum non-locality, showing that, in the above
+sense, the distribution of entanglement over subsys-
+tems can be subject to an observer-dependent and also
+delayed-choice-dependent selection process.
+
+Confirmation of the mixedness of encrypted clone
+In order to verify that after encryption, the clones and
+noise qubits are in a fully mixed state and no informa-
+tion about the entanglement with ˜A can be gathered, we
+measure the correlations between ˜A and all other qubits
+involved in the cloning protocol. To this end, we experi-
+mentally determine the full two-point correlation matrix
+T ∈ R3×3 with
+
+Tij = Tr[ρexp(σi ⊗ σj)], i, j = 1, 2, 3 ,
+
+(23)
+
+being a measurement of the expectation value on ˜A and
+A, Sk or Nk. Figure 7 show the correlation strength
+|Tij| for encrypted cloning with n = 2, 4 before and af-
+ter decryption on the IBM device ibm_kingston, using
+the Estimator primitive from Qiskit IBM Runtime, with
+default settings to measure all Tij.
+
+The results are consistent with the theoretical predic-
+tion that the clones and noise qubits are not individ-
+ually correlated to ˜A.
+In addition, after decoding the
+correlation strength with ˜A is mostly located on the de-
+coded qubit and diagonal of the correlation matrix T .
+
+TABLE V: Measured entanglement fidelities Fe of n = 2
+encrypted cloning in Experiment 1 using POM, with
+measurements taken on different days.
+
+Date (YYYY-MM-DD) Fidelity Fe
+0.824 ± 0.008
+0.875 ± 0.008
+0.810 ± 0.009
+0.844 ± 0.009
+0.813 ± 0.008
+
+2025-11-18
+2025-11-20
+2025-12-06
+2026-01-16
+2026-01-18
+
+With growing system size, hardware errors leak correla-
+tion strength to other qubits and decrease the fidelity of
+the reconstructed state.
+
+Hardware variability
+We analyzed how different transpilation runs and quan-
+tum chips impact the entanglement fidelity in Exper-
+iment 1.
+In Fig. 4, we executed Experiment 1 on
+ibm_aachen and ibm_kingston with identical transpiler
+settings, with only the transpiler seed being different over
+a total of 3 runs. It can be observed that the fidelity de-
+pends strongly on the physical execution of the quantum
+circuit, with the experiments on ibm_aachen producing
+a higher entanglement fidelity for most executions.
+
+Also, to account for any variability in the performance
+of the quantum hardware over time, experimental trials
+were conducted across five distinct sessions spanning sev-
+eral weeks on ibm_kingston. The measured fidelity Fe
+of the n = 2 case in Experiment 1 exhibited fluctuations
+reflecting the impact of daily recalibration cycles and
+varying transpilation on the device. The mean fidelity
+over five runs is Fe = 0.833 ± 0.027 (see also Table V).
+This uncertainty interval represents the standard devia-
+tion across sessions, providing a conservative estimate of
+the system’s performance stability under recalibration of
+the quantum hardware.
+
+Error mitigation and suppression
+We performed Experiments 1 and 3 using the following
+two quantum error suppression techniques:
+
+• Dynamical Decoupling (DD) mitigates qubit de-
+coherence and crosstalk by inserting sequences of
+gates (that cumulatively act as the logical identity)
+
+16
+
+during idle periods of qubit evolution (see, e.g, [32]
+for the theory behind DD). DD is particularly use-
+ful when certain qubits have long idle times dur-
+ing the circuit execution. Dynamical decoupling is
+implemented within the Sampler primitive of the
+Qiskit IBM Runtime. The pulse sequence applied
+is the XY 4-sequence.
+
+• Pauli Twirling (PT) transforms arbitrary noise
+channels into stochastic, Pauli noise channels by
+sandwiching layers of two-qubit gates by Pauli
+gates that are sampled at random, such that the
+logical operation of these layers is preserved. The
+goal of PT is to mitigate coherent noise. This is de-
+sirable because coherent noise grows quadratically
+with the depth of a quantum circuit, in contrast
+to Pauli noise which only grows linearly. Like DD,
+PT is implemented within the Sampler primitive
+in Qiskit IBM Runtime. We used the default Sam-
+pler settings which turns on measurement and gate
+twirling using 10000 shots, 313 shots per random-
+ization and 32 randomizations.
+
+More details on the theory and implementation of each
+of these techniques in Qiskit IBM Runtime may be
+found in [33].
+
+Applied to the standard encrypted cloning (Experi-
+ment 1) and the iterated encrypted cloning filling the
+maximum ibm_kingston chip (l = 3‡ in Experiment 3),
+we found that they do not improve the performance of
+our experiments significantly, see Figs. 4 and 8.
+
+Maximally iterated cloning
+We here report the experimental result of an extension of
+Experiment 3, i.e., iterating encrypted cloning: In prac-
+tice, iterated cloning is limited by both noise and chip
+size. In order to explore the maximal experimental re-
+peatability of encrypted cloning irrespective of chip size,
+we repeatedly cloned in each iteration only one of the
+created clones. Table VI shows the observed fidelities.
+We read off that the result is above the noise floor (i.e.,
+Fe > 1/4) for n = 2 up to l = 5. This means that
+if, with the same performance, the chip had suﬀiciently
+many qubits, then 729 encrypted clones could be pro-
+duced that are above the noise floor. For more details,
+see also Figs. 9, 10, and 11.
+
+17
+
+(a)
+
+(b)
+
+(c)
+
+(d)
+
+FIG. 7: Correlation strength of the two-point correlator Tij between ˜A and all other qubits. Each block is separated
+into a left sub-block: qubit A, top row: signal qubits Si, bottom row: noise qubits Ni. (a),(b) Correlation strength
+after encryption for encrypted cloning with n = 2, 4. (c),(d): Correlation strength after encryption and subsequent
+decryption for encrypted cloning with n = 2, 4.
+
+XYZσᵢXYZσⱼ0.000.250.500.76|ⱼσᵢσⱼ⟨|XYZσᵢXYZσⱼ0.000.210.420.63|ⱼσᵢσⱼ⟨|XYZσᵢXYZσⱼ0.000.250.500.76|ⱼσᵢσⱼ⟨|XYZσᵢXYZσⱼ0.000.210.420.63|ⱼσᵢσⱼ⟨|18
+
+FIG. 8: Fidelity of iterated encrypted cloning in the
+case l = 3‡ using no error mitigation (no EM),
+dynamical decoupling (DD) and Pauli twirling in
+combination with dynamical decoupling (DD + PT).
+Values are averaged over 3 different transpilation runs.
+Errors are the standard deviation over the 3 runs.
+
+TABLE VI: Measured entanglement fidelities Fe of the channel obtained via l iterations of the n = 2, 4 encrypted
+cloning and subsequent decryption of a signal qubit when only a single signal qubit is re-cloned. The number of
+qubits required in decryption grows linearly with l, while the number of virtual clones Nvirt.clones = (n + 1)(l+1)
+grows exponentially. Here, “virtual clones” refers to the encrypted clones that would be produced if the encrypted
+cloning protocol were applied to all clones in every iteration. Given that the threshold for an entanglement witness
+is a fidelity of 1/2, the table shows that with the hardware we used, it is possible to create Nvirt.clones = 27
+encrypted clones so that each encrypted clone, if decrypted, possesses provable entanglement with the ancilla ˜A.
+The table also reports the number of qubits Nqubits on the chip used for each case, the number of two-qubit gate
+layers L2q, and the number of two-qubit gates N2q.
+
+Iteration l
+0
+1
+2
+3
+4
+5
+6
+
+Nqubits
+6
+10
+14
+18
+22
+26
+30
+
+Encrypted cloning n = 2
+L2q
+18
+36
+56
+79
+110
+126
+160
+
+Nvirt.clones
+3
+9
+27
+81
+243
+729
+2187
+
+N2q
+21
+44
+79
+121
+167
+197
+226
+
+Nqubits
+10
+18
+26
+34
+
+Fe
+0.875 ± 0.008
+0.723 ± 0.009
+0.613 ± 0.009
+0.481 ± 0.010
+0.310 ± 0.009
+0.299 ± 0.009
+0.254 ± 0.009
+
+Encrypted cloning n = 4
+L2q
+44
+83
+145
+176
+
+Nvirt.clones
+5
+25
+125
+625
+
+N2q
+57
+142
+222
+310
+
+Fe
+0.693 ± 0.009
+0.450 ± 0.010
+0.291 ± 0.009
+0.255 ± 0.009
+
+no EMDDDD+PT0.200.220.240.260.280.300.32Fidelity FeNoise floor19
+
+FIG. 9: In Experiment 3, a logarithmic plot of the
+number of encrypted clones created by iterated
+encrypted cloning versus the circuit depth. The number
+of physically created encrypted clones grows
+sub-exponentially with the circuit depth as the chip fills
+up quickly and the compilations become constrained
+and less eﬀicient. When encrypted cloning only one
+clone per iteration (the others remaining ‘virtual’), the
+chip fills up more slowly and the exponential increase
+persists longer.
+
+FIG. 10: In Experiment 3, the number of physical, i.e.,
+of actually produced encrypted clones and the number
+of ‘virtual’ encrypted clones, i.e., the number of
+encrypted clones producible if the chip contained more
+qubits, versus the infidelity of the decryption. In the
+latter case, in each iteration step, we create clones of
+only one clone. This leaves more space on the chip,
+allowing compilations with lower circuit depths and, as
+shown in the plot, with correspondingly lower
+infidelities.
+
+20406080100120140160# of 2-qubit gate layers L2q101102103Number of clonesVirtual clonesPhysical clones0.20.30.40.50.60.7Infidelity 1Fe101102103Number of clonesVirtual clonesPhysical clones20
+
+FIG. 11: In Experiments 1 and 3, a plot of the observed
+entanglement fidelities versus the two-qubit layer depth.
+The plots “EC_POM” and “EC_BSM” show the
+results for Experiment 1 with POM and BSM,
+respectively. The plots “virtual cloning” and “physical
+cloning” show the results for Experiment 3; in the
+former, we repeatedly cloned each time just one of the
+created clones; in the latter, all the clones of each
+generation are encrypted cloned in each iteration. The
+close similarity of these plots shows that the
+degradation of the fidelity of the decrypted clone is
+governed by the circuit depth.
+
+20406080100120140160# of 2-qubit gate layers L2q0.00.20.40.60.81.0Fidelity FeEC_POMEC_BSMvirtual cloningphysical cloning

@@ -22,6 +22,7 @@ abstract: >-
   conducted in extended collaboration with Anthropic Claude model instances,
   as recorded throughout the repository's specs and commit history.
 license: MIT
+doi: 10.5281/zenodo.21340726
 repository-code: "https://github.com/fsgeek/quantumos"
 version: 0.1.0
 date-released: 2026-07-13

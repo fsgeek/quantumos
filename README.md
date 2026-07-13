@@ -1,5 +1,7 @@
 # QuantumOS
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21340726.svg)](https://doi.org/10.5281/zenodo.21340726)
+
 QuantumOS is a Python discrete-event simulator for exploring operating-system
 resource management in a Photonic-style, entanglement-first quantum computer.
 

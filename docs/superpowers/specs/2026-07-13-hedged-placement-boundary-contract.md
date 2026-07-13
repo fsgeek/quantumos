@@ -2,8 +2,9 @@
 
 **Date:** 2026-07-13
 
-**Status:** DRAFT FOR REVIEW -- boundary-scout synthesis; no numerical
-preregistration or deciding run is authorized by this document.
+**Status:** APPROVED AS CONCEPTUAL BOUNDARY -- human review, 2026-07-13. This is
+an inference boundary, not a clause-by-clause implementation specification; no
+numerical preregistration or deciding run is authorized by this document.
 
 **Governs:** the finite, exogenous Stage 1 comparison of `single`,
 `plural/prebound`, and `plural/late-bound` defined by the hedged-placement

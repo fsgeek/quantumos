@@ -205,7 +205,7 @@ a null effect.
 - Quality null after activation: no demonstrated value in that quality model
   and envelope; it is not a hardware-universal negative.
 - Both channels null after activation: the mechanism is not decision-earned in
-  the tested Stage 1 envelope.
+  the tested Stage 1 site-choice envelope.
 - A changed decision supported entirely by cheaper existing state is
   **REPRESENTATION-CHEAP**; it does not earn new ontology.
 - New persistent state is **FIELD-EARNED** only when a decision requires it and
@@ -214,6 +214,11 @@ a null effect.
 A positive Stage 1 result licenses a minimal mechanism preregistration, not a
 full `qsim` integration. A negative result may preserve the vocabulary while
 rejecting the modeled mechanism at that regime.
+
+Stage 1 fixes exercise-request timing exogenously and therefore adjudicates
+only **where** to exercise. The option to hold an intact claim versus exercise
+now is excluded by construction and remains undecided under every Stage 1
+outcome.
 
 ## 10. Parallel scout assignments
 
@@ -264,6 +269,11 @@ Each scout returns:
 The coordinating agent synthesizes by tracing assumptions and equations, not
 by majority vote. It must preserve disagreements that arise from genuinely
 different model families.
+
+Synthesis owns the cross-channel interaction: it must condition quality option
+value on the survival/path regime and identify where survivor scarcity or flat
+quality suppresses the usable value of the other channel. Scouts B and C each
+supply the conditional quantities needed from their side of that interaction.
 
 The scout pass is converged when:
 

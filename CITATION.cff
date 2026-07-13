@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software or the research notes it contains, please cite it as below."
+type: software
+title: "QuantumOS: a sensitivity-instrument simulator for constraint-first quantum operating system design"
+authors:
+  - family-names: Mason
+    given-names: Tony
+    email: fsgeek@cs.ubc.ca
+    affiliation: "University of British Columbia"
+abstract: >-
+  A Python discrete-event simulator for exploring operating-system resource
+  management in an entanglement-first quantum computer. The simulator is a
+  sensitivity instrument, not a point predictor: it tests whether proposed OS
+  abstractions (entanglement leases, syndrome rounds, decoder capacity, switch
+  paths, calibration epochs) deserve to exist, under the admission rule that no
+  quantity enters the object model without naming the decision that reads it.
+  The repository includes the simulator, its test suite, pre-registered
+  experiment batteries with OpenTimestamps-anchored falsification records, and
+  the research notes the instrument forced. The work is produced through a
+  documented human-AI collaborative method: research direction, vetoes, and
+  claims discipline by the author; exploration, implementation, and analysis
+  conducted in extended collaboration with Anthropic Claude model instances,
+  as recorded throughout the repository's specs and commit history.
+license: MIT
+repository-code: "https://github.com/fsgeek/quantumos"
+version: 0.1.0
+date-released: 2026-07-13
+keywords:
+  - quantum computing
+  - operating systems
+  - discrete-event simulation
+  - resource management
+  - entanglement
+  - research software

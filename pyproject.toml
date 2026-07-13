@@ -1,7 +1,7 @@
 [project]
 name = "quantumos"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sensitivity-instrument DES simulator for constraint-first quantum OS design"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

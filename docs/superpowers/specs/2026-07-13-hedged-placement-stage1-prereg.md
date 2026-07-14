@@ -2,10 +2,10 @@
 
 **Date:** 2026-07-13
 
-**Status:** DRAFT FOR HUMAN REVIEW. No model implementation or deciding run has
-occurred. This document must be approved, committed, and OTS-stamped before the
-deciding model is implemented. Build verification may exercise only the synthetic
-controls named below.
+**Status:** PRE-REGISTERED -- human-approved 2026-07-14. No model implementation or
+deciding run has occurred. This approved revision must be committed and OTS-stamped
+before the deciding model is implemented. Build verification may exercise only the
+synthetic controls named below.
 
 **Boundary:** governed by the approved hedged-placement conceptual-boundary
 contract. This preregistration deliberately instantiates only its minimum deciding

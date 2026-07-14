@@ -3,7 +3,7 @@
 **Date:** 2026-07-14
 **Status:** NAME ACCEPTED (Tony, in-session veto passed 2026-07-14). This discharges the
 naming deferral of `2026-07-05-perishable-good-lifecycle-parked.md`. All other 07-05
-next-instance prohibitions remain in force (see §6).
+next-instance prohibitions remain in force (see §7).
 **Inputs:** (1) the parked lifecycle note (2026-07-05) — the four faces and the three
 registers; (2) the Chertov naming test (`2026-07-09-chertov-method-transfer.md` §4);
 (3) the HSD maintenance-economics note (`2026-07-10-hsd-transfer-note.md`);
@@ -131,7 +131,54 @@ The HSD maintenance economics rides along unchanged: 76% of fabric actuations be
 maintenance is the refrigeration bill — a cold chain runs its compressors whether or not
 the shelf is full.
 
-## 6. What this note does not do
+## 6. Addendum (same day): the one-use capability — interface name, not object name
+
+Tony's framing, in-session 2026-07-14: what Yamaguchi found is beautifully expressed by
+the 1970s systems term **capability** — specifically a **one-use capability**.
+
+**Reconciliation with the 07-13 rejection (which stands):** the taxonomy note rejected
+*capability/token* as a name for the **claim**, because the claim is physical, relational,
+and decaying, while OS capabilities are classical and copyable. Both are right at their
+own level. The term attaches to the **interface**: the composite {valid warrant + intact
+claim + gate admission} presents exactly one-use-capability semantics to everything above
+it. The claim is the *backing store* of that capability, not the capability itself — the
+same relation as file descriptor to inode, or as a classical capability to the kernel
+c-list that implements it. Nobody calls the kernel table a capability; nobody should call
+the key bundle one. The name lives at the interface; the anatomy (carrier / claim /
+warrant / exercise gate, 07-13, still standing for veto) lives underneath.
+
+**Why the term is load-bearing rather than decorative:**
+
+1. **It reframes no-cloning from a storage constraint to an authorization primitive.**
+   Yamaguchi shows quantum data is copyable after all (encrypted, at will, no dilution);
+   what physics irreducibly provides is not uncopyable *data* but the universe's only
+   **native linear capability** — use-exactly-once, enforced by dynamics rather than by
+   a reference monitor.
+2. **Classical linearity is always mediated linearity.** Bits copy freely, so every
+   classical single-use object (single-use tokens, exclusive transfer in ocap systems,
+   money — the double-spending problem) requires a trusted mediator to police
+   non-duplication. Physics provides the at-most-once half natively — but only
+   **after** exercise (post-action fencing; taxonomy 2.2). Attempt serialization
+   remains classical: the exercise gate. The split is complementary — classical
+   mediation before the linearization point, physics after it.
+3. **The 1970s produced both halves** *(shelf pointers, unverified until citation
+   pass)*: capabilities (Dennis & Van Horn 1966; Hydra; Lampson's protection matrix)
+   and Wiesner's conjugate coding / quantum money (manuscript circa 1970, published
+   1983) — a physics-enforced unforgeable token. The two threads meet here: quantum
+   money was the first proposed use of quantum information, and it was a capability.
+4. **Cold-chain convergence — the bill of lading.** Logistics has run one-use
+   capabilities for centuries: a negotiable bill of lading is a document of title,
+   surrendered against delivery — one use, then spent — policed by law because paper
+   copies. §5's "the waybill becomes the cargo" sharpens: **the waybill was always a
+   one-use capability made of paper; the claim is one made of physics, and it polices
+   half of itself.**
+
+**Rhetorical consequence for the paper:** this is the bridge for the classical-OS
+reader. "You already know this object — it is a capability; your kernels have been
+faking its linearity with mediation for fifty years, and physics finally implements it
+natively (half of it)."
+
+## 7. What this note does not do
 
 - Does not separate the durations, does not model the backlog coupling, does not rebuild
   deadline semantics (07-05 instructions remain in force; Simmons Q1–Q3 still pending).

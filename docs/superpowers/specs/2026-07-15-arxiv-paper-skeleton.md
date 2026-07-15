@@ -15,9 +15,11 @@ capability bridge); 2026-07-13-state-taxonomy-authority-semantics.md;
 (maintenance economics + framing language); docs/quantum_os.md (the pre-instrument
 document this paper absorbs and supersedes); the six tales + decode record (now published:
 wamason.com/ayllu/pass-the-glass-before-it-goes-dark/records/ — citable URL).
-**Two-paper strategy:** this is the RELAXED LONG version for arXiv. The HotOS
-distillation (deadline Jan 2027) derives from it later: lettuce opening + king's
-epigraph only.
+**Two-paper strategy (order INVERTED by the 2026-07-15 review disposition):** the
+narrow technical core ("Carrier, Claim, and Gate" ≈ the HotOS distillation, deadline
+Jan 2027) is proven first, sprint-gated; this long arXiv position version grows from
+its evidence. The narrative ruling stands: the HotOS cut is the lettuce opening +
+the king's epigraph only.
 
 ---
 
@@ -30,10 +32,11 @@ Have to Date Doses"* (the best sentence, but as a title it hides the subject —
 as §2's close); *"Entanglement Is a Perishable Good"* (true, pre-Yamaguchi — the paper's
 sharpest content is that the perishability MIGRATES; the static claim undersells it).
 
-**0.2 Scope: general argument, Photonic as the worked instance.** The arXiv version
+**0.2 Scope: general argument, Photonic as one deployment context.** The arXiv version
 argues the constraint-first case for distributed photonic/spin–photon architectures
-generally, with Photonic's T-centre stack as the concrete instance carrying the numbers
-(0.41 ms / 112 ms / 67 ms, SHYPS, 1 K cryostat + room-temperature fabric). Rejected:
+generally; Photonic's T-centre stack appears as a deployment context carrying the
+numerical instance (0.41 ms / 112 ms / 67 ms, SHYPS, 1 K cryostat + room-temperature
+fabric), not as experimentally established scope. Rejected:
 Photonic-only (the argument is architecture-general, and the ask channel — §10 — should
 reach every lab that can answer rather than any single addressee); fully abstract
 (unfalsifiable, and the tale needs a real wagon).
@@ -181,9 +184,14 @@ exploration/paper-data simulator split. Findings as evidence, each with its boun
   retry discipline is a de-rigging knob);
 - two regimes bracketed at one operating point by retry spacing; awareness advantage
   quality-specific (DiD +34); churn as the only currency while attempt-price ≪ slack;
-- rotation neutralizes spatial heterogeneity in outcomes at first order (credit-first:
-  rotor-switch networking — RotorNet/Opera/Sirius, Valiant LB — shelf UNVERIFIED);
-  novelty scoped to perishable-resource / churn-currency / emergent-not-designed;
+- outcome flatness across path-quality spread at the tested operating point is
+  SCALE-INDUCED — foreground herald retry is sticky-in-place and the Jensen penalty
+  prices in microseconds against seconds of slack — not structural cancellation by
+  rotation (that account is retracted in the S1 run note and must not appear in prose;
+  consistency repair 2026-07-15, external review round 2). The measured payoff of
+  quality-awareness in this regime is churn (−39% reservations, −96% wastage).
+  Rotor-switch shelf (RotorNet/Opera/Sirius, Valiant LB — UNVERIFIED) attaches to the
+  routing-policy comparison; novelty scoped to perishable-resource / churn-currency;
 - concentration outcome-negative at the binding point (exploratory: post-hoc mechanism);
 - T1 FIELD-EARNED: hardware cadence imprints on resource dynamics, de-rigged, blind,
   at predicted lag; T3's honest blindness (86% degenerate decision points) as the
@@ -203,16 +211,19 @@ paper is the ask. The productive asymmetry, quoted: "here is the decision, the q
 it reads, the lead time — at what threshold does your hardware invalidate this
 distinction?"
 
-## 11. The decode experiment (§11, ~1.5 pages)
+## 11. The decode experiment (§11, short sidebar, ≤0.5 page — demoted per the
+2026-07-15 review disposition)
 
-Evidence the abstraction transmits: the tournament protocol (preregistered acceptance
-criteria, prompts frozen verbatim), the blind cross-model decode landing on classical
-distributed systems with the two-kinded death intact, the post-Yamaguchi revision
-independently reproducing perishability-migrates-to-the-key. Bounds stated in full:
-n=1 decoder; decoder is an LLM (shared training culture weakens "independent reader");
-priming inseparable in the convergence observation. Cite the published records
-(wamason.com URL) + repo. The sound-convergence hypothesis appears ONLY as a
-falsification-path footnote, if at all.
+A bounded demonstration that the abstraction TRANSMITS — not evidence that it is
+correct: the tournament protocol (preregistered acceptance criteria, prompts frozen
+verbatim), the blind cross-model decode landing on classical distributed systems with
+the two-kinded death intact, the post-Yamaguchi revision independently reproducing
+perishability-migrates-to-the-key. Bounds stated in full: n=1 decoder; decoder is an
+LLM (shared training culture weakens "independent reader"); priming inseparable in the
+convergence observation. Cite the published records (wamason.com URL) + repo. Out of
+the technical core entirely. Per the 2026-07-15 F1 result note: if the convergence
+footnote is kept at all, it must report the failed replication ("the convergence is
+robust, its target is not").
 
 ## 12. Related work (§12, ~2 pages)
 

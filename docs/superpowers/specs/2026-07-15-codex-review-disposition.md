@@ -78,3 +78,40 @@ Test-suite claim (463 green) matches the v0.1.0 tag record.
    products are the cold-chain essay, the instrument record, and the question list —
    per the review's own closing, and per this project's standing negative-result
    framing (HSD precedent).
+
+---
+
+## Addendum — review round 2 (Codex, same day): earned-claim scope for Stage 1
+
+The reviewer accepted the genre pushback and the gate, and added one substantive
+qualification, ADOPTED here verbatim in spirit:
+
+**A positive Stage 1 result earns exactly this claim:** *the conflated lease cannot
+correctly express plural presence, ensemble-level recoverability, and late binding as
+distinct OS concerns.* It does NOT validate the complete carrier/claim/warrant/
+exercise-gate taxonomy: in Stage 1 the warrant is always valid and the gate is
+uncontended by design (verified against the prereg and boundary contract — persistent
+carrier/claim/warrant/gate classes are deliberately forbidden there). Authority and
+concurrent serialization remain systems deductions awaiting their own deciding
+workload. The implementing instance must write conclusions to this scope and no wider.
+
+**The forced-rescue subtlety, adopted:** Stage 1's control constructs a world where
+late binding wins by construction; the contribution is the REGION MAP — whether the
+option value occupies a material region of the declared envelope, how observation
+quality moves it, and how key fragility and structural cost erode it — not the
+discovery that such a world is possible. The prereg already says this ("an exact
+region map of an AUTHORED MODEL"); it is restated here so the earned claim stays
+exact.
+
+**Consistency repairs applied to the skeleton same day** (review round 2's list, all
+verified against the primary record before editing): §9's retracted rotation-
+neutralization account replaced with the scale-induced/sticky-retry mechanism from the
+corrected run note; two-paper order inverted in the header; §0.2 rescoped to
+"deployment context"; §11 demoted to a ≤0.5-page sidebar labeled transmission-
+demonstration, not evidence.
+
+**Propagation note, for the record:** the dead rotation account reached the skeleton
+via a memory-store summary title written after the correction — the compressed
+phrasing preserved the retracted mechanism. The store entry is superseded with
+corrected phrasing as of tonight. Compressions of corrected findings must carry the
+correction, not the corpse.

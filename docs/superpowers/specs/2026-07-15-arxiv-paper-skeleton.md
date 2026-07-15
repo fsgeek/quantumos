@@ -1,8 +1,9 @@
 # arXiv paper skeleton — epigraphs placed, sections named against their notes
 
 **Date:** 2026-07-15
-**Status:** SKELETON (the artifact the 07-14 architecture note names: "paper skeleton
-with epigraphs placed: next session's artifact, against this note"). Standing for veto:
+**Status:** SKELETON — **GATED (2026-07-15, external review): no prose drafting until
+the validation sprint in `2026-07-15-codex-review-disposition.md` clears; that note's
+net plan supersedes the build order below until then.** Standing for veto:
 title, the Photonic-scope decision (§0.2), and everything the source notes already hold
 for veto (taxonomy names carrier/claim/warrant/exercise-gate, 07-13). Drafting of prose
 sections happens against this skeleton + each section's routed note.

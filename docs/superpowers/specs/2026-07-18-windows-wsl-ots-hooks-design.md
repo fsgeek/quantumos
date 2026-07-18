@@ -1,7 +1,7 @@
 # Cross-platform signed OpenTimestamps hook design
 
 **Date:** 2026-07-18
-**Status:** APPROVED DIRECTION — revised design awaiting final review; implementation not begun
+**Status:** APPROVED DESIGN — implementation not begun
 **Scope:** repository contribution mechanics only; no simulator or paper-content changes
 
 ## 1. Purpose
@@ -22,6 +22,12 @@ For commits explicitly designated as preregistrations, a separate confirmation-g
 publication step creates a third-party-visible, independently verifiable commitment.
 Routine timestamping and public preregistration are deliberately distinct: the former
 is automatic local provenance; the latter is an authorized external act.
+
+This is an enabling mechanism, not a governance or enforcement authority. Its threat
+objective is to make a disclosed preregistration difficult to forge, backdate, or
+silently substitute while keeping independent verification practical. Contributors and
+the ayllu choose when a preregistration governs a deciding run; future layers may add
+independent witnesses or policies without changing this base claim.
 
 ## 2. Current findings
 
@@ -114,6 +120,8 @@ the verification key remain available.
   time.
 - Offer an opinion about legal admissibility; the design specifies technical evidence
   and its limits.
+- Prevent a repository administrator or contributor from intentionally bypassing local
+  hooks; the hooks are recoverable guardrails, not a security perimeter.
 
 ## 4. Authority boundary
 
@@ -358,8 +366,9 @@ requires its own timestamp.
 
 ## 7. Push invariant
 
-`post-commit` is an automatic attempt, not an enforcement point: its exit status cannot
-undo the commit that triggered it. `pre-push` is the enforcement point.
+`post-commit` is an automatic attempt: its exit status cannot undo the commit that
+triggered it. `pre-push` is the final local guardrail before remote contact, not a
+governance authority or security perimeter.
 
 For each ref update received on standard input, `pre-push` enumerates commits newly
 introduced to that remote ref. For every commit that is neither a structurally valid

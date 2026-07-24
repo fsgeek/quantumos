@@ -1,0 +1,1561 @@
+Reinforcement learning control of quantum 
+error correction
+
+https://doi.org/10.1038/s41586-026-10759-2
+
+Received: 11 November 2025
+
+Accepted: 4 June 2026
+
+Published online: 8 July 2026
+
+Open access
+
+ Check for updates
+
+Quantum error correction (QEC) is the primary strategy for protecting a quantum 
+computer from the environment1,2. The prerequisite of QEC is that errors must remain 
+sufficiently rare, which requires perpetually adapting the control parameters of the 
+computer to the drifting environmental conditions. The current solution to this 
+problem is to terminate the entire quantum computation for recalibration, but it  
+is incompatible with the long runtimes of future quantum algorithms3,4. Here we 
+address this challenge by unifying calibration with computation. We grant the  
+QEC process5–11 a dual role: its error-detection events are not only used to correct  
+the logical quantum state but are also repurposed as a learning signal, teaching a 
+reinforcement learning agent12–16 to continuously steer the control parameters and 
+stabilize the quantum system during computation. We experimentally demonstrate 
+this framework on a Willow superconducting processor, improving the logical 
+stability of the surface code 3.5-fold against injected drift. By synthesizing our full 
+suite of technological advances, we achieve record performance of the surface and 
+colour codes, with average logical error per cycle of 7.72(9) × 10−4 and 8.19(14) × 10−3, 
+respectively. Numerical simulations of large codes with tens of thousands of control 
+parameters confirm the scalability of our RL framework, revealing an optimization 
+speed that is independent of system size. This work thus enables a new paradigm:  
+a quantum computer that learns from its errors and never stops computing.
+
+Quantum computers are fundamentally analogue machines, which 
+makes them extremely fragile compared with the digital classical 
+computers17. Quantum error correction (QEC) mitigates this vulner-
+ability by effectively digitizing the errors: through repetitive error 
+detection embedded in QEC protocols, spurious analogue evolution 
+branches into a sequence of ‘error’ or ‘no error’ events. These binary 
+error-detection signals can then be decoded to correct the logical 
+quantum state, providing a mechanism for reaching low logical error 
+rates (LERs) required for practical applications.
+
+However, the digitization of errors alone is insufficient, and the prac-
+tical success of QEC is critically dependent on the analogue control of 
+the constituent qubits: QEC is effective only if the physical gate error 
+rate is kept significantly below a certain threshold, around 10−3−10−2 
+(ref. 18). The process of precisely tuning the control parameters of the 
+system to meet this prerequisite is known as calibration19,20. Although 
+traditional calibration techniques have been able to achieve the neces-
+sary precision8,10, the analogue nature of the control makes the system 
+performance susceptible to drift. Consequently, the challenge expands 
+from merely reaching deep below the QEC threshold to continuously 
+maintaining this performance amidst the non-stationarity.
+
+The solution to the drift problem used in previous experiments5–10 is 
+to terminate the entire QEC process for intermittent system recalibra-
+tion. However, this complete decoupling of computation and calibr-
+ation represents a fundamental bottleneck for useful future algorithms 
+that require continuous execution times on the order of days or even 
+months3,4. Although theoretical proposals based on logical swaps or 
+code deformation21 have been put forward to reconcile this dichotomy, 
+they entail a large overhead in the circuit runtime, footprint and opera-
+tional complexity. Yet, the very process of error detection embedded in 
+
+the QEC algorithm offers a more direct solution, because errors from 
+imperfect calibrations produce detectable syndromes just like all other 
+errors. A pioneering attempt in ref. 22 to leverage this by engineering a 
+direct feedback loop from error detection to physical control relied on 
+a heuristic approach that is difficult to scale. In this work, we propose a 
+different paradigm: repurposing error-detection events as a learning 
+signal for an artificial intelligence agent (Fig. 1).
+
+Our framework is based on reinforcement learning (RL), an approach 
+that has demonstrated remarkable success in automating solutions to 
+complex control problems across diverse fields. It has powered systems 
+that achieve superhuman performance in intricate games12,13, enabled 
+substantial advances in robotics14,15 and has recently become integral to 
+refining the behaviour of large language models16. In the field of quan-
+tum control, RL was theoretically explored for various problems23–27 
+and applied experimentally to improve the performance of isolated 
+gates28–30 and bosonic codes7. Building on these foundations, here we 
+demonstrate the effectiveness of RL for the system-level challenge of 
+calibrating and steering a large error-corrected quantum processor.
+We perform our experiments on the distance-5 and -7 surface codes 
+and the distance-5 colour code, focusing on a quantum memory algo-
+rithm, in which the logical state is preserved over time by repetitive 
+application of QEC cycles. Our RL agent manages more than 1,000 con-
+trol parameters, which specify how an abstract QEC circuit is translated 
+into analogue waveforms that control the quantum system. The agent 
+successfully steers the system against injected drift, improving the LER 
+stability 2.4-fold, a figure that increases to 3.5-fold with complementary 
+decoder steering. Moreover, RL fine-tuning of an already well-calibrated 
+processor yields an additional 20% suppression of the LER, pushing 
+performance beyond the limits of traditional physics-based calibration 
+
+A list of authors and their affiliations appears at the end of the paper.
+
+Nature  |  Vol 655  |  23 July 2026  |  879
+
+ArticleQuantum system
+
+Classical controller
+
+QEC decoder
+
+0/1
+
+10100110
+
+Learning agent
+
+Fig. 1 | Overview of RL control. Quantum computation on logically encoded 
+states is physically realized by analogue control signals. The quantum errors 
+are digitized by the QEC process, and error-detection events are used by the 
+decoder to infer logical corrections. In our control framework, they are also 
+repurposed as a learning signal, teaching the RL agent to continuously steer 
+the physical control parameters and stabilize the quantum system during 
+computation.
+
+and human expert tuning. The agent is able to reach high performance 
+even starting from randomized initial control parameters, suggest-
+ing the potential to augment or replace elements of the traditional 
+calibration stack.
+
+Having demonstrated RL control of the present-day state-of-the-
+art QEC processor, we further showcase the future potential of this 
+framework using numerical simulations. They establish the compat-
+ibility of RL control with uninterrupted quantum computation and 
+its scalability to distance-15 surface code with tens of thousands of 
+control parameters. Our approach is fundamentally general, requiring 
+only error-detection signals and tunable controls. Although demon-
+strated here using planar QEC codes implemented with supercon-
+ducting circuits, it is directly applicable to any physical qubit modality 
+and QEC architecture, including those with spatially nonlocal con-
+nectivity31. Our findings thus firmly establish RL as a promising path 
+towards automating the control of large-scale error-corrected quantum  
+systems.
+
+Learning from errors
+The main guiding principle in the construction of fault-tolerant QEC 
+circuits is to ensure that errors leave detectable signatures in the meas-
+urement outcomes of the code stabilizers. These signatures are most 
+conveniently represented using the notion of detectors32, defined 
+as sets of measurements that have deterministic total parity in the 
+absence of errors. A detection event, corresponding to flipped parity, 
+signals the occurrence of errors in a certain space–time region of the 
+circuit, called the detecting region33 (Fig. 2a). Detecting regions are 
+usually sensitive to multiple kinds of errors, and a decoder is needed 
+to infer the likely error patterns from any given pattern of detection 
+events34,35. After the correction of the logical state by the decoder, the 
+remaining error is quantified by the LER—the principal measure of 
+quality of the QEC process.
+
+To execute QEC, the parameters of the quantum gates are stored in 
+the memory of a classical controller (Fig. 1). These parameters are used 
+by the pulse compiler to convert an abstract QEC logical circuit to its 
+physical implementation. In our learning-based approach, this process 
+is modified: we deliberately apply small, simultaneous perturbations 
+to all control parameters during the computation to explore the con-
+trol space. These perturbations translate into subtle changes in the 
+statistics of error-detection events. The goal of the learning algorithm 
+is to disentangle cause and effect, correlating specific perturbations 
+with changes in performance to continuously calibrate the system.
+
+The performance measure of interest in this process is the LER, εL. 
+However, using it directly as an optimization objective faces funda-
+mental obstacles to scalability (Methods). Instead, we construct a sur-
+rogate objective C, which is an efficiently computable local proxy for 
+
+880  |  Nature  |  Vol 655  |  23 July 2026
+
+a
+
+b
+
+s
+r
+o
+t
+c
+e
+t
+e
+D
+
+c
+
+L
+
+
+g
+o
+
+l
+
+p
+
+∂
+
+R   H  
+
+H   M R   H  
+
+H   M R   H  
+
+H   M
+
+R   H  
+
+H  
+
+M R   H  
+
+H  
+
+M R   H  
+
+H  
+
+M
+
+R   H  
+
+H  
+
+M
+
+R  
+
+H  
+
+H  
+
+M R   H  
+
+H  
+
+M
+
+R   H  
+
+H  
+
+M R   H  
+
+H  
+
+M R   H  
+
+H  
+
+M
+
+Epoch: t
+
+Epoch: t + 1
+
+Rewards
+
+Gradient step
+
+t
+
+t + 1
+
+p
+
+p
+
+Policy
+samples
+
+C
+
+d
+
+Detectors
+
+XY pulse
+
+ψ
+
+Detection events
+
+010000100011100...
+100010001001000...
+011000010001000...
+100010100100100...
+
+010000100011100...
+100010001001000...
+011000010001000...
+100010100100100...
+
+010000100011100...
+100010001001000...
+011000010001000...
+100010100100100...
+
+QEC cycles
+
+0.6
+
+0.4
+
+0.2
+
+0
+
+0.11
+
+0.10
+
+0.09
+
+0.08
+
+XY amplitude
+
+XY frequency
+
+CZ coupling
+
+CZ post-phase
+
+Transfer function
+
+0
+
+0.1
+
+0.2
+
+0.3
+
+∂
+
+logC
+p
+
+Control parameter space
+
+Fig. 2 | Learning from errors. a, A small space-time chunk of the QEC circuit for 
+the repetition code, highlighting two overlapping detecting regions. b, One 
+iteration of the learning process. In each epoch, a batch of control policy 
+candidates is sampled from the policy distribution. A certain number of QEC 
+cycles is executed with each policy candidate (shades of red and blue). The 
+acquired QEC data are used to compute rewards by estimating error-detection 
+rates for each detector. This information, indicating the relative performance 
+of each policy candidate, is converted by the learning algorithm into a small 
+gradient step for the policy distribution. Then, a new batch of policy candidates 
+is sampled, and the process repeats. c, Finite-difference partial derivatives 
+experimentally evaluated along random directions in the high-dimensional 
+control space confirm the linear relation between the gradient of the true and 
+surrogate objectives, with proportionality coefficient (d + 1)/2 (black line).  
+d, The surrogate objective C allows us to effectively use the sparse dependence 
+of error-detection rates on the system control parameters, represented here  
+as a factor graph. Each detector node is connected to the learnable control 
+parameters of the gates within its detecting region. In our distance-5 surface 
+code experiment, on average, each detector node is connected to 302 parameter 
+nodes, and each parameter node to 18 detector nodes.
+
+C
+
+LER that enables high-dimensional optimization. Our surrogate objec-
+D= [ ]
+tive is defined as the average rate of error-detection events, 
+, 
+where D denotes all detectors in the circuit, and the empirical expecta-
+tion value is computed over a sufficient number of QEC cycles. This 
+surrogate objective function is inspired by a simple scaling model of 
+the surface code εL ∝ Λ−d/2, where d is the code distance and Λ = εth /ε 
+quantifies the suppression of the physical error rate ε relative to the 
+QEC threshold εth. As C ∝ ε, the gradients of LER and of the surrogate 
+objective in this model are simply related as 
+. 
+C
+To confirm that this relation is approximately satisfied in a real exper-
+imental setting, we sample Gaussian perturbations in the control 
+parameter space and evaluate finite-difference partial derivatives 
+(Fig. 2c). We observe good empirical agreement in the regime of small 
+
+∇log = ( + 1)/2 ⋅∇l og
+
+d
+
+ε
+
+L
+
+Articlê
+perturbations, which is sufficient for our RL approach that relies on 
+Monte Carlo gradient estimation.
+
+To optimize C, we use a multi-objective policy-gradient RL algorithm 
+(Methods). Key to its performance and scalability is an observation 
+that components of C have sparse dependence on the system control 
+parameters owing to the locality of detecting regions in the QEC cir-
+cuit (Fig. 2d). Our algorithm maintains a parameterized probability 
+distribution over all system control parameters36. Each sample from 
+this distribution, the so-called control policy, is a candidate solution to 
+the optimization problem. As shown in Fig. 2b, the learning proceeds 
+iteratively by repeating the same sequence of steps in every learn-
+ing epoch. First, a batch of policy candidates is sampled and ranked 
+according to C: policies that lead to a lower rate of error-detection 
+events receive a higher reward. In practice, the error-detection rate 
+is estimated by acquiring data from a finite number of QEC cycles 
+executed with a given control policy and then switching to another  
+policy.
+
+Next, the reward information, reflecting the relative performance of 
+all policy candidates, is used by the learning algorithm to compute the 
+gradient of the policy distribution, pushing it towards a more optimal 
+region in the control space. Owing to the limited data rate that currently 
+hampers our ability to learn complex policy distributions such as neural 
+networks, we resort to a simple factorized multivariate Gaussian distri-
+bution. Its mean μ(t) represents the best guess of the optimal control 
+policy during the learning epoch t, and the diagonal covariance σ(t)2 
+controls the degree of exploration of the control space. It evolves during 
+the learning process, typically shrinking over time to finely localize the 
+solution25. Eventually, the distribution converges to a local optimum 
+of the optimization objective, in which detection event probabilities 
+are minimized, indicating that the occurrence of errors is suppressed 
+to its minimum. In a non-stationary setting, the stochastic gradients 
+steer the control parameters to follow the system drift. In this case, μ(t) 
+learns to track the optimal policy over time, whereas σ(t)2 maintains 
+finite spread to never cease exploring.
+
+RL fine-tuning of control policy
+To demonstrate the practical utility of our RL framework, we first show 
+that it can push system performance beyond the limits achievable by 
+the traditional calibration stack and human expert tuning.
+
+The central idea in the traditional approach to gate calibration is 
+to orthogonalize the space of control parameters, using an accurate 
+physical model of the system, and then construct dedicated ‘calibra-
+tion experiments’ that target a few parameters at a time. For example, 
+a control parameter corresponding to the frequency of a microwave 
+pulse for XY-rotation of a qubit is calibrated by spectroscopy, and then 
+the amplitude of this pulse is calibrated by Rabi oscillations. Control 
+parameters can also be jointly fine-tuned in calibration experiments 
+that measure an aggregate performance metric of the gate, such as ran-
+domized or cross-entropy benchmarking37,38. Recently, this approach 
+has culminated in a framework for automated calibration of large quan-
+tum systems based on the traversal of a directed acyclic graph20, which 
+encodes the order of calibration of various control parameters, distilled 
+from decades of research in the field of quantum control39. It has been 
+successfully applied in numerous experiments8,11,38,40 reaching the 
+scale of O(102) qubits.
+
+Using this traditional approach and extensive human-expert tun-
+ing, we calibrate the Willow quantum processor for QEC of the sur-
+face code and colour code, as in similar previous experiments8,11,41,42. 
+Subsequent RL fine-tuning of the system consistently yields about 
+20% additional suppression of the LER, as shown in Fig. 3a for mul-
+tiple runs on the distance-5 codes of both types. We achieve record 
+QEC performance demonstrated across any physical qubit modality:  
+our distance-7 surface code reaches the LER of εL = 7.72(9) × 10−4 with  
+the AlphaQubit2 neural network decoder43 (averaged over X and 
+
+a
+
+)
+
+%
+
+(
+
+t
+n
+e
+m
+e
+v
+o
+r
+p
+m
+
+i
+
+R
+E
+L
+
+b
+
+l
+
+e
+b
+a
+v
+r
+e
+s
+b
+o
+
+l
+
+i
+
+a
+c
+g
+o
+L
+
+30
+
+20
+
+10
+
+0
+
+1.0
+
+0.9
+
+0.8
+
+0
+
+100
+
+200
+Epoch
+
+300
+
+400
+
+Calibration
+
+RL fine-tuning
+
+1.0
+
+0.7
+
+0.5
+
+0.3
+
+l
+
+e
+b
+a
+v
+r
+e
+s
+b
+o
+
+l
+
+i
+
+a
+c
+g
+o
+L
+
+0
+
+50
+
+100
+
+150
+
+0
+
+25
+
+50
+
+QEC cycle
+
+QEC cycle
+
+Fig. 3 | RL fine-tuning of QEC performance. a, Systematic improvement of LER 
+from RL fine-tuning applied after exhaustive conventional calibration process, 
+with five independent runs for surface code and colour code each (grey), mean 
+performance (teal) and 1σ deviation (shaded region). b, Decay of the logical 
+observable in a quantum memory experiment, averaged over X and Z logical 
+bases, featuring enhanced performance from RL fine-tuning. The distance-7 
+surface code (left) was decoded with AlphaQubit2, and the distance-5 colour 
+code (right) with Tesseract.
+
+Z logical bases), whereas the distance-5 colour code reaches εL =  
+8.19(14) × 10−3 with the Tesseract most-likely-error decoder35 (Fig. 3b). 
+Our RL fine-tuning technique was also applied in the recent magic-
+state cultivation experiment44, which combines the elements of both 
+surface code and colour code QEC, in which it provided an order of 
+magnitude improvement in the cultivation error and the post-selection 
+rate. Beyond fine-tuning, in Supplementary Information section IV, 
+we show that RL successfully recovers the performance even after we 
+artificially randomize the control policy to fully scramble the logical  
+observable.
+
+Generally, as gate error rates are pushed further below the QEC 
+threshold, they will become limited by an increasing number of 
+low-probability error channels. These can be related to the unavoid-
+able simplifying assumptions and approximations in the system models 
+used by the standard calibration approach, or to yet unknown device 
+physics. We anticipate that in the deep below-threshold regime, achiev-
+ing and maintaining optimal system performance through metrology 
+and targeted calibrations alone will become infeasible, and holistic 
+model-free in-context fine-tuning of the QEC system will become nec-
+essary. Our results indicate that RL from error-detection events could 
+fill this important role.
+
+RL steering of control policy
+Next, we demonstrate that RL is not only able to optimize the system 
+performance, but also steer the control policy in the presence of drift. 
+This is achieved by the entropy regularization technique45, which 
+ensures that the policy distribution never becomes deterministic, 
+enabling the agent to continuously explore and adapt to changes in 
+a non-stationary environment. To systematically study this effect, we 
+inject artificial drift on several control parameters simultaneously, 
+as shown in Fig. 4a (red symbols). We choose different temporal drift 
+profiles (step-like, sinusoidal and stroboscopic), different control 
+
+Nature  |  Vol 655  |  23 July 2026  |  881
+
+ 
+ 
+ 
+ 
+a
+
+EDR (normalized)
+
+Epoch
+
+Fixed control policy
+RL steering
+Including decoder steering
+
+XY amplitude
+
+XY frequency
+
+b
+
+r
+e
+t
+e
+m
+a
+r
+a
+p
+
+l
+
+o
+r
+t
+n
+o
+C
+
+0
+
+–1
+
++1
+
+0
+
+–1
+
+c
+
+)
+
+d
+e
+z
+
+i
+l
+
+a
+m
+r
+o
+n
+
+(
+
+R
+E
+L
+
+1.4
+
+1.2
+
+1.0
+
+0.8
+
+0
+
+500
+
+1,000
+
+0
+
+Epoch
+
+500
+
+Epoch
+
+1,000
+
+Fig. 4 | Demonstration of RL steering. a, The data qubits (yellow diamonds) 
+and measure qubits (panels with data) are arranged in the layout of a distance-5 
+surface code. We inject artificial drift with various temporal profiles on the gates 
+indicated with red shapes (circles, diamonds and bars) and observe elevated 
+error-detection signals where expected (coloured background). The detection 
+rate associated with each measure qubit is normalized for visualization to 
+remove the effect of the natural system drift. Performance of the fixed control 
+policy (maroon) degrades over time because of the injected drift, whereas RL 
+steering (blue) stabilizes and maintains the error-detection rate (EDR) below its 
+initial level (white lines). b, Time dependence of the injected drift in system 
+control parameters (dashed) and RL steering (solid). An exponential fit of RL 
+response to step-like drift in XY pulse amplitude yields the characteristic 
+learning time of 130 epochs. c, Periodic evaluation of the logical performance 
+indicates that RL steering of the system significantly suppresses and stabilizes 
+the LER, see main text. Incorporating the decoder steering (black) further 
+improves these results.
+
+parameters (CZ coupling strength, XY pulse amplitude and frequency) 
+and different locations of drifting gates on the qubit grid.
+
+Following the already-described methodology, we start by calibrat-
+ing the control policy at t = 0. The performance of this policy (maroon) 
+degrades over time because of the injected drift, as the fixed values of 
+the control parameters become ‘outdated’, leading to additional errors. 
+These control errors lead to an elevated detection event signal, which 
+appears exactly in those detectors in which it is expected based on the 
+constructed factor graph, see tiles highlighted with coloured back-
+ground in Fig. 4a. In contrast to a fixed control policy, RL steering (blue) 
+maintains a significantly suppressed rate of error-detection events that 
+consistently remains below the initial level (white line), except for brief 
+moments when the drift is too fast. In Fig. 4b, we show the evolution 
+
+882  |  Nature  |  Vol 655  |  23 July 2026
+
+of the learned control parameters. The recovery from a step-like drift  
+in the XY pulse amplitude (red circle) allows us to estimate the response 
+time of the steering process of about 130 epochs. This also sets the 
+time scale for the policy lag in the case of slow continuous drift, as in 
+XY pulse frequency (red diamond).
+
+To confirm that suppression of detection events is not due to hin-
+dered detection capability but is due to suppressed errors, we evaluate 
+the logical performance in Fig. 4c. Compared with the fixed policy, 
+we find on average a 24% reduction of LER and a 2.4× improvement 
+of its stability (quantified here by the standard deviation of the LER 
+distribution). These figures of merit further improve to 31% and 3.5×, 
+respectively, by additionally steering the decoder parameters. Decoder 
+steering is achieved within the same RL framework by reweighting the 
+matching graph as described in ref. 46. Although the steering of the 
+classical controller is done via the surrogate objective C that relies 
+exclusively on the error-detection probabilities, our decoder steer-
+ing process relies on LER estimation, which is not straightforwardly 
+scalable to the real-time setting. However, alternative approaches to 
+decoder steering have been proposed47–49 that, in principle, do not 
+suffer from this limitation.
+
+We also analysed the RL performance under natural system drift, 
+which arises from sources ranging from material defects near the 
+quantum system50 to temperature fluctuations in the classical con-
+trol instruments and, unlike our previous demonstration, rarely has a 
+simple time dependence. Fourier analysis of multiple experimental RL 
+runs from Fig. 3a shows that the effect of steering can be understood as 
+a filter that provides about 4 dB of suppression of low-frequency LER 
+fluctuations originating from these natural sources (Supplementary 
+Information section III).
+
+We have thus far demonstrated that the mean μ(t) of the Gaussian 
+policy distribution learns to track the optimal policy over time in the 
+presence of drift. As a result, the learned policy μ(t) outperforms the 
+fixed policy, with lower EDR and LER. However, as the learning process 
+requires exploration of the parameter space, the algorithm inevitably 
+samples policy candidates whose performance is worse than that of the 
+μ(t) policy. This ‘exploration noise’ is irrelevant in our experimental 
+setting in which RL steering relies on repeated executions of a short 
+logical algorithm and the quantum state is independently re-prepared 
+in every shot. However, in the future, this steering must be done in real 
+time during the single-shot execution of a long logical algorithm. In 
+that case, the exploration noise, although necessary for learning, will 
+be detrimental to the performance of the logical algorithm. Generally, 
+balancing the exploration of parameter space and the exploitation of 
+the learned policy μ(t) is a central challenge in many applications of RL51. 
+In our case, the favourable resolution of the exploration–exploitation 
+trade-off would mean that the aggregate performance of all sampled 
+policy candidates, most of which are worse than μ(t), is still better than 
+the performance without RL steering.
+
+To study this trade-off, we conducted numerical simulations of 
+real-time steering of the distance-3 surface code subject to sinusoidal 
+parameter drift at different frequencies (Fig. 5a and Supplementary 
+Information section VIA). We count the total number of error-detection 
+events generated in a 1.8 × 109-cycle window of QEC, and normalize it 
+so that level 1 corresponds to the performance of the optimal policy 
+(known in the simulation), and level 0 corresponds to the perfor-
+mance of a fixed policy (optimal at t = 0). We control the exploration– 
+exploitation trade-off by changing the amount of entropy regulariza-
+tion45 in our RL algorithm. Our findings indicate that there is a critical 
+drift frequency, about 1/150 epochs, below which the system becomes 
+real-time steerable: the performance with exploration noise is better 
+than the performance of a fixed policy. This critical frequency is consist-
+ent with the response time of the learning algorithm observed in the 
+experiment (Fig. 4b). When drift is too fast, the real-time steering is not 
+able to keep up—this drift must be mitigated at the hardware level. In 
+particular, correlated drift caused by rare high-energy particle impacts 
+
+Article 
+ 
+a
+
+t
+n
+e
+m
+e
+v
+o
+r
+p
+m
+
+i
+
+R
+D
+E
+
+)
+
+d
+e
+z
+
+i
+l
+
+a
+m
+r
+o
+n
+
+(
+
+1
+
+0
+
+–1
+
+10–3
+
+D
+
+rift fr
+
+(
+1
+
+/
+
+e
+
+e
+
+q
+
+10–2
+
+p
+
+o
+
+u
+
+e
+
+c
+
+n
+
+h
+)
+
+c
+
+y
+
+Real-time
+steerable
+
+Yes
+
+No
+
++1
+
+0
+
+–1
+
+10–1
+
+10–1
+
+E x p l o r a t i o n
+
+10–3
+
+10–2
+E n t r o p y   r e g u l a r i z a t i o n
+
+10–4
+
+E x p l o i t a t i o n
+
+b
+
+R
+E
+L
+
+10–2
+
+10–3
+
+10–4
+
+10–5
+
+10–6
+
+10–7
+
+Code distance 3
+
+Λ*
+
+15
+
+Epoch
+
+500
+
+100
+
+150
+
+200
+
+400
+
+0
+
+c
+
+i
+
+n
+o
+s
+s
+e
+r
+p
+p
+u
+s
+
+r
+o
+r
+r
+e
+
+f
+o
+d
+e
+e
+p
+S
+
+4
+
+2
+
+0
+
+Code distance
+
+3
+
+15
+
+4 × 10–4
+
+10–3
+
+3 × 10–3
+
+0
+
+2
+
+Physical error rate
+
+Distance to local optimum
+
+Fig. 5 | Real-time steering and scaling simulations. a, Normalized 
+improvement (colour) of error-detection rate in the real-time steering 
+simulation of the distance-3 surface code subject to sinusoidal drift at different 
+frequencies. Level 1 indicates the performance of the optimal policy. Isoline at 
+level 0 demarcates the boundary beyond which real-time steering results in 
+better performance than a fixed policy, approaching the performance of an 
+optimal policy in the regime of slow drift. b, Simulation of scalability of RL 
+control of large surface codes. The algorithm learns the parameters of single-
+qubit and CZ gates, with 30 control parameters per gate, amounting to almost 
+40,000 control parameters in total for the distance-15 code. During the learning 
+process, the LER reduces over time (colour) until it reaches the floor (red bars) 
+set by the irreducible physical error rates and characterized by the optimal error 
+suppression factor Λ*. c, Point estimates of Λ at every code distance and learning 
+epoch from b confirm that the speed, ∂t Λ/Λ* × 102, at which the error suppression 
+factor approaches the local optimum, is proportional to the distance from the 
+optimum, 1 − Λ/Λ*. The convergence rate γ (see main text) is independent of the 
+system size but depends on the number of control parameters per gate, with 
+three beams corresponding to 1, 10 and 30 parameters, and the linear fits (red) 
+indicating the convergence rates.
+
+in superconducting devices8,41 typically equilibrates on a much shorter 
+time scale and is not real-time steerable in our current implementation. 
+By contrast, at low drift frequencies, the exploration and exploitation 
+can be successfully balanced to closely approach the performance of 
+the optimal policy at all times.
+
+Thus, our simulations establish that RL is able to effectively use the 
+information concealed in the error-detection events to calibrate the 
+system while continuing the logical computation. This ability offers 
+a substantial advantage over approaches based on the synthesis of 
+traditional calibration and code deformation21, because RL steering 
+does not introduce any resource overhead.
+
+Scaling and outlook
+Finally, we demonstrate the scalability of RL control with simula-
+tions extending to a distance-15 surface code with approximately 
+40,000 control parameters (Fig. 5b). We extract point estimates of 
+
+the instantaneous error suppression factor Λ at each code distance 
+and learning epoch, verifying in Fig. 5c that its convergence rate ∂t Λ/Λ* 
+is proportional to the distance from the optimal Λ*, set in our simula-
+tion by the irreducible control-independent physical error rates. This 
+empirical result leads to the exponential convergence law, 1 − Λ/Λ* ∝ e−γ t, 
+characteristic of gradient-descent-based algorithms in the vicinity of a 
+local optimum52, with the convergence rate γ that depends on proper-
+ties such as the number of gates per detecting region and the number 
+of control parameters per gate. Crucially, this rate is independent of 
+the system size, a direct consequence of the ability of our algorithm 
+to effectively use the sparsity of the factor-graph representation of 
+the control problem.
+
+Multiple possible extensions of our RL control framework leave 
+ample room to further enhance its abilities. For example, instead of 
+relying on a simple Gaussian policy distribution, it could be advanta-
+geous to use deep neural networks13 and condition the policy distribu-
+tion on the observations from the environment, for example, on some 
+suitable statistics of the error-detection events. Learning the system 
+model in addition to the policy53 can lead to better sample efficiency 
+and further improve the quality of solutions by discovering unexpected 
+correlations in the data. It is conceivable that in the future, with suf-
+ficient enhancement of our learning framework, a quantum processor 
+could be calibrated for QEC ab initio fully by RL, with no reliance on the 
+traditional calibration paradigm or human experts.
+
+In conclusion, by empowering the quantum computer to learn from 
+its errors, we unlock a scalable pathway to optimize performance in 
+real time, replacing disruptive calibration routines with uninter-
+rupted computation. Our work suggests that the path to fault toler-
+ance will be built not only on better hardware but on more intelligent  
+control.
+
+Online content
+Any methods, additional references, Nature Portfolio reporting summa-
+ries, source data, extended data, supplementary information, acknowl-
+edgements, peer review information; details of author contributions 
+and competing interests; and statements of data and code availability 
+are available at https://doi.org/10.1038/s41586-026-10759-2.
+
+1. 
+
+Shor, P. W. Scheme for reducing decoherence in quantum computer memory. Phys. Rev. A 
+ 52, R2493 (1995).
+
+2.  Nielsen, M. A. & Chuang, I. L. Quantum Computation and Quantum Information 
+
+(Cambridge Univ. Press, 2010).
+
+3.  Reiher, M., Wiebe, N., Svore, K. M., Wecker, D. & Troyer, M. Elucidating reaction mechanisms 
+
+on quantum computers. Proc. Natl Acad. Sci. USA 114, 7555–7560 (2017).
+
+4.  Gidney, C. How to factor 2048 bit RSA integers with less than a million noisy qubits. Preprint at 
+
+5. 
+
+6. 
+
+7. 
+
+https://doi.org/10.48550/arXiv.2505.15917 (2025).
+Ryan-Anderson, C. et al. Realization of real-time fault-tolerant quantum error correction. 
+Phys. Rev. X 11, 041058 (2021).
+Krinner, S. et al. Realizing repeated quantum error correction in a distance-three surface 
+code. Nature 605, 669–674 (2022).
+Sivak, V. V. et al. Real-time quantum error correction beyond break-even. Nature 616,  
+50–55 (2023).
+
+8.  Google Quantum AI and Collaborators. Quantum error correction below the surface 
+
+9. 
+
+code threshold. Nature 638, 920–926 (2025).
+Bluvstein, D. et al. Logical quantum processor based on reconfigurable atom arrays. 
+Nature 626, 58–65 (2024).
+
+10.  Bluvstein, D. et al. A fault-tolerant neutral-atom architecture for universal quantum 
+
+computation. Nature 649, 39–46 (2026).
+
+11.  Lacroix, N. et al. Scaling and logic in the colour code on a superconducting quantum 
+
+processor. Nature 645, 614–619 (2025).
+
+12.  Silver, D. et al. Mastering the game of Go without human knowledge. Nature 550,  
+
+354–359 (2017).
+
+13.  Mnih, V. et al. Human-level control through deep reinforcement learning. Nature 518, 
+
+529–533 (2015).
+
+14.  Levine, S., Finn, C., Darrell, T. & Abbeel, P. End-to-end training of deep visuomotor 
+
+policies. J. Mach. Learn. Res. 17, 1334–1373 (2016).
+
+15.  Shalev-Shwartz, S., Shammah, S. & Shashua, A. Safe, multi-agent, reinforcement  
+
+learning for autonomous driving. Preprint at https://doi.org/10.48550/arXiv.1610.03295 
+(2016).
+
+16.  Ouyang, L. et al. Training language models to follow instructions with human feedback. 
+In Proc. Advances in Neural Information Processing Systems(eds Koyejo, S. et al.) Vol. 35, 
+27730–27744 (NeurIPS, 2022).
+
+Nature  |  Vol 655  |  23 July 2026  |  883
+
+ 
+ 
+ 
+ 
+17.  Landauer, R. Is quantum mechanics useful? Philos. Trans. R. Soc. Lond. A Phys. Eng. Sci. 
+
+353, 367–376 (1995).
+
+18.  Stephens, A. M. Fault-tolerant thresholds for quantum error correction with the surface 
+
+code. Phys. Rev. A 89, 022321 (2014).
+
+19.  Khaneja, N., Reiss, T., Kehlet, C., Schulte-Herbrüggen, T. & Glaser, S. J. Optimal control  
+
+of coupled spin dynamics: design of nmr pulse sequences by gradient ascent algorithms. 
+J. Magn. Reson. 172, 296–305 (2005).
+
+20.  Kelly, J., O’Malley, P., Neeley, M., Neven, H. & Martinis, J. M. Physical qubit calibration  
+
+on a directed acyclic graph. Preprint at https://doi.org/10.48550/arXiv.1803.03226  
+(2018).
+
+21.  Fang, X. et al. CaliQEC: in-situ qubit calibration for surface code quantum error correction. 
+In Proceedings of the 52nd Annual International Symposium on Computer Architecture 
+1402–1416 (ACM, 2025).
+
+Open Access This article is licensed under a Creative Commons Attribution- 
+NonCommercial-NoDerivatives 4.0 International License, which permits any 
+non-commercial use, sharing, distribution and reproduction in any medium or 
+format, as long as you give appropriate credit to the original author(s) and the source, provide 
+a link to the Creative Commons licence, and indicate if you modified the licensed material.  
+You do not have permission under this licence to share adapted material derived from this 
+article or parts of it. The images or other third party material in this article are included in the 
+article’s Creative Commons licence, unless indicated otherwise in a credit line to the material. 
+If material is not included in the article’s Creative Commons licence and your intended use is 
+not permitted by statutory regulation or exceeds the permitted use, you will need to obtain 
+permission directly from the copyright holder. To view a copy of this licence, visit http://
+creativecommons.org/licenses/by-nc-nd/4.0/.
+
+22.  Kelly, J. et al. Scalable in situ qubit calibration during repetitive error detection. Phys. Rev. 
+
+© The Author(s) 2026
+
+A 94, 032321 (2016).
+
+23.  Fösel, T., Tighineanu, P., Weiss, T. & Marquardt, F. Reinforcement learning with neural 
+
+networks for quantum feedback. Phys. Rev. X 8, 031084 (2018).
+
+24.  Bukov, M. et al. Reinforcement learning in different phases of quantum control. Phys. Rev. X 
+
+8, 031086 (2018).
+
+25.  Sivak, V. V. et al. Model-free quantum control with reinforcement learning. Phys. Rev. X 12, 
+
+011059 (2022).
+
+26.  Metz, F. & Bukov, M. Self-correcting quantum many-body control using reinforcement 
+
+learning with tensor networks. Nat. Mach. Intell. 5, 780–791 (2023).
+
+27.  Bukov, M. & Marquardt, F. Reinforcement learning for quantum technology. Preprint at 
+
+https://doi.org/10.48550/arXiv.2601.18953 (2026).
+
+28.  Ding, L. et al. High-fidelity, frequency-flexible two-qubit fluxonium gates with a transmon 
+
+coupler. Phys. Rev. X 13, 031035 (2023).
+
+29.  Baum, Y. et al. Experimental deep reinforcement learning for error-robust gate-set design 
+
+on a superconducting quantum computer. PRX Quantum 2, 040324 (2021).
+
+30.  Reuer, K. et al. Realizing a deep reinforcement learning agent for real-time quantum 
+
+feedback. Nat. Commun. 14, 7138 (2023).
+
+31.  Bravyi, S. et al. High-threshold and low-overhead fault-tolerant quantum memory. Nature 
+
+627, 778–782 (2024).
+
+32.  Gidney, C. Stim: a fast stabilizer circuit simulator. Quantum 5, 497 (2021).
+33.  McEwen, M., Bacon, D. & Gidney, C. Relaxing hardware requirements for surface code 
+
+circuits using time-dynamics. Quantum 7, 1172 (2023).
+
+34.  Higgott, O. & Gidney, C. Sparse blossom: correcting a million errors per core second with 
+
+minimum-weight matching. Quantum 9, 1600 (2025).
+
+35.  Beni, L. A., Higgott, O. & Shutty, N. Tesseract: a search-based decoder for quantum error 
+
+correction. Preprint at https://doi.org/10.48550/arXiv.2503.10988 (2025).
+
+36.  Sehnke, F. et al. Parameter-exploring policy gradients. Neural Netw. 23, 551–559  
+
+(2010).
+
+37.  Knill, E. et al. Randomized benchmarking of quantum gates. Phys. Rev. A 77, 012307 
+
+(2008).
+
+38.  Google Quantum AI. Quantum supremacy using a programmable superconducting 
+
+processor. Nature 574, 505–510 (2019).
+
+39.  Koch, C. P. et al. Quantum optimal control in quantum technologies. strategic report on 
+current status, visions and goals for research in Europe. EPJ Quantum Technol. 9, 19 
+(2022).
+
+40.  Wu, Y. et al. Strong quantum computational advantage using a superconducting quantum 
+
+processor. Phys. Rev. Lett. 127, 180501 (2021).
+
+41.  Google Quantum AI Suppressing quantum errors by scaling a surface code logical qubit. 
+
+Nature 614, 676–681 (2023).
+
+42.  Eickbusch, A. et al. Demonstration of dynamic surface codes. Nat. Phys. 21, 1994–2001 
+
+(2025).
+
+43.  Senior, A. W. et al. A scalable and real-time neural decoder for topological quantum 
+
+codes. Preprint at https://doi.org/10.48550/arXiv.2512.07737 (2025).
+
+44.  Rosenfeld, E. et al. Magic state cultivation on a superconducting quantum processor. 
+
+Preprint at https://doi.org/10.48550/arXiv.2512.13908 (2025).
+
+45.  Haarnoja, T., Zhou, A., Abbeel, P. & Levine, S. Soft actor-critic: off-policy maximum 
+
+entropy deep reinforcement learning with a stochastic actor. In Proceedings of the 35th 
+International Conference on Machine Learning (eds Dy, J. & Krause, A.) 80, 1861–1870 
+(PMLR, 2018).
+
+46.  Sivak, V., Newman, M. & Klimov, P. Optimization of decoder priors for accurate quantum 
+
+error correction. Phys. Rev. Lett. 133, 150603 (2024).
+
+47.  Google Quantum AI. Exponential suppression of bit or phase errors with cyclic error 
+
+correction. Nature 595, 383–387 (2021).
+
+48.  Wang, H. et al. DGR: tackling drifted and correlated noise in quantum error correction  
+via decoding graph re-weighting. Preprint at https://doi.org/10.48550/arXiv.2311.16214 
+(2023).
+
+49.  Hockings, E. T., Doherty, A. C. & Harper, R. Improving error suppression with noise-aware 
+
+decoding. Preprint at https://doi.org/10.48550/arXiv.2502.21044 (2025).
+
+50.  Klimov, P. V. et al. Fluctuations of energy-relaxation times in superconducting qubits. 
+
+Phys. Rev. Lett. 121, 090502 (2018).
+
+51.  Sutton, R. S. & Barto, A. G. Reinforcement Learning: An Introduction (MIT Press, 2018).
+52.  Boyd, S. P. & Vandenberghe, L. Convex Optimization (Cambridge Univ. Press, 2004).
+53.  Hafner, D., Lillicrap, T., Ba, J. & Norouzi, M. Dream to control: learning behaviors by latent 
+
+imagination. Preprint at https://doi.org/10.48550/arXiv.1912.01603 (2019).
+
+Publisher’s note Springer Nature remains neutral with regard to jurisdictional claims in 
+published maps and institutional affiliations.
+
+Volodymyr Sivak1 ✉, Alexis Morvan1 ✉, Michael Broughton1, Rodrigo G. Cortiñas1, 
+Johannes Bausch2, Andrew W. Senior2, Matthew Neeley1, Alec Eickbusch1, Noah Shutty1, 
+Laleh Aghababaie Beni1, James S. Spencer2, Francisco J. Heras2, Thomas Edlich2, 
+Dmitry Abanin1, Amira Abbas1, Rajeev Acharya1, Georg Aigeldinger1, Ross Alcaraz1, 
+Sayra Alcaraz1, Trond I. Andersen1, Markus Ansmann1, Frank Arute1, Kunal Arya1, 
+Walt Askew1, Nikita Astrakhantsev1, Juan Atalaya1, Brian Ballard1, Joseph C. Bardin1,3, 
+Hector Bates1, Andreas Bengtsson1, Majid Bigdeli Karimi1, Alexander Bilmes1, 
+Simon Bilodeau1, Felix Borjans1, Alexandre Bourassa1, Jenna Bovaird1, Dylan Bowers1, 
+Leon Brill1, Peter Brooks1, David A. Browne1, Brett Buchea1, Bob B. Buckley1, Tim Burger1, 
+Brian Burkett1, Nicholas Bushnell1, Jamal Busnaina1, Anthony Cabrera1, Juan Campero1, 
+Hung-Shen Chang1, Silas Chen1, Ben Chiaro1, Liang-Ying Chih1, Agnetta Y. Cleland1, 
+Bryan Cochrane1, Matt Cockrell1, Josh Cogan1, Roberto Collins1, Paul Conner1, Harold Cook1, 
+William Courtney1, Alexander L. Crook1, Ben Curtin1, Martin Damyanov1, Sayan Das1, 
+Dripto M. Debroy1, Sean Demura1, Paul Donohoe1, Ilya Drozdov1, Andrew Dunsworth1, 
+Valerie Ehimhen1, Aviv Moshe Elbag1, Lior Ella1, Mahmoud Elzouka1, David Enriquez1, 
+Catherine Erickson1, Vinicius S. Ferreira1, Marcos Flores1, Leslie Flores Burgos1, 
+Ebrahim Forati1, Jeremiah Ford1, Austin G. Fowler1, Brooks Foxen1, Masaya Fukami1, 
+Alan Wing Lun Fung1, Lenny Fuste1, Suhas Ganjam1, Gonzalo Garcia1, Christopher Garrick1, 
+Robert Gasca1, Helge Gehring1, Robert Geiger1, Élie Genois1, William Giang1, Dar Gilboa1, 
+James E. Goeders1, Edward C. Gonzales1, Raja Gosula1, Stijn J. de Graaf1, 
+Alejandro Grajales Dau1, Dietrich Graumann1, Joel Grebel1, Alex Greene1, 
+Jonathan A. Gross1, Jose Guerrero1, Loïck Le Guevel1, Tan Ha1, Steve Habegger1, 
+Tanner Hadick1, Ali Hadjikhani1, Michael C. Hamilton1, Matthew P. Harrigan1, 
+Sean D. Harrington1, Jeanne Hartshorn1, Stephen Heslin1, Paula Heu1, Oscar Higgott1, 
+Reno Hiltermann1, Hsin-Yuan Huang1, Mike Hucka1, Christopher Hudspeth1, Ashley Huff1, 
+William J. Huggins1, Evan Jeffrey1, Shaun Jevons1, Zhang Jiang1, Xiaoxuan Jin1, Chaitali Joshi1, 
+Pavol Juhas1, Andreas Kabel1, Dvir Kafri1, Hui Kang1, Kiseo Kang1, Amir H. Karamlou1, 
+Ryan Kaufman1, Kostyantyn Kechedzhi1, Tanuj Khattar1, Mostafa Khezri1, Seon Kim1, 
+Can M. Knaut1, Bryce Kobrin1, Fedor Kostritsa1, John Mark Kreikebaum1, Ryuho Kudo1, 
+Ben Kueffler1, Arun Kumar1, Vladislav D. Kurilovich1, Vitali Kutsko1, Nathan Lacroix1, 
+David Landhuis1, Tiano Lange-Dei1, Brandon W. Langley1, Pavel Laptev1, Kim-Ming Lau1, 
+Justin Ledford1, Joy Lee1, Kenny Lee1, Brian J. Lester1, Wendy Leung1, Lily Li1, Wing Yan Li1, 
+Ming Li1, Alexander T. Lill1, William P. Livingston1, Matthew T. Lloyd1, Aditya Locharla1, 
+Laura De Lorenzo1, Daniel Lundahl1, Aaron Lunt1, Sid Madhuk1, Aniket Maiti1, 
+Ashley Maloney1, Salvatore Mandrá1, Leigh S. Martin1, Orion Martin1, Eric Mascot1, 
+Paul Masih Das1, Dmitri Maslov1, Melvin Mathews1, Cameron Maxfield1, Jarrod R. McClean1, 
+Matt McEwen1, Seneca Meeks1, Kevin C. Miao1, Zlatko K. Minev1, Reza Molavi1, 
+Sebastian Molina1, Shirin Montazeri1, Charles Neill1, Michael Newman1, Anthony Nguyen1, 
+Murray Nguyen1, Chia-Hung Ni1, Murphy Yuezhen Niu1, Logan Oas1, Raymond Orosco1, 
+Kristoffer Ottosson1, Alice Pagano1, Agustin Di Paolo1, Sherman Peek1, David Peterson1, 
+Alex Pizzuto1, Elias Portoles1, Rebecca Potter1, Orion Pritchard1, Michael Qian1, 
+Chris Quintana1, Arpit Ranadive1, Matthew J. Reagor1, Rachel Resnick1, David M. Rhodes1, 
+Daniel Riley1, Gabrielle Roberts1, Roberto Rodriguez1, Emma Ropes1, Lucia B. De Rose1, 
+Eliott Rosenberg1, Emma Rosenfeld1, Dario Rosenstock1, Elizabeth Rossi1, Pedram Roushan1, 
+David A. Rower1, Robert Salazar1, Kannan Sankaragomathi1, Murat Can Sarihan1, 
+Kevin J. Satzinger1, Max Schaefer1,4, Sebastian Schroeder1, Henry F. Schurkus1, 
+Aria Shahingohar1, Michael J. Shearn1, Aaron Shorter1, Vladimir Shvarts1, Spencer Small1, 
+W. Clarke Smith1, David A. Sobel1, Barrett Spells1, Sofia Springer1, George Sterling1, 
+Jordan Suchard1, Aaron Szasz1, Alexander Sztein1, Madeline Taylor1, 
+Jothi Priyanka Thiruraman1, Douglas Thor1, Dogan Timucin1, Eifu Tomita1, Alfredo Torres1, 
+M. Mert Torunbalci1, Hao Tran1, Abeer Vaishnav1, Justin Vargas1, Sergey Vdovichev1, 
+Guifre Vidal1, Catherine Vollgraff Heidweiller1, Meghan Voorhees1, Steven Waltman1, 
+Jonathan Waltz1, Shannon X. Wang1, Brayden Ware1, James D. Watson1, Yonghua Wei1, 
+Travis Weidel1, Theodore White1, Kristi Wong1, Bryan W. K. Woo1, Christopher J. Wood1, 
+Maddy Woodson1, Cheng Xing1, Z. Jamie Yao1, Ping Yeh1, Bicheng Ying1, Juhwan Yoo1, 
+Noureldin Yosri1, Elliot Young1, Grayson Young1, Adam Zalcman1, Ran Zhang1, Yaxing Zhang1, 
+Ningfeng Zhu1, Nicholas Zobrist1, Zhenjie Zou1, Ryan Babbush1, Dave Bacon1, Sergio Boixo1, 
+Yu Chen1, Zijun Chen1, Michel Devoret1,4, Monica Hansen1, Jeremy Hilton1, Cody Jones1, 
+Julian Kelly1, Alexander N. Korotkov1, Erik Lucero1, Anthony Megrant1, Hartmut Neven1, 
+William D. Oliver1, Ganesh Ramachandran1, Vadim Smelyanskiy1 & Paul V. Klimov1
+
+1Google Quantum AI, Santa Barbara, CA, USA. 2Google DeepMind, London, UK. 3Department 
+of Electrical and Computer Engineering, University of Massachusetts, Amherst, MA, USA. 
+4Department of Physics, University of California Santa Barbara, Santa Barbara, CA, USA. 
+✉e-mail: vladsivak@google.com; amorvan@google.com
+
+884  |  Nature  |  Vol 655  |  23 July 2026
+
+ArticleMethods
+
+Objective function
+Using LER as an optimization objective faces fundamental obstacles 
+to scalability, particularly in multi-qubit stabilizer codes such as the 
+surface code, for the following reasons: (1) The LER is suppressed with 
+the code distance d as εL ∝ Λ−d/2, where the error suppression factor Λ > 2 
+has already been demonstrated in experiments with superconducting 
+circuits8 and neutral atoms10. Thus, accurately resolving the LER would 
+require an exponentially large number of QEC cycles. (2) The optimiza-
+tion involves a vast number of parameters—already more than 2,000 
+in our d = 7 experiment, and scaling as O(d2)—which renders global 
+optimization from a single scalar metric impractical. (3) The LER is 
+unsuitable for real-time calibration and steering during a quantum 
+computation, as the logical state is generally unknown. Although direct 
+LER optimization has proven effective in specific contexts, such as for 
+small bosonic codes7, these scaling challenges necessitate a different 
+approach for large multi-qubit codes.
+
+The surrogate objective C, defined in the main text, immediately alle-
+viates the third limitation. It also alleviates the first limitation because 
+resolving C to a constant relative accuracy requires accumulation of 
+data from a number of QEC cycles that scale as O(ε−1) and is independent 
+of the code distance. To alleviate the second limitation and enable effi-
+cient high-dimensional optimization, we harness the sparse structure 
+of the surrogate objective. We rely on the locality of detectors in the 
+QEC circuit to narrow down the dependence of each term in C to only 
+a small subset of control parameters—those related to the gates within 
+the respective detecting region. These relations can be conveniently 
+represented using a factor graph, a bipartite graph in which the factor 
+nodes correspond to detectors, and the variable nodes correspond to 
+the system control parameters (Fig. 2d and Supplementary Information 
+section II for more information).
+
+Learning algorithm
+Directly optimizing the surrogate objective C is intractable for standard 
+off-the-shelf optimizers. Although some algorithms54 are compatible 
+with large-scale nonlinear optimization problems represented as sparse 
+factor graphs, in practice, additional considerations play an important 
+part. Specifically, our objective function C is highly stochastic, as it is 
+obtained by averaging the binary detector values from a finite (and pref-
+erably small) number of QEC cycles. Furthermore, C is non-stationary 
+due to inherent system drift. Furthermore, evaluating C is expensive 
+because it requires updating the classical controller and acquiring data 
+from the QEC detectors. Finally, in the future, C must be optimized in 
+real time during the quantum computation, favouring smooth and 
+gradual improvements over disruptive large parameter steps that might 
+lead to catastrophic consequences for the logical algorithm.
+
+Given these properties, we adopted a multi-objective, policy-gradient 
+RL approach, in which signals from QEC detectors comprising C serve 
+as multiple objectives optimized simultaneously. Our learning algo-
+rithm is built on parameter-exploring policy gradients36, an approach in 
+which an entire control policy is sampled in one piece, which provides 
+a convenient interface with the classical controller. For robustness in 
+the stochastic and non-stationary setting, we integrate several key tech-
+niques: proximal policy optimization55 for stability, entropy regulariza-
+tion45 to maintain exploration and a replay buffer13 for improved sample 
+efficiency. Crucially, the algorithm harnesses the sparse structure of 
+the factor graph representation of C for efficient variance reduction of 
+the Monte Carlo gradient estimator56 by gradient masking. The latter 
+technique is adopted from appendix G of ref. 46, in which it was derived 
+
+from the point of view of multi-agent learning. For completeness, a 
+detailed exposition of our RL algorithm is provided in Supplementary 
+Information section VIII.
+
+Data availability
+The data supporting our findings are available at Zenodo57 (https://
+doi.org/10.5281/zenodo.17566521).
+
+Code availability
+The custom code used in this study is the proprietary property of 
+Google and cannot be made publicly available. A detailed mathematical 
+description of the RL algorithm is provided in Supplementary Informa-
+tion section VIII to allow independent replication.
+
+54.  Virtanen, P. et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. 
+
+Nat. Methods 17, 261–272 (2020).
+
+55.  Schulman, J., Wolski, F., Dhariwal, P., Radford, A. & Klimov, O. Proximal policy optimization 
+
+algorithms. Preprint at https://doi.org/10.48550/arXiv.1707.06347 (2017).
+
+56.  Mohamed, S., Rosca, M., Figurnov, M. & Mnih, A. Monte Carlo gradient estimation in 
+
+machine learning. J. Mach. Learn. Res. 21, 1–62 (2020).
+
+57.  Google Quantum AI. Data for “Reinforcement learning control of quantum error correction”. 
+
+Zenodo https://doi.org/10.5281/zenodo.17566521 (2026).
+
+Author contributions V. Sivak conceived and led the project, with major contribution from  
+A. Morvan; V. Sivak developed the RL control framework; A. Morvan and R.G.C. calibrated and 
+expert-tuned the processor; V. Sivak and A. Morvan designed and conducted the experiments 
+and wrote the manuscript with input from all authors; M.B. and M. Neeley contributed to 
+software improvements; N.S., L.A.B. and DeepMind team contributed to high-accuracy 
+decoding; A.E. performed device simulations; and P.V.K. supervised the project. All Google 
+Quantum AI authors contributed to building and maintaining the hardware, software, 
+cryogenics and electronics infrastructure.
+
+Funding The authors declare no funding.
+
+Competing interests V. Sivak, A. Morvan, M.B., R.G.C., M. Neeley, A.E., N.S., L.A.B., D.A., A.A.,  
+R. Acharya, G.A., R. Alcaraz, S.A., T.I.A., M.A., F.A., K.A., W.A., N.A., J.A., B. Ballard, J.C.B., H.B.,  
+A. Bengtsson, M.B.K., A. Bilmes, S. Bilodeau, F.B., A. Bourassa, J. Bovaird, D. Bowers, L.B., P.B., 
+D.A.B., B. Buchea, B.B.B., T.B., B. Burkett, N.B., J.B., A.C., J. Campero, H.-S.C., S.C., B. Chiaro, 
+L.-Y.C., A.Y.C., B. Cochrane, M.C., J. Cogan, R.C., P.C., H.C., W.C., A.L.C., B. Curtin, M. Damyanov, 
+S. Das, D.M.D., S. Demura, P.D., I.D., A.D., V.E., A.M.E., L.E., M.E., D.E., C.E., V.S.F., M. Flores, L.F.B., 
+E.F., J.F., A.G.F., B.F., M.F., A.W.L.F., L.F., S.G., G.G., C.G., R. Gasca, H.G., R. Geiger, É.G., W.G.,  
+D. Gilboa, J.E.G., E.C.G., R. Gosula, S.J.d.G., A.G.D., D. Graumann, J. Grebel, A.G., J.A.G., J. Guerrero, 
+L.L.G., T. Ha, S. Habegger, T. Hadick, A. Hadjikhani, M.C.H., M.P.H., S.D.H., J. Hartshorn, S. Heslin, 
+P.H., O.H., R.H., H.-Y.H., M. Hucka, C.H., A. Huff, W.J.H., E.J., S.J., Z.J., X.J., C. Joshi, P.J., A. Kabel, 
+D.K., H.K., K. Kang, A.H.K., R. Kaufman, K. Kechedzhi, T.K., M.K., S.K., C.M.K., B. Kobrin, F.K., 
+J.M.K., R. Kudo, B. Kueffler, A. Kumar, V.D.K., V.K., N.L., D. Landhuis, T.L.-D., B.W.L., P.L., K.-M.L.,  
+J. Ledford, J. Lee, K.L., B.J.L., W.L., L.L., W.Y.L., M.L., A.T.L., W.P.L., M.T.L., A. Locharla, L.D.L.,  
+D. Lundahl, A. Lunt, S. Madhuk, A. Maiti, A. Maloney, S. Mandrá, L.S.M., O.M., E.M., P.M.D., D.M., 
+M. Mathews, C.M., J.R.M., M. McEwen, S. Meeks, K.C.M., Z.K.M., R.M., S. Molina, S. Montazeri, 
+C.N., M. Newman, A.N., M. Nguyen, C.-H.N., M.Y.N., L.O., R.O., K.O., A. Pagano, A.D.P., S.P.,  
+D.P., A. Pizzuto, E.P., R.P., O.P., M.Q., C.Q., A.R., M.J.R., R. Resnick, D.M.R., D. Riley, G. Roberts,  
+R. Rodriguez, E. Ropes, L.B.D.R., E. Rosenberg, E. Rosenfeld, D. Rosenstock, E. Rossi, P.R., D.A.R., 
+R.S., K.S., M.C.S., K.J.S., M.S., S. Schroeder, H.F.S., A. Shahingohar, M.J.S., A. Shorter, V. Shvarts, 
+S. Small, W.C.S., D.A.S., B.S., S. Springer, G.S., J.S., A. Szasz, A. Sztein, M.T., J.P.T., D. Thor,  
+D. Timucin, E.T., A.T., M.M.T., H.T., A.V., J.V., S.V., G.V., C.V.H., M.V., S.W., J.W., S.X.W., B.W., J.D.W., 
+Y.W., T. Weidel, T. White, K.W., B.W.K.W., C.J.W., M.W., C.X., Z.J.Y., P.Y., B.Y., J.Y., N.Y., E.Y., G.Y., A.Z., 
+R.Z., Y.Z., N. Zhu, N. Zobrist, Z.Z., R.B., D. Bacon, S. Boixo, Y.C., Z.C., M. Devoret, M. Hansen,  
+J. Hilton, C. Jones, J.K., A.N.K., E.L., A. Megrant, H.N., W.D.O., G. Ramachandran, V. Smelyanskiy 
+and P.V.K. work for Google Quantum AI. J. Bausch, A.W.S., J.S.S., F.J.H. and T.E. work for Google 
+DeepMind. Author-affiliated entities have filed US and international patent applications related 
+to RL calibration of the QEC decoder and quantum computer control parameters, including 
+US18/680,288 and US19/345,222.
+
+Additional information
+Supplementary information The online version contains supplementary material available at 
+https://doi.org/10.1038/s41586-026-10759-2.
+Correspondence and requests for materials should be addressed to Volodymyr Sivak or 
+Alexis Morvan.
+Peer review information Nature thanks Marin Bukov, Giovanni Cemin and the other, 
+anonymous, reviewer(s) for their contribution to the peer review of this work. Peer reviewer 
+reports are available.
+Reprints and permissions information is available at http://www.nature.com/reprints.
+
+ 
+

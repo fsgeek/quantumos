@@ -43,6 +43,19 @@ class RunConfig:
     #                                            spread can reach outcomes: penalty per
     #                                            round ~ (E[1/p]-1/p_bar) * this value
     #                                            (2026-07-10 mechanism-correction note).
+    pool_herald_attempts: int = 1              # Bounded herald attempts per §8.2
+    #                                            replenish reservation — the retain-and-
+    #                                            retry replenishment arm of the Q4
+    #                                            protocol asymmetry (Gemini disposition
+    #                                            2026-07-16: rounds retain-and-retry,
+    #                                            replenishment release-and-reacquire).
+    #                                            Default 1 IS §8.2 verbatim (one attempt
+    #                                            per generation trigger): existing
+    #                                            configs reproduce traces byte-
+    #                                            identically. Bounded, unlike round
+    #                                            retries (which the deadline bounds), so
+    #                                            a p=0 tracked path cannot hold a
+    #                                            reservation forever.
 
     def __post_init__(self) -> None:
         if self.path_policy not in _VALID_PATH_POLICIES:
@@ -56,6 +69,10 @@ class RunConfig:
         if self.herald_retry_interval_s <= 0.0:
             raise ValueError(
                 f"herald_retry_interval_s must be positive, got {self.herald_retry_interval_s!r}"
+            )
+        if not isinstance(self.pool_herald_attempts, int) or self.pool_herald_attempts < 1:
+            raise ValueError(
+                f"pool_herald_attempts must be an int >= 1, got {self.pool_herald_attempts!r}"
             )
         if self.retry_cap is not None and (not isinstance(self.retry_cap, int) or self.retry_cap < 0):
             raise ValueError(

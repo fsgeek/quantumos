@@ -1,0 +1,132 @@
+{
+ "purpose": "Q4 protocol-asymmetry confirmation sweep (pre-\u00a74 gate)",
+ "base_config": "examples/t1-open.toml",
+ "knob": "pool_herald_attempts",
+ "regression_control_expectation": {
+  "arm": 1,
+  "foreground": 145,
+  "replenish": 467,
+  "note": "must reproduce the committed sweep-s1 delta=0 anchor"
+ },
+ "arms": [
+  {
+   "pool_herald_attempts": 1,
+   "run_id": "89f5a019-a8a8-4856-a50f-774dcfcbdf97",
+   "run_dir": "runs/sweep-pool-retry/89f5a019-a8a8-4856-a50f-774dcfcbdf97",
+   "steady_state_status": "CONVERGED",
+   "reservations": {
+    "foreground": 145,
+    "replenish": 467,
+    "maintenance_share": 0.7630718954248366,
+    "replenish_to_foreground_ratio": 3.220689655172414
+   },
+   "pool_herald_draws": 467,
+   "pool_events": {
+    "pool.deposited": 334,
+    "pool.expired": 85,
+    "pool.replenish_abandoned": 670,
+    "pool.withdrawn": 243
+   },
+   "replenish_abandoned_by_reason": {
+    "endpoint_conflict": 449,
+    "herald_failed": 139,
+    "switch_capacity_exhausted": 82
+   },
+   "deadline_compliance": {
+    "completed_in_deadline": 0.9947916666666666,
+    "completed_late": 0.0,
+    "failed": 0.015625,
+    "dropped": 0.005208333333333333
+   }
+  },
+  {
+   "pool_herald_attempts": 2,
+   "run_id": "8072caab-a2a0-4cbc-af2c-79162e4ab053",
+   "run_dir": "runs/sweep-pool-retry/8072caab-a2a0-4cbc-af2c-79162e4ab053",
+   "steady_state_status": "CONVERGED",
+   "reservations": {
+    "foreground": 95,
+    "replenish": 473,
+    "maintenance_share": 0.8327464788732394,
+    "replenish_to_foreground_ratio": 4.978947368421053
+   },
+   "pool_herald_draws": 598,
+   "pool_events": {
+    "pool.deposited": 435,
+    "pool.expired": 135,
+    "pool.replenish_abandoned": 515,
+    "pool.withdrawn": 293
+   },
+   "replenish_abandoned_by_reason": {
+    "endpoint_conflict": 383,
+    "herald_failed": 44,
+    "switch_capacity_exhausted": 88
+   },
+   "deadline_compliance": {
+    "completed_in_deadline": 0.9947916666666666,
+    "completed_late": 0.0,
+    "failed": 0.0234375,
+    "dropped": 0.005208333333333333
+   }
+  },
+  {
+   "pool_herald_attempts": 4,
+   "run_id": "95f6984c-4192-4cae-bed0-d0def2f7e7bb",
+   "run_dir": "runs/sweep-pool-retry/95f6984c-4192-4cae-bed0-d0def2f7e7bb",
+   "steady_state_status": "CONVERGED",
+   "reservations": {
+    "foreground": 91,
+    "replenish": 474,
+    "maintenance_share": 0.8389380530973451,
+    "replenish_to_foreground_ratio": 5.208791208791209
+   },
+   "pool_herald_draws": 659,
+   "pool_events": {
+    "pool.deposited": 476,
+    "pool.expired": 174,
+    "pool.replenish_abandoned": 448,
+    "pool.withdrawn": 297
+   },
+   "replenish_abandoned_by_reason": {
+    "endpoint_conflict": 354,
+    "herald_failed": 4,
+    "switch_capacity_exhausted": 90
+   },
+   "deadline_compliance": {
+    "completed_in_deadline": 0.9947916666666666,
+    "completed_late": 0.0,
+    "failed": 0.015625,
+    "dropped": 0.005208333333333333
+   }
+  },
+  {
+   "pool_herald_attempts": 8,
+   "run_id": "10f00ac1-dc0d-4cf8-a8ad-acf7ad512060",
+   "run_dir": "runs/sweep-pool-retry/10f00ac1-dc0d-4cf8-a8ad-acf7ad512060",
+   "steady_state_status": "CONVERGED",
+   "reservations": {
+    "foreground": 83,
+    "replenish": 474,
+    "maintenance_share": 0.8509874326750448,
+    "replenish_to_foreground_ratio": 5.710843373493976
+   },
+   "pool_herald_draws": 661,
+   "pool_events": {
+    "pool.deposited": 480,
+    "pool.expired": 170,
+    "pool.replenish_abandoned": 440,
+    "pool.withdrawn": 305
+   },
+   "replenish_abandoned_by_reason": {
+    "endpoint_conflict": 350,
+    "switch_capacity_exhausted": 90
+   },
+   "deadline_compliance": {
+    "completed_in_deadline": 0.9947916666666666,
+    "completed_late": 0.0,
+    "failed": 0.015625,
+    "dropped": 0.005208333333333333
+   }
+  }
+ ]
+}

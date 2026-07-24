@@ -169,6 +169,10 @@ class _PoolReplenishActivatePayload:
     key: tuple  # (PathId, CoherenceClass) — the pool this attempt feeds
     causal_parent_id: EventId | None
     reservation: SwitchPathReservation
+    # Bounded retain-and-retry ordinal (RunConfig.pool_herald_attempts): 1 on
+    # first activation; >1 payloads are herald retries on the SAME still-held
+    # reservation and skip the reservation.active transition.
+    attempt_no: int = 1
 
 
 @dataclass(frozen=True)
@@ -747,19 +751,29 @@ class Engine:
             # replenish reservation is only ever released by its own
             # resolution below, so this is defensive symmetry, not a live path.
             return
-        reservation.state = ReservationState.ACTIVE
-        entity_id = self._reservation_entity_id(payload.path_id)
-        active_id = self._publish(
-            "reservation.active", entity_id, payload.causal_parent_id,
-            {"round_id": None, "lease_id": payload.lease_id,
-             "request_id": payload.request_id,
-             "path_id": self._path_id_payload(payload.path_id)})
+        if payload.attempt_no == 1:
+            reservation.state = ReservationState.ACTIVE
+            entity_id = self._reservation_entity_id(payload.path_id)
+            active_id = self._publish(
+                "reservation.active", entity_id, payload.causal_parent_id,
+                {"round_id": None, "lease_id": payload.lease_id,
+                 "request_id": payload.request_id,
+                 "path_id": self._path_id_payload(payload.path_id)})
+        else:
+            # Retry on the already-ACTIVE reservation: no state transition to
+            # re-publish (the §7 lifecycle invariant sees exactly one
+            # acquired->configuring->active->released per reservation).
+            active_id = payload.causal_parent_id
 
-        # §8.2 verbatim: ONE heralding attempt per generation trigger. (An
-        # internal retry loop would non-terminate at p=0 — the round path's
-        # retry loop is bounded by the round deadline, which a replenish
-        # attempt lacks.) New named CRN stream: reusing the round "herald"
-        # stream would collide two different-kinded physical events on one key.
+        # §8.2 as shipped: ONE heralding attempt per generation trigger,
+        # generalized 2026-07-23 to RunConfig.pool_herald_attempts BOUNDED
+        # attempts per reservation (default 1 = the shipped behaviour; the
+        # retain-and-retry replenishment arm of the Q4 protocol asymmetry,
+        # Gemini disposition 2026-07-16). The bound is what keeps p=0
+        # termination: the round path's retry loop is bounded by the round
+        # deadline, which a replenish attempt lacks. New named CRN stream:
+        # reusing the round "herald" stream would collide two different-kinded
+        # physical events on one key.
         path_id, coherence_class = payload.key
         ordinal = self._pool_herald_ordinal.get(payload.key, 0) + 1
         self._pool_herald_ordinal[payload.key] = ordinal
@@ -808,6 +822,21 @@ class Engine:
                  "lease_id": payload.lease_id, "round_id": None,
                  "source": "replenish"})
         else:
+            if payload.attempt_no < self._config.pool_herald_attempts:
+                # Retain-and-retry: keep the reservation and schedule the next
+                # bounded attempt. No resolution yet — the in-flight slot stays
+                # held and no abandonment is published (only the FINAL failed
+                # attempt resolves, so pool.replenish_abandoned still counts
+                # generation triggers, not draws).
+                self._heap.push(
+                    self._state.now + self._config.herald_retry_interval_s,
+                    _PoolReplenishActivatePayload(
+                        path_id=payload.path_id, request_id=payload.request_id,
+                        lease_id=payload.lease_id, key=payload.key,
+                        causal_parent_id=draw_id, reservation=payload.reservation,
+                        attempt_no=payload.attempt_no + 1,
+                    ))
+                return
             self._scheduler.on_pool_replenish_outcome(
                 payload.key, False, None, self._state.now)
             depth = len(self._state.pool.get(payload.key, []))

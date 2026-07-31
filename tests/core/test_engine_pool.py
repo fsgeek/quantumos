@@ -453,3 +453,52 @@ def test_stale_head_is_skipped_and_the_fresh_next_lease_is_withdrawn():
     assert withdrawn[0].payload["depth"] == 0
     assert len(engine._state.pool[key]) == 0
     assert scheduler.pool_depth(key) == 0
+
+
+def test_pool_herald_attempts_retries_on_one_reservation_then_abandons():
+    # Retain-and-retry replenishment arm (the Q4 protocol asymmetry; Gemini
+    # disposition 2026-07-16): pool_herald_attempts=3 on an uncalibrated
+    # (p=0) tracked path takes THREE bounded draws on ONE reservation —
+    # acquired/configuring/active/released exactly once — publishes ONE
+    # herald_failed abandonment at the final draw, and releases at resolution.
+    key = (_P23, _MSG)
+    scheduler = _PoolingS0(low_water_mark=1, tracked_keys=[key])
+    config = replace(make_config(switch_capacity_c=2), pool_herald_attempts=3)
+    engine, events = _run_engine(config, scheduler, _first_arrival_time() + 1e-3)
+
+    res = [e for e in events if e.event_type.startswith("reservation.")
+           and e.entity_id == "M2:0->M3:0"]
+    assert [e.event_type for e in res] == [
+        "reservation.acquired", "reservation.configuring",
+        "reservation.active", "reservation.released"]
+
+    draws = [e for e in events if e.event_type == "draw.sampled"
+             and e.payload["stream"] == "pool_herald"]
+    assert len(draws) == 3
+    assert [d.payload["key"][3] for d in draws] == [1, 2, 3]
+
+    abandoned = [e for e in events if e.event_type == "pool.replenish_abandoned"]
+    assert len(abandoned) == 1
+    assert abandoned[0].payload["reason"] == "herald_failed"
+    assert scheduler._in_flight[key] == 0
+    assert _P23 not in engine._state.active_reservations
+
+
+def test_pool_herald_attempts_stops_at_first_success():
+    # N > 1 must not change the success path: one draw, one deposit, release
+    # at resolution, no abandonment.
+    key = (_P23, _MSG)
+    scheduler = _PoolingS0(low_water_mark=1, tracked_keys=[key])
+    engine, events = _run_engine(_config(pool_herald_attempts=3), scheduler,
+                                 _first_arrival_time() + 1e-6)
+
+    draws = [e for e in events if e.event_type == "draw.sampled"
+             and e.payload["stream"] == "pool_herald"]
+    assert len(draws) == 1
+    deposits = [e for e in events if e.event_type == "pool.deposited"]
+    assert len(deposits) == 1
+    assert not any(e.event_type == "pool.replenish_abandoned" for e in events)
+    released = [e for e in events if e.event_type == "reservation.released"
+                and e.entity_id == "M2:0->M3:0"]
+    assert len(released) == 1
+    assert _P23 not in engine._state.active_reservations

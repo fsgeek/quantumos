@@ -1,0 +1,1650 @@
+Holographic Storage for the Cloud: advances and challenges 
+
+NATHANAËL CHERIERE , JIAQI CHU , and GRACE BRENNAN , Microsoft Research, 
+Cambridge 
+PASHMINA CAMERON and PEDRO DA COSTA , Work done at Microsoft Research, Cambridge 
+JANNES GLADROW , Microsoft Research, Cambridge 
+GUILHERME ILUNGA , Work done at Microsoft Research, Cambridge 
+DOUGLAS KELLY and SARAH LEWIS , Microsoft Research, Cambridge 
+JOOWON LIM , Work done at Microsoft Research, Cambridge 
+GIORGIO MALTESE , Microsoft Research, Cambridge 
+TONY MASON , Work done at Microsoft Research, Cambridge 
+GREG O’SHEA , Microsoft Research, Cambridge 
+SOUJANYA PONNAPALLI and MICHAEL RUDOW , Work done at Microsoft Research, 
+Cambridge 
+ALAN SANDERS , Microsoft Research, Cambridge 
+THEANO STAVRINOS , Work done at Microsoft Research, Cambridge 
+XINGBO WU , MENGYANG YANG , DUSHYANTH NARAYANAN , BENN THOMSEN , 
+and ANTONY ROWSTRON , Microsoft Research, Cambridge 
+
+Holographic Storage is an old idea that has always promised high density and fast random access, but has 
+never been commercially competitive with Hard Disk Drives (HDDs) and Solid State Devices (SSDs). In Project 
+HSD at Microsoft Research we asked the question: “Does holographic storage finally make sense for cloud 
+storage?” This article describes our journey toward answering this question. 
+
+We achieved 1.8 × higher density than the previous state-of-the-art, using commodity components available 
+today and leveraging machine learning to compensate for the noise and distortions introduced by commodity 
+components. This uncovered two new challenges which are the focus of this article: achieving high end-to- 
+end energy efficiency without sacrificing capacity, and spatial multiplexing without mechanical movement. 
+Improving end-to-end energy efficiency requires joint optimization across low-level media parameters and 
+higher-level system parameters that govern background maintenance operations such as read refresh and 
+
+*Microsoft Research, Cambridge. 
+† Work done at Microsoft Research, Cambridge. 
+Authors’ Contact Information: Nathanaël Cheriere, Jiaqi Chu, Grace Brennan, Jannes Gladrow, Douglas Kelly, Sarah Lewis, 
+Giorgio Maltese, Greg O’Shea, Alan Sanders, Xingbo Wu, Mengyang Yang, Dushyanth Narayanan, Benn Thomsen, and 
+Antony Rowstron, Microsoft Research, Cambridge; e-mails: ncheriere@microsoft.com, jiaqchu@microsoft.com, grace. 
+brennan@microsoft.com,  jannesgla@gmail.com,  doug.kelly@microsoft.com,  sarahlewis@microsoft.com,  gmaltese@ 
+microsoft.com,  gregos@microsoft.com,  alansanders89@gmail.com,  xingbowu@microsoft.com,  meny@microsoft.com, 
+dnarayan@microsoft.com, benn.thomsen@microsoft.com, antr@microsoft.com; Pashmina Cameron, Pedro Da Costa, 
+Guilherme  Ilunga,  Joowon  Lim,  Tony  Mason,  Soujanya  Ponnapalli,  Michael  Rudow,  and  Theano  Stavrinos,  Work 
+done  at  Microsoft  Research,  Cambridge;  e-mails:  pcameron@microsoft.com,  Pedro.ferreira_da_costa@kcl.ac.uk, 
+gilunga117@gmail.com,  limjoowon@gmail.com,  fsgeek@cs.ubc.ca,  soujanyap95@gmail.com,  mhrudow@gmail.com, 
+thst@uw.edu. 
+
+$
+
+This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs International 4.0 License. 
+
+© 2025 Copyright held by the owner/author(s). 
+ACM 1553-3077/2025/01-ART3 
+https://doi.org/10.1145/3708993 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:2 
+
+N. Cheriere et al. 
+
+garbage collection. We developed new physics models of the media; analytic and simulation models of the 
+media access and background media maintenance; and workload-driven optimization to find optimal param- 
+eter combinations. These techniques resulted in a 14 × improvement over the previous approach for typical 
+workloads without sacrificing capacity. We also designed the first scalable and mechanical movement free 
+spatial multiplexing system for holographic storage. 
+
+Despite these advances, we conclude that currently, holographic storage is still far from the combination 
+of density, capacity scaling, and energy efficiency needed to compete with the incumbent technologies. We 
+need fundamental advances in the physical media that improve energy efficiency by another 1–2 orders of 
+magnitude without reducing data density. Further advances in optics are also required to achieve spatial 
+multiplexing that is simultaneously scalable, low-loss, and high-density. 
+
+CCS Concepts:  • Hardware → Emerging optical and photonic technologies • Computer systems 
+organization → Cloud computing ; 
+
+Additional Key Words and Phrases: Holographic storage, read erasure, write erasure, garbage collection, end- 
+to-end simulation 
+
+ACM Reference Format: 
+Nathanaël Cheriere, Jiaqi Chu, Grace Brennan, Pashmina Cameron, Pedro Da Costa, Jannes Gladrow, Guil- 
+herme Ilunga, Douglas Kelly, Sarah Lewis, Joowon Lim, Giorgio Maltese, Tony Mason, Greg O’Shea, Sou- 
+janya Ponnapalli, Michael Rudow, Alan Sanders, Theano Stavrinos, Xingbo Wu, Mengyang Yang, Dushyanth 
+Narayanan, Benn Thomsen, and Antony Rowstron. 2025. Holographic Storage for the Cloud: Advances and 
+Challenges. ACM Trans. Storage 21, 1, Article 3 (January 2025), 31 pages.  https://doi.org/10.1145/3708993 
+
+1  Introduction 
+
+Cloud storage is going through an inflection. For warm rewritable storage in the cloud this has 
+driven exponential demand for magnetic hard disk drive ( HDD ) capacity. This demand is already 
+at exabyte scale and will reach zetabyte scale in the mid-2020s [ 81 ], even sooner than previously 
+predicted [ 21 ]. Faced with exponentially increasing demand, cloud providers such as Microsoft 
+have relied on corresponding growth in hardware GB/$ to keep costs from exploding. This has 
+usually meant increased capacity per device at a more-or-less constant dollar cost per device. How- 
+ever, we can no longer rely on this, and if we do not fundamentally innovate in storage hardware 
+then the demand will outstrip the supply and the cost of of cloud storage will increase dramatically. 
+There has been so much innovation in the last decade in computing and networking, much of 
+it driven by the needs and scale of the cloud. Yet, we have seen little fundamental innovation in 
+storage. HDDs and SSDs are no longer improving exponentially in GB/$: they are in the mature 
+phase of their the technology “S-curve” [ 80 ] shown in Figure 1 . While GB/$ continues to improve 
+for these technologies, the rate of improvement is slowing down. It is not clear yet whether new 
+technologies such as HAMR will start a new S-curve for HDD density. However, for HDDs in 
+particular, an even bigger challenge is that the access rates (IOPS) have been flat for decades. 
+Many workloads cannot benefit from improvements in device capacity as they do not come with 
+a corresponding increase in device IOPS. 
+
+Our focus in this article is on warm storage, i.e., rewritable storage with a relatively high access 
+rate requirement. Other storage tiers such as archival storage are facing similar challenges. The 
+incumbent technology — magnetic tape — is also mature and has only been improving slowly. 
+DNA storage [ 9 , 18 , 32 ] and more recently storage in glass [ 3 , 4 ] are two examples of disruptive 
+new technologies that are being developed to replace magnetic tape. However, these technologies 
+will not meet the needs of warm data storage. They are not rewritable and they do not provide 
+sufficiently high access rates particularly for small random accesses. On the other hand, they offer 
+a level of durability, density, and low cost that is beyond what is needed for warm data. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:3 
+
+Fig. 1.  Technology S-curve. 
+
+Warm storage is thus ready for disruption by new storage media. Cloud storage also offers 
+a unique opportunity to innovate in overall storage design. HDDs and SSDs initially relied on 
+consumer device demand to drive scale and volume: the effect is that even in the cloud, they are 
+constrained to use legacy form factors and interfaces, e.g., the 3.5” form factor for HDDs. Cloud 
+storage (like computing and networking) by itself is already at a scale that justifies revisiting these 
+design decisions. Cloud services are designed at rack scale, and so we can design storage hardware 
+for the form factor that makes the most sense for the technology, at least up to rack scale. Both 
+hardware and software details are abstracted away from the user, who sees only high-level service 
+APIs. This frees us to rethink the software and hardware interfaces and the storage stack. 
+
+Why holographic storage? Holographic storage [ 25 ] records data as holograms in a photosensi- 
+tive medium. It is an old idea with an extensive research literature. It has several attractive prop- 
+erties for warm data storage: it can use a rewritable, low-cost, bulk 3D medium. Unlike flash, this 
+does not wear out — it can sustain an indefinite number of program/erase cycles. It uses optics to 
+read and write data, which means it can provide high access rates and low latency. Unlike mag- 
+netic media (HDDs), CMOS-based memories (e.g., flash SSDs), or 2-D optical storage (e.g., DVDs), 
+rewritable holographic storage can be truly 3-dimensional. A single volume (or “zone”) can in 
+theory store thousands of holograms, each of which encodes tens of kilobytes to megabytes of 
+data. The optical read/write mechanisms can be decoupled from the bulk media, compared to the 
+tight integration required, e.g., with HDD heads which must be in extremely close proximity to 
+the medium. Holograms can be randomly accessed for read within each zone. Holograms are read 
+and written as entire 2-D images each encoding a large number of symbols, again unlike magnetic 
+media where a read/write head can only read a single symbol at a time. These properties make 
+holographic storage attractive for durability, density, cost, throughput and IOPS. 
+
+However despite these attractive properties, holographic storage has never been successfully 
+commercialized. Even in the research literature, there are few examples of end-to-end systems or 
+prototypes for Write Once Read Many ( WORM ) holographic storage; even fewer of rewritable 
+holographic storage; and none approaching the capacity, scale, or performance that would be 
+needed for commercial viability. In Project HSD [ 64 ] we asked the question “does rewritable holo- 
+graphic storage finally make sense in the cloud era”? We note that advances in optical technology 
+has enabled high storage densities as well as performance that is orders of magnitude better than 
+possible in the past. At the same time, commoditization of these technologies has driven down 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:4 
+
+N. Cheriere et al. 
+
+the cost of the components. Are these trends, combined with the freedom to redesign the storage 
+stack from top to bottom, sufficient to make holographic storage viable for the cloud? 
+
+Learnings from Project HSD . For the previous wave of research in holographic storage (until the 
+early 2000s), achieving high density at low cost was a challenge. The key optical technologies 
+— cameras, SLMs (Spatial Light Modulators), and lasers were low-resolution and/or high-cost. In 
+Project HSD we demonstrated that high density is achievable using commodity components: we 
+have recorded densities [ 13 ] 1.8 × higher than the previous state-of-the-art [ 15 ]. To do this we 
+leveraged the commoditization and improvement of optical components in the last two decades. 
+We used machine learning to compensate for the distortions added by commodity optics [ 50 ] and 
+improved the state-of-the-art in measurement and modeling of holographic media [ 23 ]. 
+
+This uncovered two new challenges that are the focus of this article. First, the end-to-end energy 
+efficiency of rewritable holographic storage was 2–3 orders of magnitude too low to be practical. 
+While there has been previous research on minimizing the optical energy used for individual reads 
+and writes, the challenge is to achieve end-to-end energy efficiency without sacrificing net capacity . 
+This means we must consider the overhead caused by media maintenance operations such as read 
+refresh and garbage collection that are essential to cope with write erasure and read erasure . In this 
+article we describe, model, and optimize end-to-end energy efficiency. Compared to the previous 
+state-of-the-art for optimizing media energy use [ 57 ], this improved end-to-end efficiency by 14 ×
+for typical workloads without sacrificing capacity. 
+
+Second, we identify optical spatial multiplexing as a key challenge. Multiplexing the camera 
+and SLM over a large amount of data is essential for achieving competitive cost per GB. This 
+problem is not well addressed in previous research, with most work assuming physical movement 
+of the medium. This fundamentally limits IOPS making the technology less attractive than HDDs 
+(which already suffer from low IOPS). Thus the challenge is to achieve spatial multiplexing without 
+requiring mechanical movement. We describe in this article a mechanical movement free design 
+for spatial multiplexing. 
+
+However, neither challenge has been fully solved. Energy efficiency is still a barrier to com- 
+mercial viability, and we need another 1–2 orders of magnitude improvement on this metric. We 
+believe this is only possible with fundamental advances in holographic materials. Spatial multiplex- 
+ing also continues to be a challenge. Our spatial multiplexing design can either achieve good power 
+efficiency or high density, but not both simultaneously. Further advances in optics are needed to 
+overcome this challenge. 
+
+2  Background 
+2.1  Incumbent Technologies: HDDs and SSDs 
+
+Figure 2 shows the historical capacity per device of HDDs. Until around 2010 this was a true 
+Moore’s Law exponential driven by shrinking feature sizes. However, since then the rate has 
+slowed as improvement is driven by increasingly complex and “one-off” advances such as helium- 
+filling to increase platter count; shingling to increase the number of tracks; and most recently 
+energy-assisted technologies such as HAMR [ 65 ]. It is not yet clear whether HAMR will allow 
+significant further scaling. It is a very complex technology and despite more than a decade of re- 
+search, has not yet deployed commercially at scale [ 69 ]. Due to this complexity it is also likely to 
+increase per-device cost when it ships. 
+
+The real challenge with magnetic HDDs however is that they are less and less able to sustain the 
+access rates (IOPS/TB) required by warm data workloads. A viable technology for cloud storage 
+needs to provide an IOPS/TB that is equal or higher than the IOPS/TB of the workload. However, 
+HDD IOPS per device have stayed almost completely flat for several decades, which means that 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:5 
+
+Fig. 2.  HDD per-device capacity over time. 
+
+Fig. 3.  HDD IOPS/TB over time. 
+
+every increase in per-device capacity comes with a corresponding drop in IOPS/TB. Figure 3 shows 
+the recent history of HDD IOPS/TB projected out to 2030. Recently announced dual-actuator HDDs 
+give a one-off improvement in IOPS/TB but this comes at a price premium and is not a scalable 
+solution: the number of actuators cannot simply be increased with each new generation of devices. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:6 
+
+N. Cheriere et al. 
+
+Fig. 4.  NAND flash chip areal density over time. 
+
+The increasing use of shingled magnetic recording ( SMR ) for high capacity is another challenge 
+— it reduces effective IOPS/TB (not shown in the figure) for random write workloads due to write 
+amplification [ 2 , 67 ]. 
+
+The decline in IOPS/TB results in stranded capacity which is a huge problem for cloud storage 
+providers. If the average IOPS/TB of the workload is higher than that of the device, then we cannot 
+use the full capacity of the device, and thus the increase in per-device capacity gives no benefit. 
+In some cases stranded capacity can be resold as “low-latency archival storage” [ 59 ] — however 
+this is a relatively small gain in revenue as it must compete on cost with tape and other archival 
+technologies. The only other solution to stranded capacity is to move more of the workload onto 
+SSDs at significantly higher cost/GB. 
+
+Will SSDs eventually become cheap enough to solve this problem? Historically SSD costs have 
+been driven by the increasing areal density of NAND flash chips. Figure 4 shows this historical 
+areal density. For 2D flash, this effectively stopped increasing in 2010 and further increases were 
+achieved by increasing the number of 3D flash layers. Scaling in the vertical dimension gives only 
+linear benefits (compared to quadratic for 2D features size reduction) and is also limited by the 
+aspect ratio achievable with etching and deposition [ 71 , 77 ]. We may have already hit the limits 
+of this — recent advances have relied on a multideck approach (also known as “string stacking”) 
+that stacks individual devices on top of each other. While this increases the density and amortizes 
+some costs at the package and device level, it does not fundamentally reduce the per-bit cost at 
+the chip level. 
+
+The only other option to increase bit density in NAND flash is to increase the number of bits per 
+cell. TLC (3 bits/cell) is widely deployed in the cloud today — for some workloads QLC (4 bits/cell) 
+can be used. However, this only gives a 33% improvement in capacity, is harder to manufacture, 
+and has much lower ( ∼ 4 ×) endurance which is challenging for write-heavy workloads. PLC (5 
+bits/cell) has been announced but not yet shipped, and the capacity improvement here is even 
+smaller (25% over QLC). The fundamental challenge with this approach is that at each step the 
+number of programmable levels per cell must be doubled but the gain is only one bit, hence the 
+relative capacity gain shrinks with each generation. 
+
+There is thus an increasingly large gap between SSDs and HDDs. It is possible that an entirely 
+new memory technology will appear to fill this niche — at the moment though there seems to be 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:7 
+
+Fig. 5.  Improvements in digital camera technology 1999–2018. 
+
+no viable candidate. Resistive memories [ 84 ], despite decades of research have not fulfilled their 
+promise. The most successful technology in this space — Optane (3D Xpoint) — was unable to 
+displace flash and has been discontinued [ 24 ]. The question that motivated this work was: can 
+holographic storage fill this gap? 
+
+2.2  Holographic Storage 
+Holography was discovered in 1948, but needed the development of the laser (discovered in 1960) 
+to be used in practical applications. The first holographic storage system was demonstrated in 
+1963 [ 49 ]. Since then there has been an extensive literature on different aspects of the optics and 
+physics of holographic storage [ 25 ], and a few attempts to build rewritable storage devices start- 
+ing from the 70s [ 33 , 39 , 54 ] — the IBM system [ 14 ], designed in the late 90s, to our knowledge 
+represents the most complete end-to-end data storage so far, and the highest previously reported 
+density for rewritable holographic storage. However, this was never commercialized: in the early 
+2000s there were still several commercial and technological obstacles that would have made pro- 
+duction and deployment at scale very difficult. HDDs were still in the exponential growth phase 
+of their capacity curves making it very difficult for a new technology at the initial stages of the 
+S-curve, to compete on cost/capacity. This we believe has now changed; and for cloud storage in 
+particular the declining IOPS/TB of HDDs is a huge driver to find alternative technologies with 
+higher IOPS/TB but that are still cheaper than flash SSDs. The ability to design at rack scale for 
+the cloud, rather than 3.5” form factors also unblocks the use of commodity optical components. 
+Perhaps most importantly, the optical technologies that are key to holography have improved 
+dramatically in the last two decades. Cameras in particular have become commodity devices with 
+Moore’s Law like improvements driven by the smartphone industry (Figure 5 ). Similarly commodi- 
+tization of SLMs which are essentially miniaturized projection devices has been driven by advances 
+in heads-up displays, projectors, and LIDAR. Laser quality and power as well as miniaturization 
+have been driven by extensive use in optical communications as well as consumer devices. The 
+components that were expensive, custom devices in 2000 are now available as commodity devices 
+with higher resolution, speed, and quality at lower power and cost. 
+
+3  Holographic Storage Design 
+
+The core principle of holographic data storage is the recording of an optical interference pattern 
+(a hologram ) within a photorefractive material. Figure 6 shows hologram formation and readout in 
+2 dimensions. 1 An interference pattern is created by the intersection of two coherent laser beams 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:8 
+
+N. Cheriere et al. 
+
+Fig. 6.  Creating a persistent interference pattern. 
+
+within the medium (Figure 6 (b)). This pattern results in local changes in refractive index, which 
+persist after the light is removed (Figure 6 (c)). To exploit this for storage, one of the beams is 
+modulated with a 2D image that encodes a block (page) of data. This data beam is intersected with 
+a reference beam to create the hologram. Once the hologram is written, the reference beam alone 
+is used for readout — it diffracts off the hologram to recreate a noisy and attenuated version of the 
+data beam from which the data can be decoded (Figure 6 (d)). This kind of diffraction is known as 
+Bragg diffraction [ 12 ] and the holograms are sometimes referred to as Bragg gratings. 
+
+Only certain materials have the right combination of properties to record holograms. The 
+medium must be photosensitive , i.e., respond to light by changing its local optical properties (e.g., 
+the refractive index) as a function of light intensity. One popular mechanism is for the light energy 
+to cause a chemical change (such as polymerization) changing its refractive index. It fits well for 
+WORM holographic storage but it is too slow, energy-intensive, and difficult to reverse to be useful 
+for rewritable storage with high access rates. 
+
+For rewritable storage, the best known materials are electro-optical ones. Incident light on such 
+materials results in a locally non-uniform electric field, which in turn causes a non-uniform refrac- 
+tive index, i.e., a Bragg grating. The most promising — and most studied — electro-optical holo- 
+graphic material is iron-doped Lithium Niobate (Fe:LiNbO3) [ 25 ], which has good optical quality 
+of holograms, speed of hologram formation, and density of holograms. It is manufactured in bulk 
+using the Czochralski method [ 79 ] that is also used to manufacture semiconductor grade silicon, 
+and thus has the potential for large-scale production. It is also very stable, and can be read and 
+written to for decades without degradation; this is unlike, for example, flash memory which has a 
+limited number of write cycles. It also has high durability, i.e., the rate of dark decay (the degrada- 
+tion of holograms over time without external action) is very low: a hologram’s half-life is counted 
+in years [ 38 ]. In this article we focus on iron-doped Lithium Niobate crystal, which we will refer 
+to as the medium or simply the crystal. 
+
+This material is a crystal lattice of Lithium, Niobium, and Oxygen atoms with iron impurities 
+( Fe 2 +and Fe 3 +ions) as a dopant material. Lithium Niobate has the required electro-optical prop- 
+erties and the Fe ions act as electron traps (Figure 7 . Light at 532 nm wavelength (green) excites 
+electrons from Fe 2 +ions to the conduction band where they can diffuse freely. As this excitation 
+happens more when the intensity of light is high, the net effect under non-uniform illumination is 
+that electrons diffuse from the brightly lit areas to the darker areas. Some of the electrons moved 
+to the dark areas of the interference pattern fall into these traps, converting Fe 3 +to Fe 2 +. This 
+
+1 
+This is simplified for illustration purposes. In reality holographic storage is 3-dimensional, and also the interference pat- 
+tern is non-uniform as it encodes the data. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:9 
+
+Fig. 7.  Physics of rewritable holographic storage in Fe:LiNbO3. 
+
+results in a persistent change in electron density even after the incident light is removed, which in 
+turn causes a local change in refractive index. Iron-doped Lithium Niobate is typically used with 
+532 nm laser light as it has maximum photosensitivity at this wavelength. As the read wavelength 
+must match the write wavelength, the same laser source is used for both operations. Reads also 
+result in redistribution of charge; as reading uses a single beam the illumination is uniform and 
+hence the redistribution is toward a uniform chrage distibution. Due to the lower power of reads 
+and the lack of interference patterns that create strong peaks, this effect is much weaker than that 
+of writes, but must still be accounted for cumulatively over thousands of read operations. 
+
+3.1  Key Concepts 
+Diffraction efficiency . The diffraction efficiency of a hologram is the ratio of light intensity diffracted 
+into the readout beam to the light intensity of the reference beam. Typical diffraction efficiencies 
+−3 . This means most of the reference beam power is not diffracted 
+range from ranges from 10 
+by the hologram into the readout beam, but simply passes through the crystal. Increasing diffrac- 
+tion efficiency of individual holograms makes reads more energy-efficient; however this requires 
+stronger holograms which require more energy to write. Stronger holograms also means fewer 
+holograms can be superposed within the same volume, reducing density. 
+
+−5 to 10 
+
+Zoned storage . Holograms once written cannot be overwritten, but new holograms can be super- 
+posed on existing ones. All the superposed holograms can be simultaneously erased using lower- 
+wavelength (UV) light, generated from low-cost UV LEDs. In a practical system, a larger volume 
+of crystal would be subdivided into many zones , each of which can be independently erased. This 
+is very similar to the zoned storage model [ 85 ] of Flash SSDs and shingled (SMR) hard disk drives. 
+Pages can be appended to a zone, individual pages within a zone can be randomly access for read, 
+and the entire zone can be erased (reset). To present the abstraction of rewritable storage, zoned 
+storage devices must implement garbage collection to move live data from a zone that is about to 
+be erased into a fresh zone. 
+
+Superposition of holograms . Individual holograms can encode kilobytes to megabytes of data 
+within a relatively small volume of crystal, i.e., a zone. To achieve high density we need to super- 
+pose 100s to 1000s of hologram within each zone. This is done by changing the reference beam 
+— for each unique reference beam, a different page can be written to the same zone, and these 
+pages can be individually addressed by using the same unique reference beam. For this reason the 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:10 
+
+N. Cheriere et al. 
+
+Fig. 8.  Angular multiplexing. 
+
+reference beam is also referred to as the address beam . For this to work well, the different reference 
+beams must be orthogonal — i.e., they must have high correlation with their own pages and low 
+correlation with any other pages, regardless of the data encoded in the pages. 
+
+Multiple techniques exist for multiplexing within a zone. Angular multiplexing (Figure 8 changes 
+the wavefront angle of the reference beam using, e.g., MEMS mirrors and lenses. This is known to 
+give very high orthogonality through Bragg selectivity [ 12 ] and has been used successfully to write 
+up to 5,000 holograms in a single zone [ 55 ]. Phase multiplexing uses spatial light modulators 
+( SLMs ) to encode one of a set of orthogonal phase codes on the reference beam [ 8 , 27 , 29 , 30 , 58 ]. 
+Wavelength multiplexing uses different wavelengths of light for different pages [ 49 , 62 , 83 ]. In this 
+article we focus on angular multiplexing, which is the most studied and most promising technique 
+for high-density holographic storage. 
+
+In principle, the number of holograms that can be superposed with angular multiplexing is only 
+limited by the available optical angle and the wavelength of the light. With a typical setup, this is 
+around 3,000 holograms. In reality however, the hologram density is limited by the medium, which 
+has limited dynamic range and also suffers from both write and read erasure. A common approx- 
+imation is that the diffraction efficiency is inversely proportional to the square of the number of 
+holograms superposed. However, this is a simplification — the actual relationship is more complex 
+and depends on the write and read profiles used for each hologram. These profiles — as well as 
+media maintenance operations such as garbage collection and read refresh — govern a complex 
+tradeoff between density and energy efficiency. 
+
+Write erasure . Each superposed hologram slightly degrades the previously written holograms 
+and decreases their diffraction efficiency. The optimal energy to use for each write depends on the 
+number of writes before and after it in that zone; and also on the number of reads we want to 
+support on the zone before doing a refresh operation. 
+
+Read erasure . Reads use the same laser light as writes but typically at much lower power levels. 
+Thus they also slightly degrade all the superposed holograms in the zone, including theo one 
+currently being read. While the erasure from a single read is much lower than that of a write, the 
+cumulative erasure of a large number of reads can be significant. As holograms get weaker due to 
+read erasure, they require increasing amounts of energy to read. For a fixed laser power, this means 
+an increased read latency and reduced IOPS. In practice, this means that we must periodically do a 
+read refresh — copy all live data out of a zone that has served many reads into a fresh zone. While 
+previous work on holography assumed a constant amount of energy per read, we have found that 
+it is much more efficient to use a variable read profile with the energy per read increasing over 
+time until a refresh is triggered. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:11 
+
+Fig. 9.  Page (hologram) life cycle: evolution of the diffraction efficiency of a page in a zone over time. 
+
+Zone life cycle . We can think of each zone as having a life cycle from when the zone has just been 
+erased until it again reaches a fully erased state. The lifecycle consists of a write phase in which 
+holograms are written in an append-only manner, followed by a read phase where any page can be 
+read at random at any time. For simplicity, we assume that reads will not interleave with writes. 
+This is a valid assumption for a design where a small number of open zones is maintained for 
+writing per device, and partially written zones are buffered in DRAM or SSD. Interleaving reads 
+and writes would add some complexity but we do not believe it would significantly change the 
+end-to-end energy efficiency of the system. Figure 9 shows the “life cycle” of a single hologram 
+within a zone in a holographic storage system. The top of the figure shows the diffraction efficiency 
+of a single page in the zone, starting from when it is written and progressing through writes of 
+subsequent pages and the read phase. The diffraction efficiency of the hologram increases over 
+time during the write as a function of the total write energy, but with diminishing returns. Reads 
+to any hologram in the zone also cause erasure, but at a lower rate as reads typically use less 
+energy. Eventually, the hologram must be refreshed by rewriting the data to a different zone. For 
+write-heavy workloads, it is also possible that the entire zone is garbage-collected (giving us a 
+free refresh of all live data in the zone) before the refresh threshold is reached. The bottom part 
+of the figure shows the write profile with the page under consideration in blue and other pages in 
+grey. Note that the shape of the read profile is independent of the actual pages being read as read 
+erasure applies uniformly across the whole zone. 
+
+3.2  Holographic Translation Layer 
+
+Any practical holographic storage must be able to optimize the write and read profiles as well as 
+handle the media management operations (garbage collection and read refresh) in a way that is 
+transparent to the application. Figure 10 shows the design that we will use as our system model 
+throughout this article. It includes a Holographic Translation Layer ( HTL ) (Figure 10 (a)) that 
+provides the abstraction of a rewritable, flat address space on a medium that needs variable write 
+and read profiles as well as garbage collection and read refresh. This is similar to the notion of a 
+Flash Translation Layer ( FTL ) in flash SSDs [ 1 , 19 , 20 , 31 , 44 , 47 , 66 ]. 
+
+The HTL manages the life cycle of each page in each zone in a device. It tracks the history of 
+each zone and makes the key decisions on how much energy to use for each write and read; when 
+to refresh a page; and when to trigger garbage collection. We use a set of simple, parametrized 
+heuristics to make these decisions. Our approach is then to use a combination of measurement, 
+simulation, and modeling to find optimal values of these parameters for any given workload. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:12 
+
+N. Cheriere et al. 
+
+Fig. 10.  High-level design of holographic storage. 
+
+Read profiles and write profiles can be computed on a per-zone basis, but for simplicity here we 
+assume that they are computed offline as a single read and write profile for the entire system. The 
+online read/write energy computation is then a simple index lookup onto the profile. Only a small 
+number of zones is kept active for write (i.e., append) at any given time. This allows us to buffer 
+all writes until we have an entire zone’s worth of data, and only then to write the zones. This also 
+means that we do not suffer read erasure during the write phase. 
+
+Refresh decisions are based on tracking the diffraction efficiency of reads, and rewriting the 
+data when this goes below a threshold. In our simplified system model we precompute a fixed read 
+budget per zone. We then maintain the invariant that the read budget of a zone always exceeds 
+the number of live pages in it; i.e., each live pages can be read at least once more. If this threshold 
+is reached then each subsequent read from the zone will trigger a refresh, causing the number of 
+live pages in the read zone to decrease. When the number of live pages reaches zero, the zone is 
+scheduled for UV-erasure. 
+
+Application writes and refresh writes both create garbage, i.e., the old version of the data that is 
+being overwritten. GC frequency is governed by the amount of free space reserved for garbage col- 
+lection; when the free space reaches this threshold, the zone with the fewest live pages is selected 
+and the live pages are copied to another zone. 
+
+We keep only a few zones open for writing at any time, and the rest are in a read-only (or 
+empty) state. We assume that the writeable zones are cached in a higher storage tier (e.g., DRAM 
+or flash SSD) and flushed in their entirety when they are full: this means zones transition from 
+append-only to read-only without interleaving reads and writes. 
+
+Many variations on these heuristics are possible, and there are also interesting low-level design 
+choices, e.g., such as the division of HTL functionality between firmware and system software. 
+We believe it is premature to optimize these details before the overall system is shown to be fea- 
+sible for energy efficiency. We use these simple heuristics and an idealized system (e.g., we ignore 
+concurrency and assume all operations are done sequentially) to explore the parameter space for 
+read/write energy, read refresh, and garbage collection in simulation. Regardless of implementa- 
+tion details, the key challenge for the HTL is to balance the competing demands of application 
+reads and writes with the background media maintenance operations. 
+
+There are several challenges to be solved before this architecture can be used in a practical 
+system. First, we need to achieve sufficiently high density and energy efficiency to be competitive 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:13 
+
+Fig. 11.  Simplified schematic of holographic storage setup. 
+
+with other storage technologies. We have significantly advanced the state-of-the-art in both of 
+these areas, as we will discuss in Section 4 . Second, we need to solve the spatial multiplexing 
+problem without using mechanical movement. Our spatial multiplexing design and the challenges 
+associated with it are discussed in Section 5 . Third, we need to solve the problem of reading noisy 
+and distorted holograms at high density; our spatial multiplexing design based on waveguides 
+adds additional distortions and complexity. The details of the ML algorithms used to compensate 
+for these distortions are beyond the scope of this article, and are described in a separate research 
+article [ 50 ]. 
+
+3.3  Hardware Testbed 
+Alongside our simulation model we have built a hardware testbed to validate our simulation re- 
+sults. The testbed contains all the hardware components needed to write and read holograms 
+within a zone and is fully automated. Testbed automation is controlled through software on a 
+standard PC server, which also runs the Forward Error Correction ( FEC ), image encode, and 
+ML decode algorithms shown in Figure 10 (b). The testbed allows us to run repeatable experiments 
+with arbitrary read and write profiles and data, and to verify that data can be written, read, and 
+decoded successfully. It also lets us easily experiment with different crystal samples, as well as 
+different optical designs and components. Our testbed lets us focus on the main challenges such 
+as the fundamental material properties as well as machine learning based decoding, while emulat- 
+ing/simulating theother parts of the system. 
+
+Figure 11 shows a simplified schematic of our testbed. A 532nm laser emits a laser beam which 
+is split into a reference and data beam. The data is encoded on the data beam using a SLM as shown 
+in Figure 12 . The reference beam angle (i.e., the “address”) is changed using a set of mirrors and 
+lenses (not shown in the figure). The two beams are directed to intersect within the crystal. To read 
+the hologram, only the reference beam is required, and the diffracted readout beam is captured by 
+a camera. Figure 13 shows an example of a camera image representing a page of data, read from 
+the crystal in one of our experiments. It includes typical artifacts found when using commodity 
+optical components, including noise and distortion. 
+
+Figure 14 shows a picture of the testbed used for our experiments. This is a typical setup and 
+similar to one used by previous systems. This is still a testbed and not an end-to-end storage device 
+— e.g., our read/write testbed does not include spatial multiplexing across zones which is needed 
+for a capacity device; the HTL and other key components are implemented in software rather 
+than firmware; and the components are not miniaturized and integrated as would be the case for a 
+commercial device. However, it does not make sense to build such a device until the key challenges 
+of energy efficiency, sensitivity, and spatial multiplexing have been solved. A testbed such as the 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:14 
+
+N. Cheriere et al. 
+
+Fig. 12.  Encoding data using an SLM. 
+
+Fig. 13.  Image of the hologram captured by the camera. 
+
+one shown gives us the flexibility to experiment with different crystals, optical components, and 
+configurations. 
+
+4  Energy Efficiency 
+By writing and reading entire images at a time, holographic storage exploits the inherent par- 
+allelism of SLMs and cameras to achieve high data rates. At the same time, techniques such as 
+angular multiplexing allow for rapid addressing by only steering optical beams. In principle this 
+should lead to very high IOPS, limited only by the frame rates of the optical devices, e.g., cameras. 
+We find however that holographic storage IOPS are limited by the end-to-end energy efficiency : 
+the amount of energy required per IO, including the amortized cost of read refresh and garbage 
+collection and accounting for losses in the optical system. Typical hologram diffraction efficiencies 
+−4 when 100 holograms are superposed, i.e., only 0.01% of the light from the reference 
+are around 10 
+beam is received at the camera. In addition, there are non-trivial energy losses at multiple stages 
+of the process. The laser, the SLMs, the spatial multiplexing, and the crystal all contribute to the 
+overall energy efficiency of the system. With standard components available today, the energy 
+efficiency of the system is around 0.65 IOPS/W(Input Output per Second per Watt). By comparison 
+a hard drive has an energy efficiency of 20 to 30 IOPS/W, while SSDs are around three orders of 
+magnitude more energy efficient. Our estimate ignores the power consumption of the camera, the 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:15 
+
+Fig. 14.  Overhead view of hardware testbench. 
+
+SLM, and image decoding — the power consumed by the laser dominates the overall power and 
+needs to be substantially reduced before we consider optimizing these other factors. It also ignores 
+the power lost to spatial multiplexing — this is covered in Section 5 . 
+
+A straightforward way to increase the IOPS would be to drastically reduce the density of holo- 
+gramsper zone. This would increase the diffraction efficiency of each hologram and reduce erasure, 
+but would also reduce the density thus increasing cost per GB. Another simple way to increase 
+the IOPS would be to increase the power of the laser. However, this would increase the cost of 
+the laser, which is the dominant cost factor in the system. There is thus is a need to maximize the 
+energy efficiency of the system without reducing density. 
+
+We believe laser efficiency can improve from 2% to around 15% and that the cost per Watt of 
+laser power will also drop when scaled to high-volume production. SLM efficiency also has some 
+room for improvement. Read energy could be decreased by increasing camera sensitivity but this is 
+likely to trade off signal-to-noise ratio (and hence effective capacity) for performance. Overall, for 
+holographic storage to be competitive, we still need a significant reduction in the HTL overhead 
+(garbage collection and read refresh) as well as the energy efficiency at the crystal (the average 
+energy used per read and per write). 
+
+4.1  Density 
+
+The challenge with holographic storage is to achieve high end-to-end energy efficiency as well 
+as high density. The best previous density achieved (by IBM) was 5.8 GB/cm 3 [ 15 ], with 1,000 
+pages using precisely aligned custom optical components. This density is sufficient to consider 
+holographic storage seriously as a warm storage technology; however it was not clear if it was 
+realistic for an end-to-end scenario and whether we could leverage commodity cameras and SLMs. 
+Additionally reading back the pages was only validated only for 100 reads from the zone: we 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:16 
+
+N. Cheriere et al. 
+
+Fig. 15.  Model fit for write sensitivity and erasure (reproduced from [ 23 ]). Dots are experimental data, solid 
+lines are model fits, and the dashed line is the previous state-of-the-art model. 
+
+know that due to read erasure reads later in the zone lifecycle are more likely to fail, and for most 
+workloads the zone lifecycle needs to extend well beyond only reading 10% of written pages. 
+
+Thus we asked the question Can we achieve a competitive density, using commodity components, 
+while allowing for read refresh and garbage collection, and would this be energy efficient? . On the 
+density front we were able to show a maximum density 2 of 9.6 GB/cm 3 using 705 pages/zone. This 
+1.8 × improvement over the previous state-of-the-art was enabled by using a denser encoding of 
+bits onto symbols and optimizing the optical setup to shrink the zone size. In order to decode the 
+data despite the increased density and the errors introduced by commodity cameras and SLMs, we 
+used machine learning based decode. We also validated our results by checking that we could reli- 
+ably read the zone sufficient times before read refresh was needed in our optimized configuration 
+— the validation results are shown later in this section. 
+
+These densities are somewhat lower than that achievable with HDDs and significantly lower 
+than that of SSDs. However, the bulk medium for holography is simpler and cheaper to manufac- 
+ture than HDDs or SSDs. At the densities we have achieved, we believe that density is no longer 
+the main obstacle to cost-effective storage. At these densities, and using commodity optical com- 
+ponents, the overall system cost is already dominated by the laser cost, which scales with the 
+amount of optical power needed. Energy efficiency now becomes the biggest challenge: can we 
+significantly improve energy efficiency without sacrificing too much density or capacity? A key 
+observation here is that the density that matters is user-visible density, which is proportional to 
+the number of user pages net of error correction and also net of any free space set aside for garbage 
+collection. As we will see, for many workloads it is more energy-efficient to achieve a given user 
+capacity by overprovisioning the raw capacity. i.e., while a higher raw density does have a penalty 
+in diffraction efficiency, it is more than compensated for by less frequent garbage collection. 
+
+4.2  Modeling the Medium 
+Figure 15 (a) shows the measured write sensitivity — the diffraction efficiency of a single hologram 
+in one of our sample crystals as a function of the write energy. We see that the diffraction efficiency 
+increases with the write energy, but with diminishing returns as the medium begins to saturate. 
+In practice we would operate in the initial region of this curve where the diffraction efficiency 
+
+2 
+For a fair comparison, we report density net of error correction similar to the IBM result. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:17 
+
+is increasing rapidly with the write energy. Operating near the saturation limit is not energy- 
+efficient; it also means that fewer holograms can be superposed in the same zone due to write 
+erasure, which reduces the overall capacity of the system. We see that in the region of interest, our 
+experimental data (red dots) is a close match for the theoretically predicted curve (solid blue line). 
+Figure 15 (b) shows an erasure curve — the diffraction efficiency of a previously written hologram 
+as a function of the energy used for subsequent writes or reads in the same zone. We found that 
+existing mathematical models of erasure (dashed line) did not fit our experimental data, and we 
+developed a new model, described in a companion publication [ 23 ], that takes into account the 
+dynamics of the crystal and has a good fit to our experimental data. Based on our experimentally 
+validated models of write sensitivity and erasures, given any sequence of writes and reads (each 
+represented as an amount of optical energy received at the crystal) starting from a “reset” state we 
+can compute the resulting diffraction efficiency of each hologram. This can be used to compute, 
+for example, the point at which read refresh must occur in the lifecycle shown in Figure 9 . 
+
+4.3  Write and Read Profile Optimization 
+
+The “life cycle” of a zone (Figure 9 ), can be divided into a write (append) phase during which new 
+holograms are added to the zone, and a read phase during which the holograms are read. For each 
+zone lifecycle, we can choose the length of the write phase (i.e., the number of raw pages per 
+zone) and the length of the read phase (the number of reads that must be supported on a zone 
+before the data is rewritten). In addition, we can tune the amount of energy used for each write 
+and each read in these two phases. The optimal values of these profile parameters are a function 
+of the crystal properties (sensitivity and erasure) as well as the workload properties. We map this 
+to an optimization problem where the inputs are the desired user capacity in pages per zone, and 
+the workload. The outputs are the optimal write profile and read profile. The length of the write 
+profile is the number of raw pages per zone; typically this is larger than the target user capacity 
+per zone to allow for garbage collection. The length of the read profile determines the point at 
+which the zone must be refreshed to avoid read erasure. 
+
+There is a complex tradeoff between the HTL parameters and the read and write profiles, and 
+energy efficiency. The end-to-end efficiency depends on the amount of free space reserved for 
+garbage collection, the frequency of read refresh, the frequency of garbage collection, the energy 
+per read, and the energy per write. Our first challenge therefore was to model the energy con- 
+sumption of the entire zone lifecycle as a function of the write and read profiles and the workload. 
+To do this we derived an analytic model of garbage collection and read refresh frequency, and 
+combined it with the read/write sensitivity and erasure equations. Our analytic model assumes a 
+uniform random read/write workload that is parametrized by the read/write ratio. 
+
+A second challenge is that the search space of write and read profiles is extremely large, making 
+it infeasible for most optimization search techniques. From our analytic model we were able to 
+express the energy consumption of the entire zone lifecycle as a function of just three parameters: 
+the energy of the first write; the number of writes (i.e., the number of raw pages per zone); and the 
+number of reads of the zone before a read refresh (the “read budget”). Table 1 shows the qualitative 
+effect of each of these parameters on the HTL overhead and read/write energy at the crystal. This 
+made it possible to use a standard genetic algorithm, NSGA-II [ 72 ] to search for optimal points. 
+However, it was still slow due to the high cost of evaluating a single point, which took about 
+0.3s. By reformulating the problem to eliminate expensive root-finding inner loops and porting 
+the implementation from Python to C++, we improved this by four orders of magnitude, to 0.3ms 
+per evaluation. This made it feasible to find optimized solutions in about 15s–1min on a 20-core 
+desktop machine. This means we can sweep the space of workload parameters, different media, and 
+other system parameters rapidly while using the per-zone energy optimization as an inner loop. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:18 
+
+N. Cheriere et al. 
+
+Table 1.  Parameters and their Impact 
+
+Parameter 
+Increase raw pages per zone 
+(for a fixed amount of user data) overhead, increases write energy and read energy per page 
+Increase write energy per page  Decreases read energy per page 
+Increase read budget 
+
+Effect 
+Decreases garbage collection overhead, increases refresh 
+
+Increases read energy, decreases refresh overhead 
+
+4.4  End-to-end Optimization 
+End-to-end optimization of read and write profiles (i.e., including HTL overheads in the optimiza- 
+tion loop) significantly improves the energy efficiency of the system. We compare this approach 
+to the previous state of the art state-of-the-art [ 57 ] where the write profile was chosen to achieve 
+equal diffraction efficiency for all holograms at the end of the write phase, chosen to be 60% of 
+the maximum achievable diffraction efficiency for the same number of superposed holograms on 
+a given crystal. Intuitively this approach is aiming for the “knee” of the diminishing returns curve 
+in Figure 15 (a). 
+
+Our approach improves on the previous one in three ways. First, we use minimal reads that use 
+only the minimum energy required at the current diffraction efficiency of holograms in the zone. 
+This significantly extends the lifetime of the zone before read refresh is required. Second we jointly 
+optimize the write and read profiles using our improved media erasure model. Finally, we use our 
+analytic model of GC/refresh to do end-to-end optimization that includes the overhead of these 
+media management operations. This lets us optimize an additional key parameter — the number 
+of raw pages per zone. A larger number of raw pages reduces the frequency of GC (as we have 
+more free space to absorb writes), but increases the impact of erasure as well as the overhead of 
+copying zones for GC and read refresh. 
+
+We evaluate the contribution of each of these improvements by comparing four configurations. 
+We choose as a baseline a target user page capacity of 360 pages/zone, which is 50% of our maxi- 
+mum raw density — this allows us to explore overprovisioning as a way to reduce GC overhead. 
+We use a uniform random workload with a read/write ratio varying from 0% to 100%. We compare 
+the following configurations: 
+
+—Baseline: write profile with a fixed (60%) diffraction efficiency target and flat read profile, 
+
+and a fixed allocation of 10% free space for GC (i.e., 400 raw pages per zone). 
+
+—Minimal reads: same as the baseline, but using minimal reads. 
+—Jointly optimized: write and read profiles jointly optimized using our new method, but raw 
+
+pages per zone still fixed. 
+
+—End-to-end optimized: write and read profiles and the number of raw pages per zone were 
+
+all jointly optimized. 
+
+Figure 16 (a) shows the estimated energy efficiency of the system for the different methods, as a 
+function of the read/write ratio of the workload. While the actual efficiency at the crystal is much 
+higher — the overall numbers are scaled by the low efficiency of the laser (2%) and the SLM (25%). 
+We see that end-to-end optimization significantly improves the energy efficiency. At 50% reads 
+the efficiency is 14 × higher than the baseline. However, the overall efficiency is still extremely low 
+(0.65 IOPS/W) even with end-to-end optimization, and significant improvement is needed to make 
+this competitive with HDDs. Figure 16 (b) shows that when the HTL overhead (refresh and GC) 
+is subtracted out (dashed lines), the jointly optimized and end-to-end optimized configurations 
+perform very similarly. However, when HTL overhead is also considered (solid lines), the end-to- 
+end optimized configuration is significantly more efficient. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:19 
+
+Fig. 16.  Energy efficiency and overhead with different optimization methods for a uniform random workload. 
+
+Fig. 17.  Profiles generated by different optimization methods for a uniform random workload with 50% 
+reads. 
+
+For extremely read dominated workloads (with more than 99% reads) the efficiency increases 
+sharply regardless of method. Intuitively this is because there is almost no overhead for garbage 
+collection, and the approach of using high energy for writes works well: writes are rare, and 
+stronger writes means less frequent read refresh. 
+
+To illustrate the tradeoffs involved in optimizing write and read profiles, Figure 17 shows the 
+profiles generated by the different optimization methods for a 50% read workload. The baseline 
+approach is not workload- or GC-aware. For this workload, it uses too much energy for writes and 
+the default space allocated for GC is too low. Using minimal reads slightly reduces the read energy; 
+however the read energy is already very low and the overall energy usage is dominated by writes 
+with these profiles. Joint optimization of writes and reads achieves a better ratio of read and write 
+energy resulting in a 3 × improvement in overall efficiency. However, the efficiency is still limited 
+by the need for frequent garbage collection. 
+
+Full end-to-end optimization finds a very different point in the space with much higher effi- 
+ciency, by increasing the number of raw pages per zone by 2.5 ×, from 400 to 1,018 (the x -axis 
+on Figure 17 (a) shows the length of the write profile which is also the number of raw pages per 
+zone). This reduces the GC overhead enormously (see Figure 16 (b)) while slightly increasing the 
+write and read erasure; the net effect is a further improvement in efficiency of almost 5 ×. While 
+the benefits of reserving additional space for GC are similar to that of overprovisioning capacity 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:20 
+
+N. Cheriere et al. 
+
+Fig. 18.  Effect of different crystal dopant concen- 
+trations and different read/write ratios. 
+
+Fig. 19.  Optimizing for workload read/write ratio. 
+
+in flash SSDs or other zoned storage, it is important to note that this is done without sacrificing 
+overall density and hence without increasing cost. We are exploiting the non-linear relationship 
+between density and energy efficiency to achieve a higher overall efficiency for a given user-visible 
+capacity. This gives us the freedom to overprovision capacity by a large factor if this is the best 
+choice for overall efficiency. The optimized write and read profiles obtained with this approach 
+have been validated on our experimental test bed [ 23 ], to ensure that pages can be reliably read 
+and written using these profiles. 
+
+4.5  Read Validation 
+While diffraction efficiency is the key metric for measuring hologram strength, for a storage system 
+we need to ensure not just that holograms are sufficiently strong, but also that the data can be read 
+back reliably at a given level of error correction. We have validated this experimentally using the 
+write and read profiles generated from end-to-end optimization, for both 50% reads and 100% reads. 
+In both cases, we were able to read back pages up to the end of the generated read profile (i.e., up 
+to the point of read refresh) with a BER (bit error rate) that was correctable with the configured 
+amount of error correction. Further details on the validation experiments are in our companion 
+publication [ 23 ]. While a fully deployed system would require much more validation — this gives 
+us confidence that our profile optimization method gives feasible configurations. 
+
+4.6  Media Optimization 
+
+Our lab testbench for characterizing the medium, our media and workload models, and our opti- 
+mization methods have already helped us to pick the best performers from a small set of candidate 
+crystals (the results shown so far are based on this best crystal). Figure 18 shows the optimized 
+energy-efficiency of three of these crystals. These are all based on iron-doped Lithium Niobate 
+(Section 3 ), with different concentrations of the dopant ions ( Fe 2 +and Fe 3 +). The dopant concen- 
+trations affect the media properties: e.g., the write sensitivity first increases and then decreases as 
+Fe 2 +concentration is increased. Further details of the media characterization are in our companion 
+publication [ 23 ]. 
+
+4.7  Workload-specific Optimization 
+
+Write/read  energy  profiles  and  HTL  parameters  are  runtime  parameters  that  can  be  tuned 
+dynamically for the workload. Figure 19 shows the effect of optimizing for the precise read/write 
+mix of the workload (dotted line), for a uniform random access pattern. The solid lines show the 
+performance when optimized for a fixed read percentage of 50% (red line) or 80% (green line) —
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:21 
+
+Fig. 20.  Model fit for uniform random workloads. 
+
+as the actual workload moves further away from the optimization target, the penalty for using a 
+workload-independent configuration increases significantly. Cloud storage providers have a good 
+understanding of their workload, and such workload-specific tuning is feasible in practice. The 
+main reason this is not possible in today’s cloud storage hardware is legacy interfaces that offer 
+very limited scope for tuning low-level hardware parameters for the high-level workload. We 
+believe that enabling dynamic, full-stack tuning down to low-level hardware parameters is an im- 
+portant principle not only for cloud holographic storage but also for cloud-first design in general. 
+The results shown in this section are based on analytic models of the workload, that assume a 
+uniform random access pattern with a fixed read/write ratio. This is very useful for exploring the 
+design space, and uniform random access patterns capture the worst-case scenario that we can 
+expect to see for energy efficiency. We are also able to use the same optimization framework with 
+a trace-driven simulator that can compute energy usage given a trace of read and write operations 
+at the block level. We have cross-validated our analytic model against the simulator comparing the 
+computed energy efficiency for uniform random access patterns. Figure 20 shows the fit between 
+the model and a simulator for a uniform random workload, using a profile optimized for 80% reads. 
+More details about the model fitting are in a companion publication [ 23 ]. 
+
+We used the simulator to explore other workloads, e.g., skewed access patterns as well as se- 
+quential access. While the energy efficiency of the system does vary across these workloads, the 
+overall trends are similar to those observed for uniform random workloads. 
+
+4.8  Improving Efficiency Further 
+Is a 14 × improvement over the state-of-the-art sufficient to make holographic storage competitive? 
+Unfortunately it does not, even with optimistic assumptions on technology improvements. We 
+assume that laser efficiency would improve from 2% to 15% and also that laser costs will drop 
+significantly with volume production. Based on input from laser vendors, our estimate for laser 
+cost at volume is $400 per optical Watt of output power (or $60 per electrical Watt at 15% efficiency). 
+We also assume that the other components (cameras, SLMs, crystal) contribute negligibly to optical 
+power loss, electrical power consumption, and dollar cost. This is very optimistic, especially in the 
+case of spatial multiplexing, described in the next section. Even under these assumptions, our 
+analysis shows that we need at least another  13 × improvement in end-to-end energy efficiency to 
+be cost-competitive with HDDs. In reality, given the non-zero contribution of other components to 
+cost and power and the challenges of spatial multiplexing, we need an even larger improvement. 
+In our view, this can only be achieved by fundamental improvements in the physical medium. 
+In other words, despite the attractive properties of iron-doped Lithium Niobate, it is unlikely to be 
+the way forwards for holographic storage. At minimum we need new materials; possibly we need 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:22 
+
+N. Cheriere et al. 
+
+to exploit new physical effects beyond the electro-optical properties that are used for holography 
+in Lithium Niobate. 
+
+5  Spatial Multiplexing 
+
+A naive implementation of holographic storage would allocate one camera and one SLM to each 
+zone of the medium. However, this is not practical from a cost point of view. While the bulk medium 
+is cheap, the cost of the camera and SLM is non-negligible and needs to be amortized over tens of 
+terabytes of capacity. On the other hand, several factors limit the capacity of a single zone to tens 
+of megabytes. Write erasure limits the number of pages that can be written to a single zone, and 
+the SLM and camera resolution limits the size of each page. These limitations cannot be addressed 
+simply by using larger zones. Instead, we must scale by multiplexing a single camera-SLM pair 
+over a large number of relatively small zones spread over the bulk medium. Each zone would be a 
+few millimeters in dimension, and we would need thousands to millions of such zones per camera- 
+SLM pair. We refer to this multiplexing as spatial multiplexing [ 16 ] as distinct from multiplexing 
+within a zone, e.g., angular multiplexing. 
+
+Previous approaches assumed the crystal would move with respect to the optics to allow access 
+to different zones [ 5 , 60 ]. e.g., by using a circular “platter” like design which would both rotate and 
+translate. This approach is not practical for high IOPS workloads, as the mechanical movement 
+would limit the number of IOPS that could be achieved. HDDs — which are heavily optimized 
+for rotational and seek latency — are already struggling to keep up with the IOPS demands of 
+cloud storage. Holographic crystal is much heavier than HDD media making its movement at 
+speed (while limiting vibrations and forces exerted on the medium) much more challenging than 
+HDDs’ platters. The alternative — moving the optical components such as cameras and SLMs with 
+respect to a fixed medium – is also impractical. The cost advantages of using commodity optical 
+components come with the disadvantage of relatively large size and weight. The only way to 
+achieve high IOPS is to move light rather than the mass, i.e., steer the optical beams to the correct 
+zones. 
+
+We considered a design based on MEMS mirrors and a single scan lens [ 34 ]. However, using 
+available lenses this design is fundamentally limited to a few tens of zones [ 16 ]. We decided instead 
+to rethink spatial multiplexing from scratch, and converged on an “optical imaging network” that 
+uses waveguides to transport entire images along a straight line path. It uses binary switching 
+elements composed of pi-cells [ 10 ] and polarized beam splitters [ 40 , 82 ]. Each switching element 
+can either transmit the image along the waveguide, or reflect it at right angles to the original 
+direction. Using these elements, we can imagine networks that transport SLM images from a single 
+SLM to one of many zones; and conversely from one of many zones to a single camera. 
+
+Waveguide propagation is almost lossless but the switching elements introduce losses. Even 
+a small loss per element can add up to a large loss if the image must propagate through many 
+elements; thus the number of switching elements on the path is a key metric. We investigated 
+multiple network designs with different tradeoffs on cost/complexity, physical volume, and optical 
+power loss. 
+
+A binary tree configuration (Figure 21 (a)) is optimal in terms of losses. However, it is complex 
+to manufacture and crucially it has an extremely large physical footprint. To multiplex over 1 M 
+zones (about 28 TB with our current optical components) requires three trees each of depth 20: one 
+each for the data beam, the address beam, and the readout beam. As imaging waveguides (unlike 
+fibers) can only propagate light in a straight line, and the cross-section of the waveguide is equal 
+to the width of the zone, this means that the volume of the waveguide network is 120 times that of 
+the crystal it addresses. This is a loss of 120 × in effective density, making the design unattractive 
+for rack density which is a key metric for cloud storage. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:23 
+
+Fig. 21.  Possible networks for spatial multiplexing with estimated volume and losses. 
+
+At the other extreme, a linear design (Figure 21 (b)) has good density but has extremely high 
+losses due to the large number of lossy switching elements in each path. Extending the linear 
+design to 2D or 3D reduces the losses significantly with little increase in volume. However it 
+increases complexity and cost, and the loss is still high at the scale of 1 M zones. Table 21 (c) shows 
+the estimated volume overhead and optical power transmitted for different configurations. This 
+assumes 1% loss per switching element which is somewhat optimistic — the elements available 
+today have losses of 2%–3%. 
+
+A second challenge is the need to correct for complex distortions introduced by the waveguide 
+switching network. We have had partial success in using machine learning to correct for these 
+effects [ 50 ]; the method works well for ideal waveguides but is very sensitive to manufacturing 
+defects that cause slight deviations from the ideal rectangular cross-section. 
+
+6  Related Work 
+
+Holography was first described in 1948 by Gabor [ 35 , 36 , 37 ]. In the 1960s, the concept of Bragg 
+selectivity emerged [ 45 , 49 , 75 ], enabling precise readout of a single hologram from a volume 
+containing multiple superimposed holograms. This ability to store multiple holograms in the same 
+volume made holography attractive for data storage, not just for images. 
+
+The theory, physics, and optics of holographic storage have an extensive literature. There have 
+been a few end-to-end storage prototypes and no commercially successful products. Our aim in 
+this section is not to provide a comprehensive review of the literature, but to highlight the key 
+works that have influenced our research and to provide context for our contributions. For more 
+detail, we recommend the book Holographic Data Storage [ 25 ] as an excellent introduction to the 
+history and fundamentals of the field as well as a comprehensive review of the literature up to the 
+year 2000. 
+
+6.1  Rewritable Holographic Storage 
+
+Early attempts at high-density rewritable holographic storage were severely limited by the avail- 
+able hardware components. One of the earliest uses of angle multiplexing from the 70s [ 33 ] was 
+limited to 10 pages of 10 Kb each. Other prototypes from the 70s [ 54 ] showed the ability to erase 
+and rewrite the crystal without degrading it. 
+
+The most complete and highest density rewritable holographic data storage prototypes we are 
+aware of are the IBM DEMON AND DEMON 2 [ 14 , 15 , 68 ], designed in the late 90s. This system 
+used an SLM with 1024 ×1024 pixels and matching cameras with very precise alignment to store 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:24 
+
+N. Cheriere et al. 
+
+large holograms. They relied on an error correction code that encoded 8 bits in 12 pixels, resulting 
+in a page size of 670,816 user bits. By angle-multiplexing 1,000 holograms in a single zone of 
+(1.6 ×1 . 6 ×5.5 mm), they demonstrated a net density after error correction of 44 Gb/cm 3 . At these 
+densities it finally became feasible to think about holographic storage as a competitor to HDDs. 
+However, it was still limited by the high cost of the custom optics; the need for precise alignment; 
+the need to compete with HDDs in their Moore’s Law phase; and the very low energy efficiency. 
+The system was never commercialized. 
+
+6.2  WORM Holographic Storage 
+
+Holographic storage has been more widely studied and prototyped for write-once, read-many 
+( WORM ) applications such as archival storage. These typically use photosensitive polymer media, 
+often in a relatively thin film coated on a spinning substrate, i.e., an optical disk form factor. The 
+media manufacture is even cheaper than for rewritable media, and the energy costs for read are 
+lower. The use of mechanical movement (i.e., rotation and seek) limits IOPS, but this is less of an 
+issue for archival storage than for warm storage. IOPS requirements are typically lower for archival 
+storage (the competition is magnetic tape), and latency is often dominated by other factors (such 
+as retrieval from a library). 
+
+Several such systems  [ 51 , 53 , 63 , 74 ] have been proposed to compete with archival media such 
+as optical DVDs but few have been commercialized. One of the earliest attempts in this space is 
+from the 60s [ 51 ] which wrote 4 sets of 4,096 holograms, each with 32 ×32 bits that could be read by 
+a single device. This would result in a storage capacity of 2 MB per disk with a reported bandwidth 
+of 16 MB/s. The density was relatively low as angle multiplexing had not been developed yet. 
+
+Holoscan [ 74 ] (1974) is, as far as we know, the only holographic data storage system to reach 
+commercialization. It was a read only sequential memory intended for checks verification. It 
+had a capacity of 1.5 MB and a read bandwidth of 112 Kb/s. In the late 90s Tamarack Multi- 
+store [ 63 ] and others [ 53 ] proposed systems with capacities in the 500 MB — 1 GB range per 
+disk. More recently InPhase [ 7 , 26 ] demonstrated the storage of 300 GB in a single disk (CD- 
+ROM shaped, 1.5 mm thick medium) and reached a throughput of 20 MB/s. However, this did 
+not succeed commercially and currently, there is no commercially available holographic storage 
+technology. 
+
+Write-only holographic storage for archival applications continues to be an active area of re- 
+search. Current proposals aim for an optical disk form factor with a capacity of 1 TB and a through- 
+put of 1-10 Gb/s [ 42 ]. However the capacity is still not high enough to be competitive, and the 
+lifetime of the polymer materials used for WORM holographic storage is still a concern, compared 
+to other more durable materials, e.g., glass [ 3 , 4 ]. 
+
+6.3  Photorefractive Materials 
+
+The  atomic  changes  happening  during  hologram  formation  have  been  modeled  by 
+Kukhtarev  et  al.  [ 46 ].  This  model  describes  the  movement  of  electrons  in  the  material  and 
+is the foundation of metrics used to evaluate materials, including the sensitivity of a material or 
+the erasure constant that describe how easy is it to record a hologram and how stable it is when 
+read. Mok et al. [ 57 ] introduce M# (read “M number”), a characteristic of the material that links 
+the number of holograms superimposed M to their diffraction efficiency η = (M# )2 /m 2 . 
+
+Photorefractive materials have been studied in details and the results have been compiled in 
+books such as Lithium Niobate: Defects, Photorefraction and Ferroelectric Switching [ 76 ] for lithium 
+niobate in particular or Photorefractive Materials and Their Applications 2: Materials [ 38 ] for a range 
+of materials covering polymers as well as inorganic crystals. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:25 
+
+The fact that Lithium Niobate has a tradeoff between write sensitivity and erasure is well 
+known [ 41 ]. While end-to-end optimization can improve the tradeoff significantly as shown by 
+our work, this tradeoff still exists and continues to be a challenge in making holographic storage 
+competitive with other storage technologies. 
+
+6.4  Beam Configuration 
+There have been several attempts to optimize holographic storage by optimizing the optical beam 
+properties. From a theoretical perspective, density is maximized when the two beams intersect 
+at right angles to each other in the medium [ 11 ]. Alternatively using a “transmission geometry”
+where the two beams intersect at a very narrow angle, can significantly improve write sensitivity 
+at the cost of much lower density. In our work, we primarily use the 90-degree configuration as 
+our goal was to optimize energy without losing density . It would be interesting to extend our media 
+model and end-to-end optimization to include transmission geometry as a design parameter. 
+
+Write efficiency for a small number of holograms can also be improved by using a higher in- 
+tensity of laser beam [ 70 ] to exploit non-linearities in the hologram formation process. However, 
+this effect is not significant when writing many hundreds of holograms in a zone. In practice, 
+we already use the maximum intensity possible from the available laser and optics — even if this 
+does not improve energy efficiency significantly, it reduces the time to deliver the same amount 
+of energy and hence improves IOPS. 
+
+6.5  Phase Multiplexing 
+Angle multiplexing [ 17 , 48 , 49 , 56 , 73 ] is the most common method of superposing multiple holo- 
+grams in the same zone, by changing the angle of the reference beam and exploiting Bragg selec- 
+tivity [ 45 , 49 , 75 ] to minimize cross-talk between the different holograms. 
+
+Phase codes [ 8 , 27 , 29 , 30 , 58 ] are another method to superimpose multiple holograms in the 
+same zone. The reference beam is modulated using an SLM. This reduces system complexity by 
+avoiding a dependency on fast and precise MEMS mirrors — we can simply use SLMs, which are al- 
+ready being used for the data beam. In theory, orthogonal phase codes such as Walsh–Hadamard 
+codes can have lower cross-talk and a better signal-to-noise ratio than angle multiplexing [ 27 ]. 
+After extensive experimentation we found that in practice, commodity SLMs can not exactly im- 
+plement ideal phase codes and this results in higher cross-talk and noise than angle multiplexing. 
+We were able to write 500 pages at 47 KB each, slightly better than the previous state-of-the-art 
+of 480 × 37.5 KB for phase multiplexing [ 29 ]. However, this is lower than we can write with angle 
+multiplexing; we also saw higher erasure and much higher bit error rate ( BER ) on readout than 
+with angle multiplexing. It is possible that with better SLMs, phase multiplexing could be com- 
+petitive or even surpass angle multiplexing on density; we do not expect the energy efficiency to 
+improve however. 
+
+6.6  Spatial Multiplexing 
+To the best of our knowledge, we are the first to explore mechanical movement free spatial multi- 
+plexing for holographic data storage, and the first to develop an optical waveguide based switch- 
+ing network for image transport. Certainly all previous attempts at spatial multiplexing for holo- 
+graphic storage relied on mechanical movement. DEMON and DEMON 2 [ 14 , 15 , 68 ] relied on 
+movement of the medium to address multiple zones. Tamarack Multistore [ 63 ] also moved the op- 
+tics radially (except the laser) in a manner similar to disk readers. Burr et al. [ 16 ] used a mechanical 
+scanner to address 16 different volumes each storing 10,000 holograms. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:26 
+
+N. Cheriere et al. 
+
+6.7  Translation Layers and Garbage Collection 
+The FTL is a key component in flash-based storage systems. It is responsible for mapping logical 
+addresses to physical addresses, garbage collection, and wear leveling. FTLs balance multiple ob- 
+jectives [ 1 ], including maximizing the lifetime [ 19 , 20 ] of the flash memory, maximizing storage 
+space [ 44 ], and improving performance [ 31 , 47 , 66 ]. Our HTL design is analogous to an FTL and 
+occupies a similar place in the storage stack. However, the optimization parameters are different, 
+in particular the value of the HTL is in jointly optimizing the media energy profiles with garbage 
+collection. Unlike flash, read refresh is a crucial management operation, whereas wear leveling 
+is not. 
+
+7  Discussion 
+
+The focus of this article has been on energy-efficiency and spatial multiplexing as these were 
+(and still are) the main challenges to solve to make the technology practical as cloud storage. 
+In the course of doing this research, we have also identified some interesting areas for future 
+investigation, both in the context of holographic storage and in the broader context of storage 
+systems. 
+
+Machine learning . We have used machine learning in Project HSD to compensate for the dis- 
+tortions and aberrations introduced by commodity optical components. In particular, ML helps us 
+solve problems related to alignment , i.e., the mapping between image pixels and user data bits. 
+Without alignment, the data is not decodable at all, even with large amounts of error correction. 
+ML decode also lets us encode 2 bits per image symbol where conventional signal processing only 
+lets us decode 1 bit per symbol. 
+
+The use of convolutional neural nets ( CNNSs ) for processing images is well established, 
+and as the fundamental unit of holographic read and write is the image, we are able to leverage 
+the existing work on CNNs. We are also able to exploit recent and ongoing advances in machine 
+learning hardware, especially inference-optimized hardware. While the use of ML on the data path 
+would have been unthinkable a decade ago, today we have hardware and models that can decode 
+data at high data rates and modest hardware cost and power. These models can correct for complex 
+effects such as waveguide propagation that are extremely difficult to compensate with traditional 
+physics-based approaches. 
+
+While other storage hardware will potentially have different sources of error and distortion, we 
+believe this is a promising area of investigation for optical image based data storage in particular 
+and for all kinds of storage in general. 
+
+Beyond image processing, we have also found machine learning, in particular Bayesian opti- 
+mization [ 78 ] useful as a design tool. We have used Bayesian optimization to optimize hardware 
+settings on the write path, specifically the intensity values to use on the SLM for each symbol value 
+to be encoded. We have also used Bayesian optimization as an alternative to genetic algorithms for 
+our end-to-end optimization of HTL and media parameters. Bayesian optimization is much more 
+sample-efficient than the genetic approach, i.e., it evaluates far fewer points while searching for the 
+optimal solution. However, it is also more computationally expensive per point generated. Overall 
+the genetic algorithm was clearly the right choice when using our fast analytic model of the system 
+— it converged an order of magnitude faster in real time than the Bayesian approach. However, 
+we believe there is value in investigating the Bayesian approach in more depth, in particular when 
+using expensive simulation models where the computational cost per sample is dominated by the 
+simulation itself. 
+
+Full-stack optimization . So far we have focused on the challenges and opportunities for opti- 
+mization below a block (or page) read/write storage interface. e.g., on jointly optimizing the HTL 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:27 
+
+parameters and the media parameters. However, we believe there is also significant potential for 
+joint optimization across more layers of the storage stack. e.g., log-structured layouts such as LSM 
+trees [ 22 , 43 , 61 ] are a natural fit for zoned storage. Many variants of LSM trees exist, offering a 
+tradeoff between capacity, write amplification, and read amplification [ 6 , 28 , 52 ]. As similar trade- 
+offs exist at the HTL and at the crystal level, it would be interesting to consider if making the 
+optimization even more “end-to-end” by including the application data structure, could improve 
+the overall system performance. 
+
+Adaptive hardware . In Project HSD we started with a clean-slate design — to maximize the ben- 
+efit of designing for the cloud free of legacy constraints. This has allowed us to optimize across 
+layers in a way that would not be possible otherwise. e.g., there is no way to exploit workload 
+knowledge to change the low-level parameters of a 3.5” HDD such as the amount of energy used 
+per read or per write. With the HSD design we can adapt the low-level parameters such as the 
+read/write energy profiles to the workload, and this has been crucial to the energy efficiency im- 
+provements. We could also adapt different zones within the same device differently, e.g., to support 
+different workloads or different SLAs — we have not explored this direction but it is an interesting 
+area for future research. 
+
+Tail latency . Latency distributions and tail latency are important metrics for warm storage. We 
+have not considered them in our analysis so far — in our model we have a single powerful laser 
+that is multiplexed over a large amount of data. The multiplexing can be done rapidly; and at full 
+power the latency of individual reads and writes is small, even for high-energy operations (i.e., at 
+the beginning of the write profile and the end of the read profile). It is likely that further down the 
+line — if/when the challenges of energy efficiency and scalable spatial multiplexing are solved —
+we will need to revisit the issue of latency. In particular, if a large number of small lasers is more 
+cost-effective than a single large multiplexed laser, then latency may prove to be a new challenge. 
+
+Optimizing for skewed workloads . The work we presented is focused around uniform random 
+workloads. However, in practice, workloads are often skewed, which open up new opportunities 
+for optimization as the device can be reconfigured for different workloads at runtime. For example, 
+pages written could be classified according to their read and write patterns, and then written to 
+different zones with different media parameters in order to maximize the efficiency of the device. 
+While this is an interesting research area, we expect that at best, this would still be limited by the 
+best achievable energy efficiency for a known read/write ratio (Figure 19 ), which by itself is too 
+low to be competitive. 
+
+8  Conclusion 
+Rewritable holographic storage is in principle a great solution to the challenges faced by warm 
+cloud storage. Previous attempts to commercialize this technology (until about 20 years ago) were 
+limited by several factors. HDD capacity per dollar was still growing exponentially; cameras and 
+SLMs were slow, expensive, and low-resolution; it is not possible to design practical holographic 
+systems in consumer device form factors. 
+
+In Project HSD we have re-examined holographic storage as a cloud-first technology, leverag- 
+ing commodity optical components, machine learning, and the freedom to redesign the storage 
+stack from top to bottom. We have found that in today’s world the main challenges to solve for 
+holographic storage are energy efficiency and spatial multiplexing. While we have made advances 
+in both these areas, including a 14 × improvement in end-to-end energy efficiency, these remain 
+the primary challenges. 
+
+To make holographic storage practical, we need significant improvements in the medium, i.e., 
+new materials that preserve all the advantages of iron-doped Lithium Niobate but with 1–2 orders 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:28 
+
+N. Cheriere et al. 
+
+of magnitude higher energy efficiency. We also need a spatial multiplexing system that is scalable, 
+low-loss, and compact. While there are other interesting research problems to be solved in the 
+context of holographic storage, we believe that these two are the most critical to solve before 
+revisiting the viability of holography as a storage system. 
+
+References 
+[1]  Nitin Agrawal, Vijayan Prabhakaran, Ted Wobber, John D. Davis, Mark Manasse, and Rina Panigrahy. 2008. Design 
+
+tradeoffs for SSD performance. In Proceedings of the 2008 USENIX Annual Technical Conference . 
+
+[2]  Ahmed Amer, JoAnne Holliday, Darrell DE Long, Ethan L. Miller, Jehan-François Pâris, and Thomas Schwarz. 2011. 
+Data management and layout for shingled magnetic recording. IEEE Transactions on Magnetics 47, 10 (2011), 3691–
+3697. 
+
+[3]  Patrick Anderson, Erika B. Aranas, Youssef Assaf, Raphael Behrendt, Richard Black, Marco Caballero, Pashmina 
+Cameron, Burcu Canakci, Thales de Carvalho, Andromachi Chatzieleftheriou. 2023. Project silica: Towards sus- 
+tainable cloud archival storage in glass. In Proceedings of the 29th ACM Symposium on Operating Systems Prin- 
+ciples .  Retrieved  from  https://w w w.microsoft.com/en- us/research/publication/project- silica- towards- sustainable- 
+cloud- archival- storage- in- glass/ 
+
+[4]  Patrick Anderson, Erika B. Aranas, Youssef Assaf, Raphael Behrendt, Richard Black, Marco Caballero, Pashmina 
+Cameron, Burcu Canakci, Thales de Carvalho, Andromachi Chatzieleftheriou. Project silica: Towards sustainable 
+cloud archival storage in glass. ACM Transactions on Storage (n.d.). To appear. 
+
+[5]  Jonathan Ashley, M-P Bernal, Geoffrey W. Burr, Hans Coufal, Harald Guenther, John A. Hoffnagle, C. Michael Jef- 
+ferson, Brian Marcus, Roger M. Macfarlane, Robert M. Shelby, et al. 2000. Holographic data storage technology. IBM 
+Journal of Research and Development 44, 3 (2000), 341–368. 
+
+[6]  Manos Athanassoulis, Michael S. Kester, Lukas M. Maas, Radu Stoica, Stratos Idreos, Anastasia Ailamaki, and Mark 
+
+Callaghan. 2016. Designing access methods: The RUM conjecture. In Proceedings of the EDBT . 461–466. 
+
+[7]  Mark R. Ayres, Ken Anderson, Fred Askham, Brad Sissom, and Adam C. Urness. 2015. Holographic data storage at 
+. In Proceedings of the Practical Holography XXIX: Materials and Applications . SPIE, 97–103. 
+[8]  MC Bashaw, JF Heanue, Abraham Aharoni, John F. Walkup, and Lambertus Hesselink. 1994. Cross-talk considerations 
+
+2+ Tbit/in 2 
+
+for angular and phase-encoded multiplexing in volume holography. JOSA B 11, 9 (1994), 1820–1836. 
+
+[9]  James Bornholt, Randolph Lopez, Douglas M. Carmean, Luis Ceze, Georg Seelig, and Karin Strauss. 2016. A DNA- 
+based archival storage system. In Proceedings of the 21st International Conference on Architectural Support for Pro- 
+gramming Languages and Operating Systems. . Association for Computing Machinery, New York, NY, USA, 637–649. 
+DOI: https://doi.org/10.1145/2872362.2872397 
+
+[10]  Philip J. Bos and K. Rickey Koehler/Beran. 1984. The pi-cell: A fast liquid-crystal optical-switching device. Molecular 
+
+Crystals and Liquid Crystals 113, 1 (1984), 329–339. 
+
+[11]  David Brady and Demetri Psaltis. 1993. Information capacity of 3-D holographic data storage. Optical and Quantum 
+
+Electronics 25, 9 (1993), S597–S610. DOI: https://doi.org/10.1007/BF00444333 
+
+[12]  William Henry Bragg and William Lawrence Bragg. 1913. The reflection of X-rays by crystals. Proceedings of the 
+Royal Society of London. Series A, Containing Papers of a Mathematical and Physical Character 88, 605 (1913), 428–438. 
+[13]  Grace  Brennan,  Nathanaël  Cheriere,  Jiaqi  Chu,  Jannes  Gladrow,  Douglas  Kelly,  Giorgio  Maltese,  Dushyanth 
+Narayanan, Greg O’Shea, Alan Sanders, Xingbo Wu, et al. 2024. Holographic optical storage for the cloud?, In Optical 
+Fiber Communication Conference (OFC) 2024 . In Proceedings of the Optical Fiber Communication Conference. 
+
+[14]  Geoffrey W. Burr, Jonathan Ashley, Hans Coufal, Robert K. Grygier, John A. Hoffnagle, C. Michael Jefferson, and Brian 
+
+Marcus. 1997. Modulation coding for pixel-matched holographic data storage. Optics Letters 22, 9 (1997), 639–641. 
+
+[15]  Geoffrey W Burr, C. Michael Jefferson, Hans Coufal, Mark Jurich, John A. Hoffnagle, Roger M. Macfarlane, and Robert 
+M. Shelby. 2001. Volume holographic data storage at an areal density of 250 gigapixels/in. 2. Optics Letters 26, 7 (2001), 
+444–446. 
+
+[16]  Geoffrey W. Burr, Fai H. Mok, and Demetri Psaltis. 1994. Large-scale volume holographic storage in the long in- 
+teraction length architecture. In Proceedings of the Photonics for Processors, Neural Networks, and Memories II . SPIE, 
+402–414. 
+
+[17]  Geoffrey W. Burr, Fai H. Mok, and Demetri Psaltis. 1995. Angle and space multiplexed holographic storage using the 
+
+90 geometry. Optics Communications 117, 1-2 (1995), 49–55. 
+
+[18]  Luis Ceze, Jeff Nivala, and Karin Strauss. 2019. Molecular digital data storage using DNA. Nature Reviews Genetics 
+
+(May 2019). Retrieved from https://w w w.nature.com/articles/s41576- 019- 0125- 3#citeas 
+
+[19]  Li-Pin Chang. 2007. On efficient wear leveling for large-scale flash-memory storage systems. In Proceedings of the 
+
+2007 ACM Symposium on Applied Computing . 1126–1130. 
+
+[20]  Yuan-Hao Chang, Jen-Wei Hsieh, and Tei-Wei Kuo. 2009. Improving flash wear-leveling by proactively moving static 
+
+data. IEEE Transactions on Computers 59, 1 (2009), 53–65. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:29 
+
+[21]  Andromachi Chatzieleftheriou, Ioan Stefanovici, Dushyanth Narayanan, Benn Thomsen, and Antony Rowstron. 2020. 
+Could cloud storage be disrupted in the next decade?. In Proceedings of the 12th USENIX Workshop on Hot Topics 
+in Storage and File Systems . USENIX Association. Retrieved from https://w w w.usenix.org/conference/hotstorage20/ 
+presentation/chatzieleftheriou 
+
+[22]  Gunhee Choi, Kwanghee Lee, Myunghoon Oh, Jongmoo Choi, Jhuyeong Jhin, and Yongseok Oh. 2020. A new LSM- 
+style garbage collection scheme for ZNS SSDs. In Proceedings of the 12th USENIX Workshop on Hot Topics in Storage 
+and File Systems . 
+
+[23]  Jiaqi Chu, Nathanaël Cheriere, Grace Brennan, Mengyang Yang, Greg O’Shea, Jannes Gladrow, Douglas J. Kelly, 
+Giorgio Maltese, Alan Sanders, Dushyanth Narayanan, et al. 2024. Can holographic optical storage displace hard disk 
+drives? Nature Communications Engineering 3, 1(2024). 79. DOI: https://doi.org/10.1038/s44172- 024- 00225- 0 
+
+[24]  Intel Corporation. 2022. Intel Reports Second-Quarter 2022 Financial Results. (2022). Retrieved January 01, 2025 from 
+
+https://w w w.intc.com/news-events/press-releases/detail/1563/intel-reports-second-quarter-2022-financial-results 
+
+[25]  Hans J. Coufal, Demetri Psaltis, and Glenn T. Sincerbox (Eds.). 2000. Holographic Data Storage. Springer. Vol. 76, 
+
+DOI: https://doi.org/10.1007/978- 3- 540- 47864- 5 
+
+[26]  Kevin Curtis, Ken Anderson, Adrian Hill, and Aaron Wegner. 2010. Tapestry drive implementation. Holographic 
+Data Storage: From Theory to Practical Systems (2010), 185–220. https://onlinelibrary.wiley.com/doi/epdf/10.1002/ 
+9780470666531.fmatter?msockid=02ac580de0776be914694d2ee1506a13 
+
+[27]  Kevin Curtis and Demetri Psaltis. 1993. Cross talk in phase-coded holographic memories. JOSA A 10, 12 (1993), 2547–
+
+2550. 
+
+[28]  Niv Dayan and Stratos Idreos. 2018. Dostoevsky: Better space-time trade-offs for LSM-tree based key-value stores 
+via adaptive removal of superfluous merging. In Proceedings of the 2018 International Conference on Management 
+of Data. Association for Computing Machinery, New York, NY, USA, 505–520. DOI: https://doi.org/10.1145/3183713. 
+3196927 
+
+[29]  Cornelia Denz, K-O Muller, Thorsten Heimann, and Theo Tschudi. 1998. Volume holographic storage demonstrator 
+based on phase-coded multiplexing. IEEE Journal of Selected Topics in Quantum Electronics 4, 5 (1998), 832–839. 
+[30]  C. Denz, G. Pauliat, G. Roosen, and T. Tschudi. 1991. Volume hologram multiplexing using a deterministic phase 
+
+encoding method. Optics Communications 85, 2-3 (1991), 171–176. 
+
+[31]  Peter Desnoyers. 2014. Analytic models of SSD write performance. ACM Transactions on Storage 10, 2 (2014), 1–25. 
+[32]  George Dickinson, Golam Mortuza, William Clay, Luca Piantanida, Christopher Green, Chad Watson, Eric Hayden, 
+Tim Andersen, Wan Kuang, Elton Graugnard, et al. 2021. An alternative approach to nucleic acid memory. Nature 
+Communications 12 (2021). https://w w w.nature.com/articles/s41467- 021- 22277- y#citeas 
+
+[33]  L d’Auria, JP Huignard, Ch Slezak, and E. Spitz. 1974. Experimental holographic read-write memory using 3-D storage. 
+
+Applied Optics 13, 4 (1974), 808–818. 
+
+[34]  Robert E. Fischer and Warren J. Smith. 1992. Chapter 22: Scanner/f-theta and Laser Disk/collimator Lenses . McGraw- 
+
+Hill, 411–430. 
+
+[35]  Dennis Gabor. 1948. A new microscopic principle. Nature 161 (1948), 777–778. https://w w w.nature.com/articles/ 
+
+161777a0#citeas 
+
+[36]  Dennis Gabor. 1949. Microscopy by reconstructed wave-fronts. Proceedings of the Royal Society of London. Series A. 
+
+Mathematical and Physical Sciences 197, 1051 (1949), 454–487. 
+
+[37]  Dennis Gabor. 1951. Microscopy by reconstructed wave fronts: II. Proceedings of the Physical Society. Section B 64, 6 
+
+(1951), 449. 
+
+[38]  Peter Gunter and Jean-Pierre Huignard. 2007. Photorefractive materials and their applications 2: Materials. Springer 
+
+Series in Optical Sciences 114 (2007), 646. https://link.springer.com/book/10.1007/0- 387- 34081- 5 
+
+[39]  John F. Heanue, Matthew C. Bashaw, and Lambertus Hesselink. 1994. Volume holographic storage and retrieval of 
+
+digital data. Science 265, 5173 (1994), 749–752. 
+
+[40]  O. S. Heavens. 1991. 7.8 The Use of Thin Films as Polarizers . Dover publications, 241–242. 
+[41]  Alexander Hellemans. 1999. Holograms can store terabytes, but where? Science 286, 5444 (1999), 1502–1504. 
+[42]  ECMA International. 2023. ECMA-423: Holographic Data Storage Disk (HDSD) - Capacity: 1 Tbyte per disk. (2023). 
+
+Retrieved January 01, 2025 from https://ecma- international.org/publications- and- standards/standards/ecma- 423/ 
+
+[43]  Jeeyoon Jung and Dongkun Shin. 2022. Lifetime-leveling LSM-tree compaction for ZNS SSD. In Proceedings of the 
+
+14th ACM Workshop on Hot Topics in Storage and File Systems . 100–105. 
+
+[44]  Jesung Kim, Jong Min Kim, Sang Lyul Min, and Yookun Cho. 2002. A space-efficient flash translation layer for com- 
+
+pactflash systems. IEEE Transactions on Consumer Electronics 48, 2 (2002), 366–375. 
+
+[45]  Herwig Kogelnik. 1969. Coupled wave theory for thick hologram gratings. Bell System Technical Journal 48, 9 (1969), 
+
+2909–2947. 
+
+[46]  NV Kukhtarev, VB Markov, SG Odulov, MS Soskin, and VL Vinetskii. 1978. Holographic storage in electrooptic 
+
+crystals. I. steady state. Ferroelectrics 22, 1 (1978), 949–960. 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+3:30 
+
+N. Cheriere et al. 
+
+[47]  Eunji Lee, Julie Kim, Hyokyung Bahn, Sunjin Lee, and Sam H. Noh. 2017. Reducing write amplification of flash storage 
+
+through cooperative data management with NVM. ACM Transactions on Storage 13 , 2 (2017), 1–13. 
+
+[48]  Hyuk Lee, Xiang-guang Gu, and Demetri Psaltis. 1989. Volume holographic interconnections with maximal capacity 
+
+and minimal cross talk. Journal of Applied Physics 65, 6 (1989), 2191–2194. 
+
+[49]  EN Leith, A. Kozma, J. Upatnieks, J. Marks, and N. Massey. 1966. Holographic data storage in three-dimensional 
+
+media. Applied Optics 5, 8 (1966), 1303–1311. 
+
+[50]  Joowon Lim, Jannes Gladrow, Douglas Kelly, Greg O’Shea, Govert Verkes, Ioan Stefanovici, Sebastian Nowozin, 
+and  Benn  Thomsen.  2023.  Efficient  data  transport  over  multimode  light-pipes  with  megapixel  images  us- 
+ing  differentiable  ray  tracing  and  machine-learning.  (2023).  Optica  Open.  Preprint.  https://doi.org/10.48550/ 
+arXiv.2301.06496 . Retrieved from https://preprints.opticaopen.org/articles/preprint/High- bandwidth _ Close- Range _ 
+Information _ Transport _ through _ Light _ Pipes/21923598?file=38892084 
+
+[51]  James Lipp and Jerry L. Reynolds. 1971. A high capacity holographic storage system. In Applications of Holography: 
+Proceedings of the United States-Japan Seminar on Information Processing by Holography, held in Washington, DC, 
+October 13–18, 1969 . Springer, 377–388. 
+
+[52]  Chen Luo and Michael J. Carey. 2019. LSM-based storage techniques: A survey. The VLDB Journal 29, 1(2019), 393–
+
+418. DOI: https://doi.org/10.1007/s00778- 019- 00555- y 
+
+[53]  Ian McMichael, William Christian, David Pletcher, Tallis Y. Chang, and John H. Hong. 1996. Compact holographic 
+
+storage demonstrator with rapid access. Applied Optics 35, 14 (1996), 2375–2379. 
+
+[54]  AL Mikaeliane. 1978. Holographic bulk memories using lithium niobate crystals for data recording. In Proceedings of 
+
+the Optical Information Processing: Volume 2 . Springer, 217–233. 
+
+[55]  Fai H. Mok. 1993. Angle-multiplexed storage of 5000 holograms in lithium niobate. Optics Letters 18, 11 (1993), 915–
+
+917. 
+
+[56]  Fai H. Mok, Goeffrey W. Burr, and Demetri Psaltis. 1994. Angle and space multiplexed holographic random access 
+
+memory (HRAM). Optical Memory and Neural Networks 3, 2 (1994), 119–127. 
+
+[57]  Fai H. Mok, Geoffrey W. Burr, and Demetri Psaltis. 1996. System metric for holographic memory systems. Optics 
+
+Letters 21, 12 (1996), 896–898. 
+
+[58]  Teruyoshi Nobukawa and Takanori Nomura. 2016. Linear phase encoding for holographic data storage with a single 
+
+phase-only spatial light modulator. Applied Optics 55, 10 (2016), 2565–2573. 
+
+[59]  Geoffrey  Noer.  2020.  Put  your  archive  data  on  ice  with  new  storage  offering.  (2020).  Retrieved  January 
+01, 2025 from https://cloud.google.com/blog/products/storage- data- transfer/archive- storage- class- for- coldest- data- 
+now-available 
+
+[60]  Sergei S Orlov. 2000. Volume holographic data storage. Communications of the ACM 43, 11 (2000), 46–54. 
+[61]  Patrick O’Neil, Edward Cheng, Dieter Gawlick, and Elizabeth O’Neil. 1996. The log-structured merge-tree (LSM-tree). 
+
+Acta Informatica 33 (1996), 351–385. https://dl.acm.org/doi/10.1007/s002360050048 
+
+[62]  George A. Rakuljic, Victor Leyva, and Amnon Yariv. 1992. Optical data storage by using orthogonal wavelength- 
+
+multiplexed volume holograms. Optics Letters 17, 20 (1992), 1471–1473. 
+
+[63]  S. Redfield. 2000. Tamarack optical head holographic storage. In Proceedings of the Holographic Data Storage . Springer, 
+
+343–357. 
+
+[64]  Microsoft Research. 2024. Project HSD. (2024). Retrieved January 01, 2025 from https://w w w.microsoft.com/en-us/ 
+
+research/project/hsd/ 
+
+[65]  Seagate. 2024. Heat Assisted Magnetic Recording (HAMR). (2024). Retrieved January 01, 2025 from https://w w w. 
+
+seagate.com/gb/en/innovation/hamr/ 
+
+[66]  Mansour Shafaei, Peter Desnoyers, and Jim Fitzpatrick. 2016. Write amplification reduction in flash-based SSDs 
+through extent-based temperature identification. In Proceedings of the 8th USENIX Workshop on Hot Topics in Storage 
+and File Systems (HotStorage 16) . 
+
+[67]  Mansour Shafaei, Mohammad Hossein Hajkazemi, Peter Desnoyers, and Abutalib Aghayev. 2017. Modeling drive- 
+
+managed smr performance. ACM Transactions on Storage 13, 4 (2017), 1–22. 
+
+[68]  RM Shelby, JA Hoffnagle, GW Burr, C. Michael Jefferson, M-P Bernal, H. Coufal, RK Grygier, H. Günther, RM Mac- 
+farlane, and GT Sincerbox. 1997. Pixel-matched holographic data storage with megabit pages. Optics Letters 22, 19 
+(1997), 1509–1511. 
+
+[69]  Anton Shilov. 2023. Seagate’s HAMR Update: 32 TB in Early 2024, 40 TB Two Years Later. (Nov. 2023). Retrieved 
+January 01, 2025 from https://www.anandtech.com/show/21125/seagates- hamr- update- 32- tb- in- early- 2024- 40- tb- 
+two-years-later 
+
+[70]  M. Simon, St Wevering, K. Buse, and E. Krätzig. 1997. The bulk photovoltaic effect of photorefractive : Fe crystals at 
+high light intensities. Journal of Physics D: Applied Physics 30, 1(1997), 144. DOI: https://doi.org/10.1088/0022-3727/ 
+30/1/018 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+Holographic Storage for the Cloud: Advances and Challenges 
+
+3:31 
+
+[71]  Harmeet Singh. 2017. Overcoming challenges in 3D NAND volume manufacturing. Solid State Technology 60, 5 (2017), 
+
+18–21. 
+
+[72]  Nidamarthi Srinivas and Kalyanmoy Deb. 1994. Muiltiobjective optimization using nondominated sorting in genetic 
+
+algorithms. Evolutionary Computation 2, 3 (1994), 221–248. 
+
+[73]  D. Staebler, J. Amodei, and W Phillips. 1972. Multiple storage of thick phase holograms in LiNbO 3. IEEE Journal of 
+
+Quantum Electronics 8, 6 (1972), 611–611. 
+
+[74]  KK Sutherlin, JP Lauer, and RW Olenick. 1974. Holoscan: A commercial holographic ROM. Applied Optics 13, 6 (1974), 
+
+1345–1354. 
+
+[75]  Pieter J. van Heerden. 1963. Theory of optical information storage in solids. Applied Optics 2, 4 (1963), 393–400. 
+[76]  Tatyana Volk and Manfred Wöhlecke. 2008. Lithium Niobate: Defects, Photorefraction and Ferroelectric Switching . Vol. 
+
+115. Springer Science and Business Media. 
+
+[77]  Steve Shih-Wei Wang. 2018. 3D NAND: Challenges beyond 96-layer memory arrays. In Proceedings of the Semiconduc- 
+tor Engineering . Retrieved from https://semiengineering.com/3d- nand- challenges- beyond- 96- layer- memory- arrays/ 
+[78]  Wikipedia. 2024. Bayesian optimization. (2024). Retrieved January 01, 2025 from https://en.wikipedia.org/wiki/ 
+
+Bayesian _ optimization Accessed: 2024-10-15. 
+
+[79]  Wikipedia.  2024.  Czochralski  method.  (2024).  Retrieved  January  01,  2025  from  https://en.wikipedia.org/wiki/ 
+
+Czochralski _ method Accessed: 2024-10-15. 
+
+[80]  Wikipedia. 2024. Innovation. (2024). Retrieved January 01, 2025 from https://en.wikipedia.org/wiki/Innovation Ac- 
+
+cessed: 2024-10-15. 
+
+[81]  Alex Woodle. 2020. Storage in the Exabyte Era. (Feb. 2020). Retrieved Januar y 01, 2025 from https://w w w.datanami. 
+
+com/2020/02/19/storage- in- the- exabyte- era/ 
+
+[82]  Pochi Yeh and Claire Gu. 2010. 3.5.4 Reflective Polarizers (2nd. ed.) . Wiley, 133–139. 
+[83]  S. Yin, H. Zhou, F. Zhao, M. Wen, Z. Yang, J. Zhang, and TS Yu Francis. 1993. Wavelength multiplexed holographic 
+storage in a sensitive photorefractive crystal using a visible-light tunable diode laser. Optics Communications 101, 5-6 
+(1993), 317–321. 
+
+[84]  Furqan Zahoor, Tun Zainal Azni Zulkifli, and Farooq Ahmad Khanday. 2020. Resistive random access memory 
+(RRAM): An overview of materials, switching mechanism, performance, multilevel cell (mlc) storage, modeling, and 
+applications. Nanoscale Research Letters 15, 90(2020), 1–26. DOI: https://doi.org/10.1186/s11671- 020- 03299- 9 
+
+[85]  Zonedstorage.io. 2024. Zoned Storage Devices. (2024). Retrieved from https://zonedstorage.io/docs/introduction/ 
+
+zoned-storage 
+
+Received 13 November 2023; revised 29 July 2024; accepted 10 October 2024 
+
+ACM Trans. Storage, Vol. 21, No. 1, Article 3. Publication date: January 2025. 
+
+

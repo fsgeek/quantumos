@@ -111,3 +111,15 @@ def test_runconfig_accepts_herald_retry_interval_override():
 def test_runconfig_rejects_nonpositive_herald_retry_interval():
     with pytest.raises(ValueError, match="herald_retry_interval_s"):
         RunConfig(**_base_kwargs(herald_retry_interval_s=0.0))
+
+
+def test_runconfig_pool_herald_attempts_defaults_to_single_attempt():
+    # §8.2 verbatim behaviour (ONE heralding attempt per generation trigger)
+    # is the default: existing configs reproduce traces byte-identically.
+    config = RunConfig(**_base_kwargs())
+    assert config.pool_herald_attempts == 1
+
+
+def test_runconfig_rejects_non_positive_pool_herald_attempts():
+    with pytest.raises(ValueError, match="pool_herald_attempts"):
+        RunConfig(**_base_kwargs(pool_herald_attempts=0))

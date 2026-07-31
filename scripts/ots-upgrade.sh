@@ -19,8 +19,6 @@ for f in timestamps/*.ots; do
         if [ "$orig_hash" != "$new_hash" ]; then
             echo "upgraded: $f"
             upgraded=$((upgraded + 1))
-        else
-            echo "already complete: $f"
         fi
     else
         echo "pending:  $f"

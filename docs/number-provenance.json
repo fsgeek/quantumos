@@ -1,0 +1,197 @@
+{
+  "_comment": [
+    "Provenance registry for every numeric claim the paper makes.",
+    "A number is REGISTERED when it appears here; it is VERIFIED only when someone",
+    "opened the artifact, re-derived the value BLIND, and recorded who and when.",
+    "Registered-but-unverified is the normal resting state and is not a defect.",
+    "Silently absent is the defect, and scripts/check_number_provenance.py finds those.",
+    "",
+    "status: unverified | verified | recorded-not-rederived | disputed",
+    "'recorded-not-rederived' means a predecessor wrote the arithmetic and nobody",
+    "reopened the artifact. It is the WEAKER honest claim and is always preferable",
+    "to marking it verified on the strength of matching a written-out denominator.",
+    "See memory: recorded provenance is more dangerous than absent provenance."
+  ],
+  "claims": [
+    {
+      "literal": "76%",
+      "claim": "share of switch-fabric actuations that are maintenance",
+      "artifact": "runs/sweep-pool-retry/manifest.json",
+      "derivation": "467/612",
+      "status": "recorded-not-rederived",
+      "recorded_by": "predecessor, draft L1199-1201",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "3.22:1",
+      "claim": "maintenance-to-foreground actuation ratio",
+      "artifact": "runs/sweep-pool-retry/manifest.json",
+      "derivation": "467/145",
+      "status": "recorded-not-rederived",
+      "recorded_by": "predecessor, draft L1199-1201",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "25.4%",
+      "claim": "manufactured entanglement that ages out unused",
+      "artifact": "runs/sweep-pool-retry/manifest.json",
+      "derivation": "85/334",
+      "status": "recorded-not-rederived",
+      "recorded_by": "predecessor, draft L1199-1201",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "73%",
+      "claim": "deposits consumed rather than lost",
+      "artifact": "runs/sweep-pool-retry/manifest.json",
+      "derivation": "243/334",
+      "status": "recorded-not-rederived",
+      "recorded_by": "predecessor, draft L1199-1201",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "86%",
+      "claim": "rank decision points that were degenerate; grounds Q2",
+      "artifact": null,
+      "derivation": null,
+      "status": "unverified",
+      "note": "NO RECORDED PROVENANCE. Load-bearing for a question addressed to physicists.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "39%",
+      "claim": "fewer switch reservations under quality-aware routing; grounds Q6",
+      "artifact": null,
+      "derivation": null,
+      "status": "unverified",
+      "note": "NO RECORDED PROVENANCE. Load-bearing for a question addressed to physicists.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "96%",
+      "claim": "less pool wastage under quality-aware routing; grounds Q6",
+      "artifact": null,
+      "derivation": null,
+      "status": "unverified",
+      "note": "NO RECORDED PROVENANCE. Load-bearing for a question addressed to physicists.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "13×",
+      "claim": "negative envelope, joint-envelope endpoint (§13)",
+      "artifact": null,
+      "derivation": null,
+      "status": "unverified",
+      "note": "NO RECORDED PROVENANCE.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "83%",
+      "claim": "maintenance share, lower end under retain-and-retry",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE. Draft L1200 names a sweep, not a per-number derivation. Weaker than the 467/612 rows and must not be read as equivalent.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "85%",
+      "claim": "maintenance share, upper end under retain-and-retry",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%).",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "5.7:1",
+      "claim": "maintenance-to-foreground ratio under retain-and-retry",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%).",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "44%",
+      "claim": "increase in deposits",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%).",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "26%",
+      "claim": "increase in pool hits",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%).",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "43%",
+      "claim": "fall in foreground reservations",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%).",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "25%",
+      "claim": "wastage, lower endpoint of the 25->35% shift",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%). Distinct from the 25.4% headline figure.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "35%",
+      "claim": "wastage, upper endpoint of the 25->35% shift",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%).",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "37%",
+      "claim": "wastage upper bound under perturbation (31-37% range)",
+      "artifact": "runs/sweep-pool-retry/",
+      "derivation": null,
+      "status": "recorded-not-rederived",
+      "note": "GROUPED PROVENANCE (see 83%). The 31% lower bound is not caught by the scanner's pattern and is registered by this note only.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "20%",
+      "claim": "RL-QEC performance past the physics-based expert stack",
+      "artifact": "docs/references/s41586-026-10759-2.txt",
+      "derivation": null,
+      "status": "unverified",
+      "note": "THEIRS, NOT OURS. Verifies by quotation against the in-repo source text, not against a run. This claim's tense was corrected once already (addendum 2026-07-24); confirm the correction survived into the current wording.",
+      "verified_by": null,
+      "verified_date": null
+    }
+  ]
+}

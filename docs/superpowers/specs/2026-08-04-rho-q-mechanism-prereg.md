@@ -56,12 +56,29 @@ largest marginal difference adjacent to rho_q = 1 (the level where the run
 note already records a refusal boundary: 180 refused cells at rho_q = 1).
 P-M1a can lose while P-M1 wins; they adjudicate separately.
 
-**Named rival — P-M2 (default owner: the result doc's candidate (b); Tony
-may claim or replace this rival in his next message before the read, and his
-version then supersedes this paragraph):** the mixture/copula preserves the
-per-site marginal, and the 0.030 enters through rho_q-dependent selection —
-materialization probability, q_min interplay, or refusal-boundary censoring
-— that happens to act identically on both blind arms.
+**Named rival — P-M3 (Tony, claimed 2026-08-04 before the read, superseding
+the default P-M2 slot per the frozen procedure):** "My bet: this is an
+experimental error, and we'll figure out what it was and fix it." I.e. the
+0.030 identical movement is not an authored property of the quality model at
+all — it is a defect somewhere in the experimental pipeline (generator
+wiring, CSV production, or analysis script; e.g. both blind arms reading a
+shared value they shouldn't, a column mix-up, an aggregation bug). Note
+recorded before reading: exact identity across arms is ALSO the classic
+fingerprint of a copy/shared-column bug, so P-M3 and P-M1 both predict the
+identity; they separate on WHERE the shared thing lives (authored model
+construction vs. pipeline defect).
+
+**Adjudication-scope amendment (pre-read, required for P-M3 fairness):** the
+read extends beyond the quality generator to the full quality pipeline —
+`hedged_placement_stage1.py` (generation and CSV writing) and
+`flattening_test_quality.py` (analysis) — since an experimental error can
+live in any of them. Verdict options: P-M1, P-M3, the unclaimed P-M2
+(marginal-preserving construction + selection-side leak), or "third thing."
+
+*(P-M2 as originally slotted, for the record: the mixture/copula preserves
+the per-site marginal, and the 0.030 enters through rho_q-dependent
+selection — materialization probability, q_min interplay, or
+refusal-boundary censoring — acting identically on both blind arms.)*
 
 ## Exposure disclosure
 

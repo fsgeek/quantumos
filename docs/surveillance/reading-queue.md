@@ -148,3 +148,19 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
   adjacent claims about rate and heralding, not things the abstract states
   outright. Whoever pays this debt should check Q5 first, and should treat
   the abstract text itself (not this paraphrase) as the source of record.
+- **provenance upgrade (2026-08-05):** the abstract was fetched directly
+  from arxiv.org/abs/2607.18387 in a session with arXiv access and checked
+  against this entry. The sweep's paraphrase is faithful: the Q5
+  link-density claim is verbatim in the abstract ("dense,
+  easy-to-parallelize channels" vs "bulky collection optics that cap how
+  densely links can be packed"); the abstract reports NO failure-cost or
+  retry-cycle data (Q4 stays inference, correctly marked); the Q1 reading
+  rests on "saturating the entanglement rate at a local-operation limit,"
+  claimed with no cadence distribution (thin, as recorded). Projected
+  headline for the eventual read: Bell-pair fidelity of 99.9% at
+  fault-tolerance-compatible rates and densities — a projection from a
+  synthesized architecture, not a measurement. The scrutiny caveat above is
+  discharged for the ABSTRACT only; the full paper remains UNREAD and is
+  still the debt. (Egress note: the scheduled job now has *.arxiv.org
+  access, so future sweeps read abstracts directly and this caveat class
+  should not recur.)

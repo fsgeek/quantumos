@@ -342,6 +342,26 @@
       "note": "From the committed run note; CSV not recounted. GROUPED with -0.210.",
       "verified_by": null,
       "verified_date": null
+    },
+    {
+      "literal": ">1,000",
+      "claim": "RL-QEC control parameters steered continuously in-band (\u00a77 calibration spectrum)",
+      "artifact": "docs/references/s41586-026-10759-2.txt L90-92",
+      "derivation": "verbatim: \"Our RL agent manages more than 1,000 control parameters\"",
+      "status": "verified",
+      "note": "Quote-verified by this session's fact-gathering agent 2026-08-04 (also L22-26 in-band steering from error-detection events; L58-63 \"fundamental bottleneck\" \u2014 both quoted). THEIRS, NOT OURS. \"Dissolves the calibration epoch\" is our routing note's verb, not the paper's; \u00a77 prints the spectrum framing without that verb.",
+      "verified_by": "session 2026-08-04 fact-gathering agent (quotes relayed and used verbatim)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "three converged on sound; six more converged on light",
+      "claim": "F1 convergence + failed replication (control 0/3 sound, 6/6 light_vision), the mandated \u00a711 footnote sentence",
+      "artifact": "docs/superpowers/specs/2026-07-15-tale-f1-falsification-result.md L49-52 (committed); full counts in gitignored docs/drafts/2026-07-15-tale-f1-falsification-protocol.md L64-65",
+      "derivation": "control 0/3 sound 3/3 light; treatment 0/3 sound 3/3 light; original 3/3 sound (2026-07-14)",
+      "status": "recorded-not-rederived",
+      "note": "Words not digits in \u00a711 per the mandated sentence. Committed result note carries the sentence; per-spin classifications were in-workflow (run wf_b5163541-d6c), no run-dir artifact in repo. Prereg chain git-provable only for the DESIGN (e431b5a evening-before; result 1d04fa0 next morning); detailed thresholds attested by the committed result note, not independently provable \u2014 \u00a711 wording written to fit exactly this.",
+      "verified_by": null,
+      "verified_date": null
     }
   ]
 }

@@ -59,7 +59,7 @@
       "artifact": "runs/t1-open/94fc5e58-a906-4ecf-af7e-9ac681bfa573/analysis/t3_report.json",
       "derivation": "1 - n_nondegenerate/n_decision_points = 1 - 54/382 = 328/382 = 85.86%",
       "status": "unverified",
-      "note": "Provenance RECOVERED 2026-07-26 (was: NO RECORDED PROVENANCE). Artifact located and complement arithmetic recomputed from artifact fields (n_decision_points=382, n_nondegenerate=54, nondegenerate_fraction=0.1414) — NON-BLIND, draft value was known, so status stays unverified. Blind protocol verification still owed, plus one interpretation check: t3's 'decision points' == draft's 'rank decision points'. Artifact's own verdict: 'NON-FIELD-AT-OPERATING-POINT (degenerate-dominated)'. Load-bearing for a question addressed to physicists.",
+      "note": "Provenance RECOVERED 2026-07-26 (was: NO RECORDED PROVENANCE). Artifact located and complement arithmetic recomputed from artifact fields (n_decision_points=382, n_nondegenerate=54, nondegenerate_fraction=0.1414) \u2014 NON-BLIND, draft value was known, so status stays unverified. Blind protocol verification still owed, plus one interpretation check: t3's 'decision points' == draft's 'rank decision points'. Artifact's own verdict: 'NON-FIELD-AT-OPERATING-POINT (degenerate-dominated)'. Load-bearing for a question addressed to physicists. 2026-08-04: artifact reopened first-hand (n_decision_points=382, n_nondegenerate=54 re-read; complement 328/382 recomputed); still NON-BLIND, status unchanged. Section 9 prints it in the artifact vocabulary (decision points) with the artifact verdict string quoted.",
       "verified_by": null,
       "verified_date": null
     },
@@ -79,17 +79,17 @@
       "artifact": "runs/sweep-s2/ via docs/superpowers/specs/2026-07-10-s1-run-note.md L94",
       "derivation": "pool.expired 111 (rr) -> 4 (bh) at delta=0.3: 107/111 = 96.4%",
       "status": "recorded-not-rederived",
-      "note": "Provenance RECOVERED 2026-07-26 (was: NO RECORDED PROVENANCE); same recovery as the 39% row. VOCABULARY FLAG: artifact says 'pool.expired', draft says 'pool wastage' — confirm the mapping against Section 5's wastage vocabulary at verification time. Load-bearing for a question addressed to physicists.",
+      "note": "Provenance RECOVERED 2026-07-26 (was: NO RECORDED PROVENANCE); same recovery as the 39% row. VOCABULARY FLAG: artifact says 'pool.expired', draft says 'pool wastage' \u2014 confirm the mapping against Section 5's wastage vocabulary at verification time. Load-bearing for a question addressed to physicists.",
       "verified_by": null,
       "verified_date": null
     },
     {
-      "literal": "13×",
-      "claim": "negative envelope, joint-envelope endpoint (§13)",
+      "literal": "13\u00d7",
+      "claim": "negative envelope, joint-envelope endpoint (\u00a713)",
       "artifact": "docs/references/2025-Holographic-Storage-for-the-Cloud.txt L945",
-      "derivation": "verbatim quotation: 'we need at least another 13 × improvement in end-to-end energy efficiency'",
+      "derivation": "verbatim quotation: 'we need at least another 13 \u00d7 improvement in end-to-end energy efficiency'",
       "status": "verified",
-      "note": "THEIRS, NOT OURS — citation number (Cheriere et al., ACM ToS 21(1) 2025), misfiled by the 2026-07-25 inventory as an instrument number. Quotation-verified against the in-repo source text 2026-07-26 (source L945; consistent with source L66-67's '1-2 orders of magnitude'). Transfer-note routing verified first-hand 2026-07-24 (addendum 0d17539). Scope: the FIGURE is verified; Section 13's eventual usage wording must still honor the source's conditions (optimistic assumptions, closable only by media advances).",
+      "note": "THEIRS, NOT OURS \u2014 citation number (Cheriere et al., ACM ToS 21(1) 2025), misfiled by the 2026-07-25 inventory as an instrument number. Quotation-verified against the in-repo source text 2026-07-26 (source L945; consistent with source L66-67's '1-2 orders of magnitude'). Transfer-note routing verified first-hand 2026-07-24 (addendum 0d17539). Scope: the FIGURE is verified; Section 13's eventual usage wording must still honor the source's conditions (optimistic assumptions, closable only by media advances).",
       "verified_by": "session 2026-07-26 (unnamed thread)",
       "verified_date": "2026-07-26"
     },
@@ -190,6 +190,156 @@
       "derivation": null,
       "status": "unverified",
       "note": "THEIRS, NOT OURS. Verifies by quotation against the in-repo source text, not against a run. This claim's tense was corrected once already (addendum 2026-07-24); confirm the correction survived into the current wording.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "2.2e-16",
+      "claim": "calibration bridge max abs ACF deviation (numpy swap measured, not assumed); \u00a79 discipline paragraph",
+      "artifact": "runs/t1-control/f230668e-3fbd-4016-bd7a-e7bac2e47688/analysis/t1_calibration_bridge.json",
+      "derivation": "max_abs_acf_deviation = 2.220446049250313e-16 (direct artifact field)",
+      "status": "verified",
+      "note": "Read first-hand from artifact 2026-08-04; reproduction PASS, verdicts pre/post PASS; per-pool deviations all <= 2.43e-16.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "2.53/1.82/1.27/1.00",
+      "claim": "per-path pool attempts-per-deposit, rr delta=0.3 (Jensen meter); \u00a79",
+      "artifact": "runs/sweep-s1 rr delta=0.3 arm via docs/superpowers/specs/2026-07-10-s1-run-note.md L144-145",
+      "derivation": "measured vs 1/p = 2.50/1.67/1.25/1.00",
+      "status": "recorded-not-rederived",
+      "note": "Counts recorded in the committed s1-run-note (correction section); traces not reopened.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "37.7%",
+      "claim": "predicted awareness churn saving 1-1/E[1/p]; \u00a79 (paired with observed 39%)",
+      "artifact": "docs/superpowers/specs/2026-07-10-s1-run-note.md L146",
+      "derivation": "1-1/E[1/p] at delta=0.3",
+      "status": "recorded-not-rederived",
+      "note": "Mechanism prediction from corrected account; the observed 39% has its own registry row.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "1.14 pp",
+      "claim": "observed blind-arm compliance drop at delta=0.3 vs frozen >=2 pp prediction (FAILED quantitative claim, printed as such); \u00a79",
+      "artifact": "runs/sweep-s1-attempt-price via s1-run-note L182-196",
+      "derivation": "0.9709-0.9595",
+      "status": "recorded-not-rederived",
+      "note": "GROUPED with the >=2 pp frozen prediction; printed in Section 9 as an honest magnitude-model failure.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "36 vs 18",
+      "claim": "paired discordant lineages, blind routing at 250 ms spacing, McNemar p~=0.021; \u00a79",
+      "artifact": "runs/sweep-s1-attempt-price paired_outcomes.json via s1-run-note L189-193",
+      "derivation": "McNemar chi2(cc)=5.35",
+      "status": "recorded-not-rederived",
+      "note": "Artifact committed per run note; not reopened this session.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "39 vs 2",
+      "claim": "paired discordant lineages, argmax vs blind at delta=0.3, 250 ms spacing, p~=2e-8; \u00a79",
+      "artifact": "runs/sweep-s2-attempt-price paired_vs_rr_delta03.json via s1-run-note L235-237",
+      "derivation": "McNemar chi2(cc)=31.6",
+      "status": "recorded-not-rederived",
+      "note": "Artifact committed per run note; not reopened this session.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "+34",
+      "claim": "difference-in-differences, quality-specific awareness advantage, lineages of 1580 (2.15 pp); \u00a79, grounds the awareness claim",
+      "artifact": "runs/sweep-s2-attempt-price/policy_by_spread_interaction.json",
+      "derivation": "DiD = (+37) - (+3); 34/1580 = 2.15 pp (direct artifact fields)",
+      "status": "verified",
+      "note": "Read first-hand from artifact 2026-08-04: difference_in_differences_lineages=34, net advantages +3 (delta=0) and +37 (delta=0.3), paired=1580. Pseudoreplication caveat carried in the artifact itself; population claim rests on the seed battery row.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "+42.2",
+      "claim": "seed-battery mean DiD, 10/10 seeds positive, sign test p~=0.002, frozen window +17..+68; \u00a79",
+      "artifact": "runs/seed-battery/seed_battery_analysis.json",
+      "derivation": "mean_did=42.2; did_positive_seeds=10/10; p=0.001953 (direct artifact fields)",
+      "status": "verified",
+      "note": "Read first-hand from artifact 2026-08-04; all_arms_converged true; clause windows match the frozen prediction in s1-run-note L268-278.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "-7",
+      "claim": "concentration-alone policy effect, mean lineages, negative in 9/10 seeds (EXPLORATORY attribution); \u00a79",
+      "artifact": "runs/seed-battery/seed_battery_analysis.json",
+      "derivation": "delta0_effects=[-20,-14,-9,-8,-8,-7,-6,-2,-2,6]: 9 negative, mean=-7.0",
+      "status": "verified",
+      "note": "Recomputed first-hand from artifact list 2026-08-04. The mechanism attribution (single-path contention) is exploratory post-hoc per the run note; only the tendency is registered.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "1296/1620",
+      "claim": "Stage 1 survival cells activated, all positive, SITE_CHOICE_DECISION_EARNED; \u00a79",
+      "artifact": "runs/hedged-stage1/summary.json",
+      "derivation": "direct artifact fields cells.survival_activated/total",
+      "status": "verified",
+      "note": "Read first-hand from artifact 2026-08-04; battery reading string matches run note 97dca97.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "270/540",
+      "claim": "Stage 1 quality cells activated, QUALITY_CHOICE_DECISION_EARNED; \u00a79",
+      "artifact": "runs/hedged-stage1/summary.json",
+      "derivation": "direct artifact fields",
+      "status": "verified",
+      "note": "Read first-hand from artifact 2026-08-04.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "+0.0164 to +0.384",
+      "claim": "Stage 1 site-choice option value range over activated cells; \u00a79",
+      "artifact": "runs/hedged-stage1/summary.json",
+      "derivation": "extrema survival_delta_m_min=0.0163615, max=0.384",
+      "status": "verified",
+      "note": "Extrema read first-hand from artifact 2026-08-04; corner parameters match run note.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "+0.0100 to +0.120",
+      "claim": "Stage 1 quality option value range over activated cells; \u00a79",
+      "artifact": "runs/hedged-stage1/summary.json",
+      "derivation": "extrema quality_v_q_min=0.01004, max=0.120",
+      "status": "verified",
+      "note": "Read first-hand from artifact 2026-08-04.",
+      "verified_by": "session 2026-08-04 (post-rho_q wander thread)",
+      "verified_date": "2026-08-04"
+    },
+    {
+      "literal": "324/180/90",
+      "claim": "Stage 1 refusal counts (fully-common-mode CARRIER / flat-quality / uninformative-signal); \u00a79",
+      "artifact": "runs/hedged-stage1/ via docs/superpowers/specs/2026-07-15-hedged-stage1-run-note.md",
+      "derivation": "1620-1296=324; 540-270=270=180+90",
+      "status": "recorded-not-rederived",
+      "note": "Totals consistent with first-hand activated/total reads; per-code split from the committed run note, not recounted from CSV.",
+      "verified_by": null,
+      "verified_date": null
+    },
+    {
+      "literal": "88",
+      "claim": "Stage 1 cells where single beats late-bound outright, worst -0.210; \u00a79 fragility profile",
+      "artifact": "runs/hedged-stage1/survival.csv via run note",
+      "derivation": "1208 late-wins + 88 single-wins, no ties",
+      "status": "recorded-not-rederived",
+      "note": "From the committed run note; CSV not recounted. GROUPED with -0.210.",
       "verified_by": null,
       "verified_date": null
     }

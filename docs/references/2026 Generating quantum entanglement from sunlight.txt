@@ -1,0 +1,1931 @@
+6
+2
+0
+2
+
+b
+e
+F
+7
+1
+
+]
+h
+p
+-
+t
+n
+a
+u
+q
+[
+
+1
+v
+5
+5
+6
+5
+1
+.
+2
+0
+6
+2
+:
+v
+i
+X
+r
+a
+
+Generating quantum entanglement from sunlight
+
+Cheng Li1
+
+†, Jasvinder Brar2,3
+
+Jeremy Upham1, Hanieh Fattahi2,3
+
+†, Michael K¨ublb¨ock2,3,
+∗, Robert W. Boyd1,4
+
+∗
+
+1Department of Physics, University of Ottawa, Ottawa, Ontario, Canada K1N 6N5.
+
+2Max Planck Institute for the Science of Light, Erlangen, Germany.
+
+3Friedrich-Alexander-Universit¨at Erlangen-N¨urnberg, Erlangen, Germany.
+
+4Institute of Optics, University of Rochester, Rochester, New York 14627, USA.
+
+∗Corresponding authors. Emails: hanieh.fattahi@mpl.mpg.de; rboyd@uottawa.ca
+
+†These authors contributed equally to this work.
+
+Energy consumption is becoming a serious bottleneck for integrating quan-
+
+tum technologies within the existing global information infrastructure. In pho-
+
+tonic architectures, considerable energy overheads stem from using lasers, whose
+
+high coherence was long considered indispensable for quantum state preparation.
+
+Here, we demonstrate that natural, incoherent sunlight can successfully produce
+
+quantum-entangled states via spontaneous parametric down-conversion. We de-
+
+tect polarization-entangled photon pairs with a concurrence of 0.905±0.053 and a
+
+Bell state ﬁdelity of 0.939±0.027. Importantly, the system violates Bell’s inequality
+with 𝑺 = 2.5408 ± 0.2171, exceeding the classical threshold of 2, while maintain-
+
+ing generation rates comparable to laser-based setups. These ﬁndings pave the
+
+way for sustainable quantum applications in resource-limited environments like
+
+interplanetary missions.
+
+1
+
+ 
+ 
+ 
+ 
+ 
+ 
+Background
+
+Quantum technologies have promised to revolutionize modern information processing, oﬀering
+
+computational advantages for classically hard problems (1–3), information-theoretic communica-
+
+tion security (4–6), and sensing precision beyond classical shot-noise limits (7, 8). Over the past
+
+few decades, breakthroughs in device performance have been widely celebrated in both scien-
+
+tiﬁc journals and the popular press, while a critical ﬁgure of merit for these advances—the energy
+
+cost—has raised concerns for their sustainability (9). In the classical domain, the global information
+
+and communication technology sector already accounts for
+
+1.8–3.9% of worldwide greenhouse
+
+∼
+
+gas emissions and energy use (10, 11). With the ever-growing global data traﬃc, any large-scale
+
+deployment of quantum-enabled information and communication technology will inevitably add to
+
+this burden.
+
+On existing quantum platforms, a substantial share of the power consumption stems from the
+
+energy overhead required to prepare and control the physical quantum systems. Preserving quan-
+
+tum coherence in superconducting circuits requires millikelvin-level cooling, which is provided by
+
+cryogenic equipment that routinely consumes 5-10 kW of electrical power per unit (12,13). Ion-trap
+
+processors require energy-intensive resources such as ultra-high-vacuum infrastructure and high-
+
+power radiofrequency drive ﬁelds (14). In photonic quantum systems, generating quantum states
+
+of light often involves deploying lasers, which have suboptimal electrical-to-optical conversion
+
+eﬃciency due to their inherent requirement of operating above a driving current threshold. Com-
+
+mercial lasers typically draw watts of electrical power only to deliver optical power on the milliwatt
+
+scale, with a signiﬁcant portion of the consumed energy going towards spectrum stabilization and
+
+temperature control, or dissipating as heat. Moreover, their durability and long-term reliability are
+
+limited when operating in harsh conditions such as intense radiation, high vacuum, and extreme
+
+temperature ﬂuctuations. The energy requirements for these platforms could signiﬁcantly constrain
+
+the scalability and accessibility of quantum technologies. Fortunately, operations of photonic quan-
+
+tum systems may not require enduring the energy burden from lasers, unlike superconducting and
+
+ion-trap systems, whose underlying physical principles necessitate the energy overheads.
+
+A key ingredient in photonic quantum technologies is the entangled photon state (15–20). Lasers
+
+often serve as the pump source for generating entangled photons from spontaneous parametric
+
+2
+
+down-conversion (SPDC), which is a nonlinear optical process widely employed in many photonic
+
+quantum applications. In SPDC, photons from a pump beam interact with a nonlinear medium
+
+and are down-converted into photon pairs (21–23). Conventionally, lasers are employed as pump
+
+sources due to their typically high coherence across all degrees of freedom, including spatial,
+
+spectral-temporal, and polarization. The reason is that the coherence of the pump in a given degree
+
+of freedom puts an upper bound on the maximally attainable entanglement in the same degree of
+
+freedom (24–33). However, this constraint does not apply when the target entanglement is in a
+
+diﬀerent degree of freedom from that of the coherence of the pump (34). For instance, studies from
+
+the authors, as well as others, have demonstrated that a polarized but spatiotemporally incoherent
+
+light source, such as a light-emitting diode (LED), can produce polarization-entangled photon
+
+pairs via SPDC (35–37). These earlier achievements suggest that natural sources of light, such
+
+as sunlight, can replace lasers as the pump source for nonlinear optical processes and generate
+
+entangled photons, thereby enabling energy-eﬃcient quantum technologies.
+
+Solar energy harvesting through photovoltaics oﬀers a prominent option for green, renewable
+
+power supply. However, the eﬃciency of state-of-the-art solar cells remains below 50% (38), and
+
+their performance and durability are similarly constrained in severe environmental conditions. In
+
+parallel with the materials science eﬀort in solar cell research, sunlight concentration technologies
+
+have been developed over the years to facilitate optimal utilization of solar power (39). Studies
+
+have proposed using solar concentration technology to directly drive optical ampliﬁcation and
+
+build a solar laser (40–42). On the other hand, large-scale solar-powered space infrastructure, such
+
+as space-based solar power platforms (43) and orbital data centers (44), is rapidly advancing,
+
+driving interest in photonic technologies capable of operating directly on abundant, incoherent
+
+solar radiation without dependence on power-intensive laser or electrical subsystems. Within this
+
+landscape, solar-driven photonic quantum technologies represent a promising route toward energy-
+
+autonomous quantum photonic functionality, naturally aligned with the requirements of future
+
+space power and information architectures. Here, we demonstrate, for the ﬁrst time, that sunlight, a
+
+ubiquitous and environmentally friendly light source, can produce entangled photon pairs via SPDC
+
+despite its lack of optical coherence. Using a combination of a Fresnel lens and a conic concentrator,
+
+we couple the sunlight into a multimode ﬁber (MMF) that guides the sunlight into a free-space
+
+optical entanglement source setup. The spectrally ﬁltered sunlight then pumps a nonlinear crystal
+
+3
+
+placed inside a polarization Sagnac interferometer (PSI) to induce SPDC (45). We measure photon
+
+coincidences with a time correlation width of
+we measure a two-photon state with a concurrence of 𝐶 = 0.905
+0.045, and a ﬁdelity to the target Bell state of 𝐹 = 0.939
+
+0.919
+
+∼
+
+1 ns. By conducting quantum state tomography (46),
+0.053 (47), a purity of 𝑃 =
+
+0.027. The polarization correlations
+
+±
+
+±
+
+±
+
+between photon pairs result in a Bell parameter for a Clauser-Horne-Shimony-Holt (CHSH)-type
+measurement of 𝑆 = 2.5408
+0.2171 (48, 49), which surpasses the local realistic threshold of
+𝑆 = 2 by 2.94 standard deviations, indicating that the correlation cannot be fully explained by a
+
+±
+
+local hidden variable theory. These results are not simply a proof of principle that polarization
+
+entanglement is generated from SPDC pumped by sunlight; they are a quantitative demonstration
+
+that these photon pairs have entanglement close to that of many recent results on polarization
+
+entanglement generated from SPDC pumped by coherence laser sources (50–53). We attribute the
+
+non-maximal entanglement and purity to practical imperfections in the experimental conditions,
+
+such as the wavefront distortions introduced by optical components, not to any inherent issue with
+
+the coherence of our solar pump. More importantly, we observe that the generation rate of entangled
+
+photons from sunlight-pumped SPDC, which is
+
+1
+1600 s−
+
+mW of pump power
+
+1, is comparable
+
+∼
+with that of laser-pumped SPDC when normalized against the eﬀective phase-matching bandwidth.
+
+(
+
+)−
+
+Our proof-of-principle demonstration not only indicates that there is no physical impediment to
+
+generating entangled photon pairs from incoherent sunlight, but is also highly encouraging that
+
+technical optimization of sunlight concentration at the phase-matching wavelengths of SPDC could
+
+make it competitive with current laser-pumped sources of polarization entangled photon sources.
+
+Our results serve as an important step towards solar-driven photonic quantum technologies and
+
+have important implications for developing energy-eﬃcient and environmentally friendly quantum
+
+devices.
+
+Experiment
+
+Figure 1 depicts the experimental setup, which consists of a sunlight-concentration module and
+
+an entangled-photon source. The sunlight concentration module is designed to optimally isolate
+
+sunlight in the desired spectral bandwidth and couple them into the MMF. To this end, we ﬁrst pre-
+
+focus the sunlight using a rectangular (1 m
+
+×
+
+1.4 m) Fresnel lens covered with commercial-grade
+
+4
+
+color ﬁlms that partially block the warm-colored spectral components. This beam then propagates
+
+through a short-pass ﬁlter and a dichroic mirror to further reduce the optical power outside of the
+
+ultraviolet spectral band. The focused and ﬁltered sunlight is then coupled into a MMF with a core
+
+diameter of 50 𝜇m and numerical aperture (NA) of 0.22 (MMF-50-0.22) using a custom glass conic
+
+concentrator. Additional details relevant to the sunlight concentration module are included in the
+
+Materials and Methods section of the Supplementary Material.
+
+To eﬃciently couple the sunlight into the nonlinear medium responsible for inducing SPDC, we
+
+ﬁrst collimate the sunlight transmitted through the MMF into a beam using a microscope objective
+
+with 20
+
+×
+
+magniﬁcation and 0.4 NA. This beam, which will later serve as the pump of the SPDC
+
+processes, is spectrally ﬁltered using a short-pass ﬁlter with a cutoﬀ wavelength of 550 nm and a
+
+band-pass ﬁlter with a center wavelength of 405 nm and a bandwidth of 1.5 nm (BPF-405). Using a
+
+combination of a polarizing beam splitter (PBS) and a half-wave plate (HWP), we make the pump
+
+beam highly polarized with equal amplitudes in its horizontal and vertical components, which
+
+ensures the generation of high polarization entanglement (32). To account for the overall phase
+
+delays that the orthogonal polarization components may later experience, we add a quarter-wave
+
+plate (QWP) that can be tilted to pre-compensate for the expected phase diﬀerences. The polarized
+
+sunlight pump beam is then focused into the nonlinear medium using a lens with a focal length
+of 𝑓1 = 200 mm. The ﬁltered sunlight reﬂected by the PBS is sent to a power meter to monitor
+
+the pump power in real time or to a spectrometer to measure its spectrum. Since sunlight is nearly
+
+unpolarized, and considering the depolarizing eﬀect of propagation in MMFs, we expect the pump
+
+power to be equally split at the PBS so that the power meter readings reﬂect the actual pump power
+
+incident on the nonlinear medium. Similarly, we expect the PBS to have negligible inﬂuence on the
+
+spectral shape of light around 405 nm, so that the spectrum measured at the spectrometer reﬂects
+
+the spectrum of the actual pump beam that induces the SPDC process. We depict the spectrum of
+
+the ﬁltered sunlight pump beam in the inset of Fig. 1. At the center of the nonlinear medium, the
+
+sunlight pump beam has a diameter of
+
+∼
+
+1 mm with an estimated divergence half-angle of 11 mrad.
+
+The nonlinear medium is a 10-mm-long periodically poled potassium titanyl phosphate (ppKTP)
+
+crystal quasi-phase-matched for Type-II SPDC from 405 nm to 810 nm. By placing this crystal at
+
+the center of the PSI, we have made the SPDC processes induced in clockwise and counterclockwise
+
+directions indistinguishable by the detectors. As a result, the setup produces a polarization-entangled
+
+5
+
+two-photon state
+
+Ψ
+
+|
+
+i ∼ |
+
+𝐻𝑉
+
+𝑉 𝐻
+
+𝑒𝑖𝜙
+
+|
+
+i
+
+i +
+
+, where 𝜙 is jointly determined by the initial polarization
+
+of the pump beam and the subsequent phase delays acquired within the PSI (45). In the experiment,
+we have set the tilting angle of QWP to target 𝜙 = 𝜋 so that the resulting two-photon state is written
+
+as
+
+Ψ
+
+|
+
+i
+
+= 1
+
+√2 (|
+
+𝐻𝑉
+
+𝑉 𝐻
+
+i)
+
+i − |
+
+(1)
+
+The SPDC ﬁelds emitted into two distinct paths are each collimated by a lens with a focal length of
+𝑓2 = 250 mm. We denote the down-converted photons emitted into the upper path as signal while
+
+those emitted into the lower path as idler. Their joint polarization state is analyzed using a set of
+
+QWP, HWP, and PBS in each path. Note that we have chosen all waveplates in the setup to be
+
+zero-order (except for the dHWP inside the PSI) and have carefully aligned their optical axes before
+
+taking measurements. We use microscope objectives (OBJs) to couple down-converted photons into
+
+MMFs with core diameters of 200 𝜇m and NAs of 0.39 (MMF-200-0.39) and detect them using
+
+avalanche photodiodes (APDs, PerkinElmer SPCM-CD 3017/Excelitas SPCM-QRH-14-FC).
+
+We register the photon arrival time using a time-to-digital converter (TDC, qutool’s quTAU)
+with a time resolution of 𝜏 = 81 ps and extract the time correlation histograms between signal
+
+and idler photons. To characterize the resulting two-photon polarization state, we perform quantum
+
+state tomography (46) by recording coincidence rates at 16 diﬀerent polarization projection bases
+
+and reconstruct the two-photon density matrix 𝜌, from which we can quantify the entanglement
+
+by calculating the concurrence 𝐶
+
+(47) and purity 𝑃
+
+𝜌
+
+)
+
+(
+
+𝜌
+
+)
+
+(
+
+= Tr
+
+𝜌2
+
+}
+
+{
+
+. We set an acquisition
+
+time of 2 min and a coincidence time window of 1 ns for each projective measurement. Due to
+
+solar irradiance variation throughout the daytime under realistic weather conditions, we observe
+
+diﬀerences in the sunlight pump power between measurements. Since the sunlight pump power
+
+measured at the power meter is well below 1 mW, we expect the SPDC to work in the low-gain
+
+regime where the pair generation rate scales linearly with the pump power. In subsequent data
+
+processing, we normalize the experimentally measured coincidence counts against the average
+
+pump power during data acquisition. The accidental coincidence rates are estimated using the
+
+average coincidence rates of photons arriving more than 5 ns apart.
+
+6
+
+Sunlight concentration module
+
+Fresnel lens
+
+Entangled photon source 
+QWP
+
+M3
+
+f2
+
+PBS
+
+OBJ
+
+MMF-200-0.39
+
+dPBS
+
+DM-675
+
+HWP
+
+OBJ
+
+M
+
+f1
+
+f2
+
+dHWP
+
+HWP
+
+PBS
+
+BPF-810
+
+MMF-
+200-0.39
+
+Power meter / spectrometer
+
+M2
+
+BPF-405
+SPF-550
+
+OBJ
+
+SPF-500
+
+DM-425
+
+Concentrator
+
+MMF-50-0.22
+
+Figure 1: Schematics of the experimental setup The setup consists of a sunlight concentration
+
+module and an entangled-photon source. The sunlight concentration module collects direct sunlight
+
+via a 1 m
+
+×
+
+1.4 m Fresnel lens and concentrates the spectrally ﬁltered light into a multimode ﬁber
+
+(MMF). In the entangled-photon source, the sunlight is collimated and ﬁltered to 405 nm
+
+0.75
+
+±
+
+nm (inset) to pump a ppKTP crystal inside a PSI. We have carefully balanced the PSI to compensate
+
+for most spatial and temporal distinguishabilities between the SPDC processes in two directions.
+
+The resulting SPDC ﬁeld is split and detected by MMF-coupled APDs to characterize two-photon
+
+entanglement and test for violation of local realism.
+
+7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Results
+
+Figure 2 displays the experimentally measured time correlation histogram between the SPDC
+
+photons measured on three separate days. We have set the waveplates in the detection paths to
+
+measure in the joint polarization bases VH and HV, respectively. We acquire data for 2 min per
+
+measurement and record the average pump power during the data acquisition. The time bin size
+is set to be twice the TDC’s temporal resolution, 2𝜏 = 162 ps. We observe photon coincidences
+centered around Δ𝑡
+
+2.25 ns. This time diﬀerence is caused by electronic delays between diﬀerent
+
+∼
+
+channels of the TDC unit. At a 1 ns coincidence time window, we extract an average coincidence
+
+rate of 10 counts per minute per 100 nW of pump power, which is equivalent to a coincidence rate of
+
+1
+1600 s−
+
+mW of pump power
+
+1. This coincidence rate is consistent with the results obtained
+
+∼
+in an earlier work, in which a blue-light LED ﬁltered to the same spatiotemporal bandwidth is
+
+(
+
+)−
+
+employed as the pump source for SPDC and produces 100 counts per minute per 1 𝜇W of pump
+
+power (37). We also note that, when this result is normalized against the eﬀective bandwidth of the
+
+nonlinear interaction, the pair generation rate from incoherent-light-pumped SPDC is comparable
+
+to that of laser-pumped SPDC reported in (37). We also observe near-zero coincidence count
+rates at time diﬀerences far from the center of correlation, that is, Δ𝑡 > 5 ns. Therefore, the
+
+experimentally measured coincidence counts contain negligible accidental coincidence counts.
+
+These results indicate a strong temporal correlation between the signal and idler photons, which
+
+is a feature of photon pair production from SPDC. Interestingly, an earlier study has observed
+
+spatial correlations between photon pairs produced from sunlight-pumped SPDC without studying
+
+entanglement (54). To observe photon entanglement beyond spatial and temporal correlations, it is
+
+necessary to reconstruct the density matrix of the quantum state and test for violations of Bell-type
+
+inequalities.
+
+Figure 3 depicts the real and imaginary parts of the two-photon density matrix for sunlight-
+
+pumped SPDC. We obtain the depicted density matrix by averaging over the ones reconstructed
+
+from QST measurements conducted on three separate days. The resulting two-photon state has a
+concurrence of 𝐶 = 0.905
+is deﬁned as an entanglement
+monotone that ranges from 0 to 1, where 𝐶 = 0 represents complete absence of entanglement and
+𝐶 = 1 stands for maximal entanglement (47). Therefore, we have, for the ﬁrst time, observed the
+
+0.053. Recall that the concurrence 𝐶
+
+±
+
+𝜌
+
+(
+
+)
+
+8
+
+A
+
+B
+
+C
+
+Figure 2: Time-correlation histogram of sunlight-pumped SPDC measured in joint polariza-
+
+tion bases VH and HV, respectively In the titles of subplots, we note the average pump power
+
+measured over the time of data acquisition. (A-C) display results measured on three separate days.
+
+The bar plots display the experimentally measured photon coincidences, while the grey shade
+
+indicates the coincidence time window. The photon pairs show clear temporal correlation with
+
+negligible accidental coincidences.
+
+9
+
+Figure 3: Real and imaginary parts of the density matrix of the two-photon state produced
+
+from sunlight-pumped SPDC. These results are calculated using quantum state tomography based
+
+on polarization correlation measurements in 16 diﬀerent projection bases, which include those that
+
+have been displayed in Fig. 2. These results conﬁrm polarization entanglement with a concurrence
+of 𝐶 = 0.905
+
+0.045, and a ﬁdelity of 𝐹 = 0.939
+
+0.053, a purity of 𝑃 = 0.919
+
+0.027 to the
+
+±
+
+±
+
+±
+
+target Bell state (Eqn. 1).
+
+10
+
+Figure 4: Bell parameter measurement using the CHSH formalism. Idler photons are projected
+
+into diﬀerent linear polarizations while signal photons are projected into the (A) rectilinear bases
+
+and (B) (anti-)diagonal bases. We denote 𝜃𝑠
+as the angle of linear polarization with respect to the
+horizontal polarization, so that 𝜃𝑠 = 0◦, 45◦, 90◦, 135◦ represents projecting signal photons in the
+
+(
+
+)
+
+𝑖
+
+horizontal (H), diagonal (D), vertical (V), and anti-diagonal (A) bases, respectively. These results
+lead to a violation of local realism with a Bell-CHSH parameter of 𝑆 = 2.5408
+
+0.2171 > 2.
+
+±
+
+generation of polarization-entangled photons from SPDC pumped by sunlight. To fully characterize
+the resulting state, we calculate the purity 𝑃 = tr
+
+denotes the trace of a matrix,
+
+{
+and the ﬁdelity 𝐹, which quantiﬁes the overlap between the generated state and the maximally
+entangled target state (Eqn. 1). As a result, we obtain 𝑃 = 0.919
+
+0.045 and 𝐹 = 0.939
+
+, where tr
+
+0.027.
+
+{· · · }
+
+𝜌2
+
+}
+
+±
+
+±
+
+These already high values for the concurrence, purity, and ﬁdelity indicate that the state is highly
+
+entangled, mostly pure (low noise), and close to the desired Bell state and are likely not limited
+
+in any fundamental way by the sunlight-pumped SPDC, but rather a consequence of optimizable
+
+technical parameters. Speciﬁcally, we believe that the spatial incoherence of the sunlight pump
+
+does not fundamentally degrade the entanglement quality in the polarization degree of freedom,
+
+and further improvements in entanglement quality can be achieved with an optimized setup design,
+
+such as using optical components with low wavefront distortions (37, 55).
+
+While the tomography results quantify the quality of entanglement, verifying the non-classical
+
+nature of these correlations requires a test against local realism. Violation of local realism ar-
+
+guably distinguishes quantum systems from their classical counterparts (48, 49, 56) and could thus
+
+11
+
+benchmark the performance of quantum systems for practical applications. For instance, observing
+
+violations of local realism certiﬁes the security of quantum communication channels (4, 5, 57) and
+
+serves as a valuable resource for quantum-enhanced imaging and metrology (58–60). To demon-
+
+strate this capability with our sunlight-pumped entangled-photon source, we perform a Bell test
+
+using the CHSH formalism.
+
+In Figure 4, we depict the experimentally measured photon coincidences for a Bell test in the
+
+CHSH formalism. To account for pump power ﬂuctuations between diﬀerent measurements, we
+
+have normalized the coincidence counts to a reference pump power of 100 nW before further data
+
+processing. The markers and error bars indicate the experimentally measured average coincidences
+
+and their standard deviations over measurements conducted on three separate days. We have used
+
+these data to calculate the Bell-CHSH parameter. The solid lines represent the expected polarization
+
+correlation curves, which are numerically calculated by projecting the resulting two-photon density
+
+matrix shown in Fig. 3 onto diﬀerent joint polarization bases. The results of Bell test measurements
+
+agree well with those reconstructed from state tomography, indicating high consistency of the
+setup performance. We choose 𝜃𝑠 = 0◦, 𝜃′𝑠
+= 67.5◦ and calculate the CHSH
+parameter 𝑆 from the coincidence rates using:
+
+= 45◦, 𝜃𝑖 = 22.5◦, 𝜃′𝑖
+
+𝑆 =
+
+𝜃𝑠, 𝜃𝑖
+
+𝐸
+
+|
+
+(
+
+) −
+
+𝐸
+
+𝜃𝑠, 𝜃′𝑖) +
+
+(
+
+𝐸
+
+(
+
+𝜃′𝑠, 𝜃𝑖
+
+) +
+
+𝐸
+
+𝜃′𝑠, 𝜃′𝑖)|
+
+,
+
+(
+
+and 𝐸
+
+𝜃𝑠, 𝜃𝑖
+
+(
+
+)
+
+is deﬁned as
+
+𝜃𝑠, 𝜃𝑖
+
+𝐸
+
+(
+
+)
+
+=
+
+𝜃𝑠, 𝜃𝑖
+𝜃𝑠, 𝜃𝑖
+
+𝑁
+𝑁
+
+(
+(
+
+) +
+) +
+
+𝑁
+𝑁
+
+𝜃⊥𝑠 , 𝜃⊥𝑖 ) −
+𝜃⊥𝑠 , 𝜃⊥𝑖 ) +
+90◦,
+
+(
+(
+𝜃⊥ = 𝜃
+
++
+
+𝑁
+𝑁
+
+𝜃𝑠, 𝜃⊥𝑖 ) −
+𝜃𝑠, 𝜃⊥𝑖 ) +
+
+(
+(
+
+𝑁
+𝑁
+
+(
+(
+
+𝜃⊥𝑠 , 𝜃𝑖
+𝜃⊥𝑠 , 𝜃𝑖
+
+,
+
+)
+)
+
+(2)
+
+(3)
+
+(4)
+
+where 𝜃⊥𝑠
+𝑖
+(
+)
+exhibit 𝑆 = 2.5408
+
+stands for an angle perpendicular to 𝜃𝑠
+
+. As a result, sunlight-pumped SPDC photons
+
+𝑖
+
+(
+
+)
+
+0.2171 > 2, thereby violating the CHSH inequality by 2.94 standard deviations.
+
+±
+
+Conclusions and perspectives
+
+In summary, we have experimentally demonstrated the generation of polarization entanglement
+
+from SPDC pumped by sunlight. We observe a strong time correlation between photons produced
+
+from sunlight-pumped SPDC. Polarization correlations between the SPDC photons violate the
+
+12
+
+Bell-CHSH inequality with 𝑆 = 2.5408
+
+±
+
+0.2171, which is larger than the local realistic threshold
+
+of 2, and thus conﬁrms the non-classical nature of these correlated photons. Tomography analysis
+
+shows that the two-photon state produced from sunlight-pumped SPDC has a concurrence of
+𝐶 = 0.905
+
+0.045, and a ﬁdelity of 𝐹 = 0.939
+
+0.053, a purity of 𝑃 = 0.919
+
+0.027 to the target
+
+±
+
+±
+
+±
+
+Bell state (Eq. 1), conﬁrming, respectively, the generation of high polarization entanglement, with
+
+low decoherence and in the desired state from sunlight-pumped SPDC. These results mark the ﬁrst
+
+demonstration of an entangled photon source operating without electrical energy input (except for
+
+temperature control on the nonlinear crystal to maintain phase-matching conditions), thus paving the
+
+way for energy-eﬃcient and environmentally friendly quantum entangled sources. Furthermore, we
+
+emphasize that the quality of entanglement generated from sunlight-pumped SPDC, as quantiﬁed
+
+by its concurrence, purity, and ﬁdelity to the target state, is on par with what has been reported
+
+in recent works employing laser-pumped SPDC (50–53), highlighting the application potential of
+
+sunlight-driven entangled-photon sources in photonic quantum technologies.
+
+Having measured high entanglement for these sunlight-pumped SPDC photon pairs, as well as
+
+conﬁrming that the correlations are fundamentally non-classical, we next consider what technical
+
+alterations would further improve these ﬁgures of merit.
+
+One possible improvement would be to mitigate wavefront distortions in the optical components
+
+comprising the PSI. For instance, an uneven surface of the dPBS could introduce path distinguisha-
+
+bility within the PSI and reduce the overall entanglement (37, 45). This wavefront distortion could
+
+be characterized and compensated for using adaptive optics methods. Alternatively, one can employ
+
+optical components custom-designed for low wavefront distortion. We believe these improvements
+
+can signiﬁcantly enhance the quality of the resulting entanglement, yielding near-unity concurrence,
+
+purity, and ﬁdelity to a maximally entangled state.
+
+Another question is how to improve the photon pair production eﬃciency. We have shown here
+
+that sunlight-pumped SPDC produces photon pairs at a rate of
+
+1,
+)−
+which is the same eﬃciency observed with an LED of the same spectral proﬁle (37), that is, 1.5 nm
+
+mW of pump power
+
+1
+1600 s−
+
+∼
+
+(
+
+bandwidth centred around 405 nm. However, this is still somewhat less than the eﬃciency shown in
+
+the same setup for laser pumping (
+
+∼
+
+1
+7500 s−
+
+(
+
+mW of pump power
+
+1). This discrepancy is likely
+
+)−
+
+due to the limited spectral phase-matching bandwidth of the nonlinear crystal (0.2-0.3 nm centred
+
+around 405 nm), which is much wider than the laser bandwidth, meaning that only a fraction of the
+
+13
+
+power in the input sunlight participates in the SPDC and produces entangled photons. The spectral
+
+utilization eﬃciency can be improved by adopting type-0 phase-matching. In this experiment,
+
+we have chosen the MMF-50-0.22 to maximize the overlap between the transverse proﬁle of the
+
+sunlight pump beam and that of the ppKTP crystal in the same plane. By adopting a nonlinear
+
+medium with larger transverse dimensions, the SPDC processes can potentially accommodate an
+
+increased amount of pump power distributed over a wider spatial spectrum.
+
+Overall, we stress that entanglement quality and production eﬃciency are currently only limited
+
+by technical challenges and do not suggest a fundamental diﬀerence in the quality of an entangled
+
+photon source with an incoherent pump.
+
+To further improve the overall brightness of entangled photon generation, one should reﬁne
+
+the design of the solar concentration module for better sunlight collection eﬃciency. We identify
+
+several technical aspects to be improved in this avenue. Firstly, one can optimize the design of the
+
+conic concentrator so that its eﬀective clear aperture and acceptance angle better match the focal
+
+parameters of the Fresnel lens at the desired spectral band. Wavelength-speciﬁc optical coatings
+
+could also be applied to the concentrator to minimize reﬂection and scattering losses. Secondly, one
+
+can adopt a motorized solar-tracking mount with ﬁner angular resolution so that the overall coupling
+
+eﬃciency of sunlight into the MMF is less susceptible to motor inaccuracies and environmental
+
+disturbances. Thirdly, one can explore a ﬁltering element engineered for high transmission at the
+
+pump wavelength to directly increase the usable optical ﬂux. Although the commercial-grade color
+
+ﬁlm employed in the current setup performs well at rejecting light at longer wavelengths, it also
+
+reﬂects a signiﬁcant fraction of the light near 405 nm (see Supplementary Material), thereby
+
+reducing the available pump power. Finally, one can employ collection ﬁbers with a larger core
+
+diameter. This would not only enhance the coupling eﬃciency of concentrated sunlight but, when
+
+paired with an appropriate lens imaging system, also deliver more overall pump power to a nonlinear
+
+crystal with larger transverse dimensions, thereby facilitating more eﬀective utilization of the
+
+spatially diverse solar pump.
+
+Although several opportunities for technical optimization have been identiﬁed, the highly en-
+
+tangled photons demonstrated in this proof-of-principle experiment already make a compelling
+
+case for replacing power-hungry, high-maintenance lasers with energy-eﬃcient sources such as
+
+sunlight or LEDs. This technology oﬀers strategic advantages, particularly for deploying quantum
+
+14
+
+technologies in resource-restricted environments such as the Arctic or satellites in space (18).
+
+Beyond logistical beneﬁts, entangled photons generated from incoherent sources possess unique
+
+performance advantages. For instance, sunlight-pumped SPDC could take advantage of the broad
+
+spectral band of solar irradiance to facilitate access to entangled photons over a wider spectral
+
+range. Combined with the inherent low coherence between spectral components, these states may
+
+have optimized robustness against cross-talk between adjacent wavelength channels and thus oﬀer a
+
+larger information capacity (61). Additionally, studies indicate that polarization-entangled photons
+
+pumped by spatially partially coherent light display stronger resilience to atmospheric turbulence,
+
+making them highly suitable for free-space quantum key distribution (62–64). Interestingly, recent
+
+ﬁndings show that four-wave mixing driven by ampliﬁed spontaneous emission can produce highly
+
+entangled states with higher generation rates than those driven by coherent emission (65). These
+
+ﬁndings not only challenge the conventional presumptions on the relations between coherence and
+
+entanglement but also present a new opportunity for boosting the energy eﬃciency and performance
+
+of current quantum information technologies.
+
+15
+
+References and Notes
+
+1. R. P. Feynman, Simulating physics with computers. International Journal of Theoretical
+
+Physics 21 (6), 467–488 (1982), doi:10.1007/BF02650179, https://doi.org/10.1007/
+
+BF02650179.
+
+2. P. Shor, Algorithms for quantum computation: discrete logarithms and factoring, in Proceedings
+
+35th Annual Symposium on Foundations of Computer Science (1994), pp. 124–134, doi:
+
+10.1109/SFCS.1994.365700.
+
+3. G. D. Kahanamoku-Meyer, et al., Classically veriﬁable quantum advantage from a computa-
+
+tional Bell test. Nature Physics 18, 918–924 (2022), doi:10.1038/s41567-022-01643-7.
+
+4. C. H. Bennett, G. Brassard, Quantum cryptography: public key distribution and coin tossing, in
+
+Proceedings of IEEE International Conference on Computers, Systems and Signal Processing
+
+(IEEE, Bangalore, India) (1984), pp. 175–179.
+
+5. A. K. Ekert, Quantum cryptography based on Bell’s theorem. Phys. Rev. Lett. 67, 661–
+
+663 (1991), doi:10.1103/PhysRevLett.67.661, https://link.aps.org/doi/10.1103/
+
+PhysRevLett.67.661.
+
+6. C. Portmann, R. Renner, Security in quantum cryptography. Reviews of Modern Physics 94 (2),
+
+025008 (2022), doi:10.1103/RevModPhys.94.025008.
+
+7. V. Giovannetti, S. Lloyd, L. Maccone, Quantum-Enhanced Measurements: Beating the Stan-
+
+dard Quantum Limit. Science 306 (5700), 1330–1336 (2004), doi:10.1126/science.1104149,
+
+https://www.science.org/doi/abs/10.1126/science.1104149.
+
+8. C. L. Degen, F. Reinhard, P. Cappellaro, Quantum sensing. Reviews of Modern Physics 89 (3),
+
+035002 (2017), doi:10.1103/RevModPhys.89.035002.
+
+9. A. Auﬀ`eves, Quantum Technologies Need a Quantum Energy Initiative. PRX Quantum 3 (2),
+
+020101 (2022), doi:10.1103/PRXQuantum.3.020101.
+
+16
+
+10. International Telecommunication Union, World Bank, Measuring the Emissions & Energy
+
+Footprint of the ICT Sector (2023), https://www.itu.int/dms_pub/itu-d/opb/ind/
+
+d-ind-clim-2023-01-pdf-e.pdf, provides data showing ICT sector emissions
+
+1.7–2.0%.
+
+∼
+
+11. C. Freitag, et al., The real climate and transformative impact of ICT. Patterns 2 (9), 100340
+
+(2021), doi:10.1016/j.patter.2021.100340.
+
+12. Oxford Instruments, Principles of Dilution Refrigeration (2015), https://nanoscience.
+
+oxinst.com/assets/uploads/NanoScience/Brochures/Principles%20of%
+
+20dilution%20refrigeration_Sept15.pdf, university of Oxford / Oxford Nanoscience
+
+brochure. States that a typical compressor for a ”dry” dilution refrigerator uses
+
+9 kW.
+
+∼
+
+13. E. Parker, M. J. D. Vermeer, Estimating the Energy Requirements to Operate a Cryptanalytically
+
+Relevant Quantum Computer (2023), https://arxiv.org/abs/2304.14344.
+
+14. D. Kielpinski, C. Monroe, D. J. Wineland, Architecture for a large-scale ion-trap quantum
+
+computer. Nature 417, 709–711 (2002), doi:10.1038/nature00784.
+
+15. T. Jennewein, C. Simon, G. Weihs, H. Weinfurter, A. Zeilinger, Quantum Cryptography with
+
+Entangled Photons. Phys. Rev. Lett. 84, 4729–4732 (2000), doi:10.1103/PhysRevLett.84.4729,
+
+https://link.aps.org/doi/10.1103/PhysRevLett.84.4729.
+
+16. R. Ursin, et al., Entanglement-based quantum communication over 144 km. Nature Physics
+
+3 (7), 481–486 (2007), doi:10.1038/nphys629, https://doi.org/10.1038/nphys629.
+
+17. A. N. Black, et al., Quantum Nonlocal Aberration Cancellation. Phys. Rev. Lett. 123,
+
+143603 (2019), doi:10.1103/PhysRevLett.123.143603, https://link.aps.org/doi/10.
+
+1103/PhysRevLett.123.143603.
+
+18. J. Yin, et al., Entanglement-based secure quantum cryptography over 1,120 kilometres. Na-
+
+ture 582 (7813), 501–505 (2020), doi:10.1038/s41586-020-2401-y, https://doi.org/10.
+
+1038/s41586-020-2401-y.
+
+19. H. Deﬁenne, B. Ndagano, A. Lyons, D. Faccio, Polarization entanglement-enabled quan-
+
+tum holography. Nature Physics 17 (5), 591–597 (2021), number: 5 Publisher: Nature Pub-
+
+17
+
+lishing Group, doi:10.1038/s41567-020-01156-1, https://www.nature.com/articles/
+
+s41567-020-01156-1.
+
+20. P. Cameron, et al., Adaptive optical imaging with entangled photons. Science 383, 1142–1148
+
+(2024), doi:10.1126/science.adk7825.
+
+21. D. C. Burnham, D. L. Weinberg, Observation of Simultaneity in Parametric Production of
+
+Optical Photon Pairs. Phys. Rev. Lett. 25, 84–87 (1970), doi:10.1103/PhysRevLett.25.84,
+
+https://link.aps.org/doi/10.1103/PhysRevLett.25.84.
+
+22. C. K. Hong, L. Mandel, Theory of parametric frequency down conversion of light. Phys. Rev. A
+
+31, 2409–2418 (1985), doi:10.1103/PhysRevA.31.2409, https://link.aps.org/doi/10.
+
+1103/PhysRevA.31.2409.
+
+23. R. W. Boyd, Nonlinear Optics (Academic Press, San Diego, CA) (2020).
+
+24. A. K. Jha, R. W. Boyd, Spatial
+
+two-photon coherence of
+
+the entangled ﬁeld pro-
+
+duced by down-conversion using a partially spatially coherent pump beam. Phys. Rev. A
+
+81, 013828 (2010), doi:10.1103/PhysRevA.81.013828, https://link.aps.org/doi/10.
+
+1103/PhysRevA.81.013828.
+
+25. E. Giese, R. Fickler, W. Zhang, L. Chen, R. W. Boyd, Inﬂuence of pump coherence on
+
+the quantum properties of spontaneous parametric down-conversion. Physica Scripta 93 (8),
+
+084001 (2018).
+
+26. C. H. Monken, P. H. S. Ribeiro, S. P´adua, Transfer of angular spectrum and image formation
+
+in spontaneous parametric down-conversion. Phys. Rev. A 57, 3123–3126 (1998), doi:10.1103/
+
+PhysRevA.57.3123, https://link.aps.org/doi/10.1103/PhysRevA.57.3123.
+
+27. H. Deﬁenne, S. Gigan, Spatially entangled photon-pair generation using a partial spatially
+
+coherent pump beam. Phys. Rev. A 99, 053831 (2019), doi:10.1103/PhysRevA.99.053831,
+
+https://link.aps.org/doi/10.1103/PhysRevA.99.053831.
+
+28. W. Zhang, R. Fickler, E. Giese, L. Chen, R. W. Boyd, Inﬂuence of pump coherence on
+
+the generation of position-momentum entanglement in optical parametric down-conversion.
+
+18
+
+Opt. Express 27 (15), 20745–20753 (2019), doi:10.1364/OE.27.020745, http://www.
+
+opticsexpress.org/abstract.cfm?URI=oe-27-15-20745.
+
+29. A. Burlakov, M. Chekhova, O. Karabutova, S. Kulik, Biphoton interference with a multimode
+
+pump. Phys. Rev. A 63 (5), 053801 (2001).
+
+30. A. K. Jha, M. N. O’Sullivan, K. W. C. Chan, R. W. Boyd, Temporal coherence and indistin-
+
+guishability in two-photon interference eﬀects. Phys. Rev. A 77 (2), 021801 (2008).
+
+31. G. Kulkarni, P. Kumar, A. K. Jha, Transfer of temporal coherence in parametric down-
+
+conversion. J. Opt. Soc. Am. B 34 (8), 1637–1643 (2017), doi:10.1364/JOSAB.34.001637,
+
+http://josab.osa.org/abstract.cfm?URI=josab-34-8-1637.
+
+32. G. Kulkarni, V. Subrahmanyam, A. K. Jha, Intrinsic upper bound on two-qubit polarization
+
+entanglement predetermined by pump polarization correlations in parametric down-conversion.
+
+Phys. Rev. A 93, 063842 (2016), doi:10.1103/PhysRevA.93.063842, https://link.aps.
+
+org/doi/10.1103/PhysRevA.93.063842.
+
+33. N. Meher, A. S. M. Patoary, G. Kulkarni, A. K. Jha, Intrinsic degree of coherence of two-qubit
+
+states and measures of two-particle quantum correlations. J. Opt. Soc. Am. B 37 (4), 1224–
+
+1230 (2020), doi:10.1364/JOSAB.384936, http://josab.osa.org/abstract.cfm?URI=
+
+josab-37-4-1224.
+
+34. L. Hutter, G. Lima, S. P. Walborn, Boosting Entanglement Generation in Down-Conversion
+
+with Incoherent Illumination. Phys. Rev. Lett. 125, 193602 (2020), doi:10.1103/PhysRevLett.
+
+125.193602, https://link.aps.org/doi/10.1103/PhysRevLett.125.193602.
+
+35. C. Li, B. Braverman, G. Kulkarni, R. W. Boyd, Experimental generation of polarization entan-
+
+glement from spontaneous parametric down-conversion pumped by spatiotemporally highly
+
+incoherent light. Phys. Rev. A 107, L041701 (2023), doi:10.1103/PhysRevA.107.L041701,
+
+https://link.aps.org/doi/10.1103/PhysRevA.107.L041701.
+
+36. W. Zhang, D. Xu, L. Chen, Polarization Entanglement from Parametric Down-conversion with
+
+an LED Pump. Phys. Rev. Appl. 19, 054079 (2023), doi:10.1103/PhysRevApplied.19.054079,
+
+https://link.aps.org/doi/10.1103/PhysRevApplied.19.054079.
+
+19
+
+37. C. Li, J. Upham, B. Braverman, R. W. Boyd, Violation of local realism with spatially multimode
+
+parametric down-conversion pumped by spatially incoherent light. Phys. Rev. A 112, 053726
+
+(2025), doi:10.1103/mxxf-ycdf, https://link.aps.org/doi/10.1103/mxxf-ycdf.
+
+38. National Renewable Energy Laboratory, Best Research-Cell Eﬃciency Chart, https://www.
+
+nrel.gov/pv/cell-efficiency (2025), accessed: 2025-09-16.
+
+39. M. Tian, et al., A review on the recent research progress in the compound parabolic concentrator
+
+(CPC) for solar energy applications. Renewable and Sustainable Energy Reviews 82, 4320–
+
+4337 (2018), doi:10.1016/j.rser.2017.11.031.
+
+40. P. F. Holloway, L. B. Garrett, Comparative analyses of space-to-space central power stations,
+
+Technical report, NASA (1981).
+
+41. Z. Kiss, H. Lewis, R. C. Duncan, Sun pumped continuous optical maser. Applied Physics
+
+Letters 2 (5), 93–94 (1963), doi:10.1063/1.1753762.
+
+42. M. K¨ublb¨ock, J. Will, H. Fattahi, Solar lasers: Why not? APL Photonics 9 (5), 050903 (2024),
+
+doi:10.1063/5.0209355.
+
+43. P. E. Glaser, Method and Apparatus for Converting Solar Radiation to Electrical Power, U.S.
+
+Patent 3,781,647 (1973), https://patents.google.com/patent/US3781647A/en, ﬁled
+
+by Arthur D. Little, Inc.
+
+44. B. Ag¨uera y Arcas, et al., Towards a future space-based, highly scalable AI infrastructure system
+
+design. arXiv preprint arXiv:2511.19468 (2025), doi:10.48550/arXiv.2511.19468, https://
+
+arxiv.org/abs/2511.19468.
+
+45. T. Kim, M. Fiorentino, F. N. C. Wong, Phase-stable source of polarization-entangled photons
+
+using a polarization Sagnac interferometer. Phys. Rev. A 73, 012316 (2006), doi:10.1103/
+
+PhysRevA.73.012316, https://link.aps.org/doi/10.1103/PhysRevA.73.012316.
+
+46. D. F. V. James, P. G. Kwiat, W. J. Munro, A. G. White, Measurement of qubits. Phys. Rev. A
+
+64, 052312 (2001), doi:10.1103/PhysRevA.64.052312, https://link.aps.org/doi/10.
+
+1103/PhysRevA.64.052312.
+
+20
+
+47. W. K. Wootters, Entanglement of formation of an arbitrary state of two qubits. Phys. Rev. Lett.
+
+80 (10), 2245 (1998).
+
+48. J. S. Bell, On the Einstein Podolsky Rosen paradox. Physics Physique Fizika 1, 195–
+
+200 (1964), doi:10.1103/PhysicsPhysiqueFizika.1.195, https://link.aps.org/doi/10.
+
+1103/PhysicsPhysiqueFizika.1.195.
+
+49. J. F. Clauser, M. A. Horne, A. Shimony, R. A. Holt, Proposed Experiment to Test Local
+
+Hidden-Variable Theories. Phys. Rev. Lett. 23, 880–884 (1969), doi:10.1103/PhysRevLett.23.
+
+880, https://link.aps.org/doi/10.1103/PhysRevLett.23.880.
+
+50. A. Lohrmann, C. Perumangatt, A. Villar, A. Ling, Broadband pumped polarization entangled
+
+photon-pair source in a linear beam displacement interferometer. Applied Physics Letters
+
+116 (2), 021101 (2020), doi:10.1063/1.5124416, https://doi.org/10.1063/1.5124416.
+
+51. Y. S. Lee, M. Xie, R. Tannous, T. Jennewein, Sagnac-type entangled photon source using
+
+only conventional polarization optics. Quantum Science and Technology 6 (2), 025004 (2021),
+
+doi:10.1088/2058-9565/abd151, https://doi.org/10.1088/2058-9565/abd151.
+
+52. E. Brambila, R. G´omez, R. Fazili, M. Gr¨afe, F. Steinlechner, Ultrabright polarization-entangled
+
+photon pair source for frequency-multiplexed quantum communication in free-space. Opt.
+
+Express 31 (10), 16107–16117 (2023), doi:10.1364/OE.461802, https://opg.optica.org/
+
+oe/abstract.cfm?URI=oe-31-10-16107.
+
+53. K. Park, J. Lee, D.-G. Im, D. Kim, Y. S. Ihn, Ultrabright Fiber-Coupled Polarization-Entangled
+
+Photon Source with Spectral Brightness Surpassing 2.0MHz mW−
+
+1 nm−
+
+1. Advanced Pho-
+
+tonics Research 6 (10), 2500024 (2025), doi:https://doi.org/10.1002/adpr.202500024, https:
+
+//advanced.onlinelibrary.wiley.com/doi/abs/10.1002/adpr.202500024.
+
+54. Y. Xing, D. Xu, Y. Li, W. Zhang, L. Chen, Sunlight-Excited Spontaneous Parametric Down-
+
+Conversion for Quantum Imaging (2025), https://arxiv.org/abs/2508.11207.
+
+55. C. Li, et al., Rapid comprehensive characterization of biphoton spatial-polarization hyper-
+
+entanglement (2025), https://arxiv.org/abs/2502.03586.
+
+21
+
+56. A. Einstein, B. Podolsky, N. Rosen, Can Quantum-Mechanical Description of Physical Real-
+
+ity Be Considered Complete? Phys. Rev. 47, 777–780 (1935), doi:10.1103/PhysRev.47.777,
+
+https://link.aps.org/doi/10.1103/PhysRev.47.777.
+
+57. D. Mayers, A. Yao, Quantum cryptography with imperfect apparatus, in Proceedings of the
+
+39th Annual Symposium on Foundations of Computer Science (FOCS) (IEEE) (1998), pp.
+
+503–509.
+
+58. P.-A. Moreau, et al., Imaging Bell-type nonlocal behavior. Science Advances 5 (7),
+
+eaaw2563 (2019), doi:10.1126/sciadv.aaw2563, https://www.science.org/doi/abs/
+
+10.1126/sciadv.aaw2563.
+
+59. A. Niezgoda, J. Chwede´nczuk, Many-Body Nonlocality as a Resource for Quantum-Enhanced
+
+Metrology. Phys. Rev. Lett. 126, 210506 (2021), doi:10.1103/PhysRevLett.126.210506,
+
+https://link.aps.org/doi/10.1103/PhysRevLett.126.210506.
+
+60. B. Yadin, M. Fadel, M. Gessner, Metrological complementarity reveals the Einstein-
+
+Podolsky-Rosen paradox. Nature Communications 12 (1), 2410 (2021), doi:10.1038/
+
+s41467-021-22353-3, https://doi.org/10.1038/s41467-021-22353-3.
+
+61. B. Dong, et al., Partial coherence enhances parallelized photonic computing. Nature
+
+632 (8023), 55–62 (2024), doi:10.1038/s41586-024-07590-y, https://doi.org/10.1038/
+
+s41586-024-07590-y.
+
+62. A. Bhattacharjee, A. K. Jha, Experimental demonstration of structural robustness of spatially
+
+partially coherent ﬁelds in turbulence. Opt. Lett. 45 (14), 4068–4071 (2020), doi:10.1364/OL.
+
+395697, http://opg.optica.org/ol/abstract.cfm?URI=ol-45-14-4068.
+
+63. Y. Qiu, W. She, The inﬂuence of atmospheric turbulence on partially coherent two-photon
+
+entangled ﬁeld. Applied Physics B 108 (3), 683–687 (2012), doi:10.1007/s00340-012-5041-6,
+
+https://doi.org/10.1007/s00340-012-5041-6.
+
+64. S. P. Phehlukwayo, M. L. Umuhire, Y. Ismail, S. Joshi, F. Petruccione, Inﬂuence of coincidence
+
+detection of a biphoton state through free-space atmospheric turbulence using a partially
+
+22
+
+spatially coherent pump. Phys. Rev. A 102, 033732 (2020), doi:10.1103/PhysRevA.102.033732,
+
+https://link.aps.org/doi/10.1103/PhysRevA.102.033732.
+
+65. Y.-W. Song, et al., On-chip quantum states generation by incoherent light. Nature Communica-
+
+tions 16 (1), 11429 (2025), doi:10.1038/s41467-025-66258-x, https://doi.org/10.1038/
+
+s41467-025-66258-x.
+
+66. J. Brar, Towards Incoherent Quantum Down-Conversion Enabled by Optimized Solar Con-
+
+centration, Bachelor’s thesis, Friedrich-Alexander-Universit¨at Erlangen-N¨urnberg (2025),
+
+https://open.fau.de/items/3503d7c8-f5be-4e9b-bb62-478261c6282e, accessed:
+
+2026-02-03.
+
+67. M. K¨ublb¨ock, M. Sahil, J. Brar, H. Fattahi, Solar-Pumped Laser Apparatus and Method of Gen-
+
+erating Laser Radiation with the Solar-Pumped Laser Apparatus, European patent application
+
+(2025), patent application ﬁled; not yet published.
+
+Acknowledgments
+
+The authors acknowledge useful discussions with Prof. Maria Chekhova and thank Prof. Jeﬀ
+
+Lundeen, Dr. Manuel Francisco Ferrer Garc´ıa, Prof. Christoph Marquardt, Thomas Dirmeier and
+
+Dr. Yen-Ju Chen for access to key experimental equipment and software.
+
+Funding: The portion of the work performed at the University of Ottawa was supported by the
+
+Canada Research Chairs program under Award 950-231657, the Natural Sciences and Engineering
+
+Research Council of Canada under Alliance Consortia Quantum Grant ALLRP 578468 - 22,
+
+Discovery Grant RGPIN/2017-06880, and the Canada First Research Excellence Fund Award
+
+072623. The work performed at the Max Planck Institute for the Science of Light was supported by
+
+the Max Planck Society and a scholarship from Erlangen School in Advanced Optical Technologies.
+
+In addition, R.W.B. acknowledges support from the U.S. National Science Foundation Award No.
+
+2138174 and the U.S. Department of Energy Award No. FWP 76295.
+
+23
+
+Author contributions: C.L., J.U., H.F., and R.W.B. conceived the research idea. J.B. and M.K.
+
+designed and built the solar concentration module. C.L. built the entangled-photon source. C.L.
+
+and J.B. conducted outdoor experiments with M.K.’s help to measure sunlight-driven entangled
+
+photon generation. C.L., J.B., J.U., and H.F. analyzed the data. C.L. and J.B. wrote the ﬁrst draft of
+
+the paper, and all authors subsequently contributed to the writing. H.F. and R.W.B. supervised the
+
+project.
+
+Competing interests: There are no competing interests to declare.
+
+Data and materials availability: All data required to reproduce the results shown in Fig. 2-
+
+4 are available at Dryad via: http://datadryad.org/share/LINK_NOT_FOR_PUBLICATION/
+
+NtVTjAjs5S8-U0Hn-oFiItMRjmpGNZtnJReX-s6ZFsU
+
+Supplementary materials
+
+Materials and Methods
+
+Figs. S1 to S4
+
+References (62-67)
+
+24
+
+Supplementary Materials for
+
+Generating quantum entanglement from sunlight
+
+Cheng Li1
+
+†, Jasvinder Brar2,3
+
+Jeremy Upham1, Hanieh Fattahi2,3
+
+†, Michael K¨ublb¨ock2,3,
+∗, Robert W. Boyd1,4
+
+∗
+
+1Department of Physics, University of Ottawa, Ottawa, Ontario, Canada K1N 6N5.
+
+2Max Planck Institute for the Science of Light, Erlangen, Germany.
+
+3Friedrich-Alexander-Universit¨at Erlangen-N¨urnberg, Erlangen, Germany.
+
+4Institute of Optics, University of Rochester, Rochester, New York 14627, USA.
+
+∗Corresponding authors. Emails: hanieh.fattahi@mpl.mpg.de; rboyd@uottawa.ca
+
+†These authors contributed equally to this work.
+
+This PDF ﬁle includes:
+
+Materials and Methods
+
+Figures S1 to S2
+
+References (62-67)
+
+S1
+
+Materials and Methods
+
+Outdoor experimental setup
+
+Fig. S1 depicts the actual experimental setup, which is deployed in an enclosed outdoor space
+
+at the Max Planck Institute for the Science of Light in Erlangen, Germany. To minimize the
+
+inﬂuence of wind, the experimental area is surrounded by protective fencing. The full setup for
+
+generating entangled photons, together with the APDs, TDC, and the temperature control unit of the
+
+ppKTP crystal, is placed inside a tent. This outer enclosure provides a darkroom-like environment
+
+that facilitates onsite troubleshooting of optical alignment for a setup placed outside a traditional
+
+laboratory. Within this tent, the entangled-photon source setup is enclosed in a light-tight housing
+
+that prevents any residual external light from entering the system. The APDs are mounted inside this
+
+inner enclosure to minimize the detection of background illumination and accidental coincidences.
+
+The pre-ﬁltered and concentrated sunlight is guided to the entangled-photon source through a ﬁve-
+
+meter MMF with a core diameter of 50 𝜇m and a numerical aperture (NA) of 0.22 (MMF-50-0.22).
+
+One end of this ﬁbre is butt-coupled to the sunlight concentration module, while the other end is
+
+routed through a small opening at the bottom of the tent, and connected to the OBJ (with 20
+
+×
+
+magniﬁcation and 0.4 NA) that couples the light into the free-space entanglement setup.
+
+Sunlight concentration system
+
+Fig. S2 displays the design and performance of the sunlight concentration module used for solar
+
+pumping. Fig. S2(A) shows a photograph of the actual sunlight concentration setup. Incident
+
+sunlight is collected by a 1 m
+
+×
+
+1.4 m PMMA Fresnel lens serving as the primary concentrator,
+
+focusing the light to a focal spot of 13 mm in diameter at a focal length of 90 cm. To reduce the
+
+contribution of long-wavelength spectral components, the Fresnel lens is covered with commercial-
+
+grade colour ﬁlters (Roscolux). The lens, clamped between two arms of a supporting frame, is
+
+mounted on a high-precision equatorial mount (Celestron CGE Pro). Following polar alignment to
+
+the celestial north pole, the Sun’s position is calculated using software integrated into the mount,
+
+which automatically slews the system to the solar position and provides continuous motor-driven
+
+tracking. The mount achieves a tracking accuracy of approximately 9 arcseconds, ensuring stable
+
+alignment of the Fresnel lens with the sun throughout the measurement period. Residual tracking
+
+S2
+
+errors and environmental perturbations nevertheless introduce slow ﬂuctuations in the focal-spot
+
+position at the secondary optics, which limit the overall coupling eﬃciency into the subsequent
+
+concentrator and ﬁber. Employing a motorized solar-tracking mount with ﬁner angular resolution
+
+would reduce sensitivity to such eﬀects and improve long-term coupling stability, allowing increased
+
+acquisition times (currently on the order of 2 min per measurement).
+
+After being pre-ﬁltered by the ﬁlms on the Fresnel lens, the sunlight then propagates through ad-
+
+ditional secondary ﬁlters located at the focal plane of the Fresnel lens. This secondary concentration
+
+module is protected by a copper shielding structure with a circular aperture that is concentrically
+
+aligned with subsequent optical components. We have designed this copper shield to maximize
+
+sunlight throughput while eﬀectively protecting the subsequent optical elements from being heated
+
+up by stray radiation. The beam ﬁrst passes through a short-pass ﬁlter with a cut-oﬀ wavelength
+
+of 500 nm (SPF-500, Edmund optics, 84-719), and subsequently through a dichroic mirror trans-
+
+mitting wavelengths shorter than 425 nm and reﬂecting longer wavelengths (DM-425, Thorlabs
+DMLP425L) at a 45° angle of incidence. Fine adjustment of the dichroic mirror angle with respect
+
+to the optical axis is used to maximize transmission at 405 nm. Through this multi-stage ﬁltering
+
+process, the solar spectrum is progressively narrowed to the ultraviolet–blue wavelength range,
+
+selectively retaining the target pump wavelength of 405 nm.
+
+Fig. S2(C) depicts the experimentally measured transmission spectra after each stage of ﬁltering,
+
+with the solar spectrum serving as a reference. The inset shows an enlarged view of the transmission
+
+behaviour around 405 nm. These are normalized and scaled to the respective full-spectrum power.
+
+As shown, the initially broadband solar spectrum is progressively attenuated at each ﬁltering stage,
+
+i.e. the Fresnel lens, the SPF-500 and the DM-425, resulting in a corresponding reduction of the
+
+transmitted power.
+
+In order to eﬃciently couple the light focused and ﬁltered by the Fresnel lens and secondary
+
+ﬁlters into a multimode ﬁber with a core diameter of 50 𝜇m and a numerical aperture of 0.22
+
+(MMF-0.5-0.22), a custom-made conical concentrator is used (66). Its shape and geometry are
+
+shown in Fig. S2(B), along with a plot highlighting the relevant geometric and optical optimization
+
+parameters. The solid cylindrically symmetric conical concentrator is fabricated from fused silica.
+
+It has an overall length of 69 mm, an entrance aperture diameter of 23 mm and an exit aperture
+
+diameter of 1.5 mm. Light entering the wide aperture is guided toward the narrow output by
+
+S3
+
+refractive guiding and total internal reﬂection at the silica–air interface, resulting from the tapered
+
+geometry. This design enables eﬃcient concentration of incident solar radiation onto a small area
+
+while maintaining high optical transmission and thermal stability. Experimentally, a concentration
+
+eﬃciency 𝜂 of approximately 30
+
+±
+
+3% is obtained. This eﬃciency is deﬁned as the ratio of the output
+
+power measured at the smaller end of the cone to the input power at the wider end. Importantly,
+
+the existing conical concentrator was originally designed to maximize collection eﬃciency across
+
+a broad visible spectral range, rather than being optimized speciﬁcally for narrowband collection at
+
+405 nm. As a result, additional improvements in the usable 405 nm throughput are expected through
+
+the application of wavelength-speciﬁc anti-reﬂection coatings, reﬁnement of the acceptance angle
+
+to better match the focused solar cone, and optimization of the entrance aperture relative to the
+
+Fresnel-lens focal spot (66, 67).
+
+Ray tracing simulations indicate that, with the appropriate choice of glass material and further
+
+geometric and optical optimizations, this concentrator can achieve concentration eﬃciencies of up
+
+to 67% (66). The plot in Fig. S2(C) compares the maximum concentration eﬃciencies obtained
+
+for four diﬀerent glass materials at their respective optimal opening angles, denoted as 𝜃opt, which
+
+correspond to the opening angles yielding the highest eﬃciency. We deﬁne the opening angle 𝜃 as
+
+the half-angle between the cone axis and the tapered sidewall of the concentrator, thereby directly
+describing the degree of tapering of the conical geometry. In contrast to fused silica (𝑛405 = 1.464)
+used in the experiment, simulations for N-BK7 (𝑛405 = 1.527), N-SF10 (𝑛405 = 1.776), and LASF35
+(𝑛405 = 2.087) predict increasing eﬃciencies of 49 %, 58 %, and 67 %, respectively, all within a
+common optimal opening-angle range of 8.2◦ −
+increasing concentration eﬃciency with higher refractive index, accompanied by a convergence of
+
+8.7◦. These results demonstrate a clear trend of
+
+the optimal opening angle toward smaller values for higher-index glasses.
+
+Based on the latitude of Erlangen (49.6° N) and season of measurement, the maximum solar
+
+power collectable by the 1.4 m2 Fresnel lens is approximately 1.1–1.2 kW, of which we estimate
+
+that approximately 1.7 W of this power lies within the 405
+
+0.75 nm spectral band. Due to the
+
+±
+
+combined eﬀect of spectral ﬁltering and the light-concentrating properties of the cone, the full-
+
+spectrum optical power available at the tip of the conic concentrator can reach up to 5 W under
+
+near-perfect conditions. After coupling into the MMF, the entangled-photon source receives an
+
+optical power of 100–200 nW within a 1.5-nm bandwidth around the center wavelength of 405 nm.
+
+S4
+
+As discussed in the main text, this overall sunlight utilization eﬃciency into the setup is constrained
+
+by the spatial and spectral bandwidth of the nonlinear conversion process and can be further
+
+improved by optimizing the crystal geometry and choosing a broadband phase-matching condition.
+
+Additionally, the coupled sunlight power is signiﬁcantly inﬂuenced by the weather conditions at the
+
+time of measurement and by the time of day. Fig. S2(D) shows an example of the diurnal variation
+
+of the pump power measured on 18 September 2025. The pump power increases from the morning
+
+hours to a maximum around solar noon before decreasing again toward the late afternoon. On
+
+the measurement days corresponding to the data presented in this paper, pump powers of up to
+
+195 nW were achieved. Although suﬃcient pump power is available throughout the day to obtain
+
+meaningful statistics for sunlight-driven entangled-photon generation, measurements performed
+
+near solar noon yield higher count rates and reduced statistical uncertainties.
+
+S5
+
+Figure S1: Real-life photographs of experimental setups used for the sunlight-pumped gen-
+
+eration of polarization-entangled photon pairs The entire setup consists of two components: a
+
+sunlight concentration module (right) and an entangled-photon source (left) housed inside a pro-
+
+tective and darkening tent, which also contains the associated electronics. Inset: Optical setup of
+
+the entangled-photon source, showing the optical arrangement and avalanche photodiodes (APDs)
+
+used for photon-pair generation. A hinged door (not shown) is also installed as part of the enclosure,
+
+which, when closed, covers the front and top sides of the optical setup.
+
+S6
+
+Figure S2: Detailed schematics of the sunlight concentration module and its performance (A)
+
+Real-life photograph of the outdoor solar concentration setup showing the Fresnel lens serving as
+
+the primary concentrator, mounted on a dual-axis tracking system, together with the secondary con-
+
+centration module. Inset: secondary concentration module. (B) Geometry and dimensions together
+
+with a plot indicating the optimization parameters of the custom-designed conical concentrator used
+
+to eﬃciently couple concentrated sunlight into the multimode ﬁbre. (C) Experimentally measured
+
+spectra at successive stages of the solar concentration illustrating the gradual spectral ﬁltering of
+
+sunlight. They are normalised and scaled to the respectively measured power, summed over the
+
+entire spectrum. Inset: spectrum around target pumping wavelength 405 nm (D) Diurnal variation
+
+of the pump power over the course of the day under clear-sky conditions, showing a maximum near
+
+solar noon. The data were recorded on 18 September 2025. SPF-500: short-pass ﬁlter with a cut-oﬀ
+
+wavelength of 500 nm; DM-425: dichroic mirror transmitting wavelengths shorter than 425 nm and
+
+reﬂecting longer wavelengths; MMF-50-0.22: multimode ﬁber with a core diameter of 50 𝜇m and
+
+a numerical aperture of 0.22.
+
+S7
+
+

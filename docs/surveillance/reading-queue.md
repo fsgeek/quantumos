@@ -164,3 +164,95 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
   still the debt. (Egress note: the scheduled job now has *.arxiv.org
   access, so future sweeps read abstracts directly and this caveat class
   should not recur.)
+
+---
+
+*Sweep of 2026-08-17 (third scheduled run). Window: submissions 2026-08-03
+through 2026-08-17 (last sweep was 2026-08-03; the default 8-day window was
+widened to cover the full 14-day gap). Direct arXiv access (export.arxiv.org
+API and arxiv.org/abs pages) worked this run, confirming the prior egress
+note; all abstracts below were read first-hand via WebFetch against the
+primary, not paraphrased from a search engine. Query table run against
+quant-ph, cs.NI, cs.OS and physics.optics per the protocol. Candidates
+checked and rejected as non-hits: arXiv 2608.11630 ("Full-Stack High-Volume
+Quantum Networking Architecture based on Photonic-Integrated Tin Vacancy
+Centers in Diamond") describes spectral tuning to overcome emitter
+inhomogeneity and a projected 99.96% connectivity of ~1000 emitters — a
+physical-layer indistinguishability fix, not switch/topology/scheduling
+data; its "multi-channel quantum repeater node" phrase is too thin to
+support a Q5 reading. arXiv 2608.11501 ("Multi-Pair Fidelity-Aware Rate
+Allocation in a Quantum Network: Approximation Schemes") proves NP-hardness
+and gives FPTAS for fidelity-aware rate allocation, but treats link
+fidelities as exogenous inputs rather than measuring spread or calibration
+error, and models neither custody (holding) nor perishability (decay) — a
+rate-allocation component, not an occupant of the fence's full form. arXiv
+2608.12636 ("Free-Space Quantum Networks and Optimized Fiber-Reinforcement")
+optimizes macro-scale backbone-node placement (Voronoi tessellation) across
+a random-graph network model — topology at the wrong grain for Q5's
+per-module/per-port reconfiguration-granularity ask. arXiv 2608.04476
+("Heralded Non-Gaussian Squeezed-State Inputs for Parity-Detection SU(1,1)
+Interferometry") uses "heralding" for a continuous-variable metrology
+protocol, not networked entanglement generation, and reports no
+failure-cost or blocking data against Q4's threshold.*
+
+### arXiv 2608.09364 — Quantum-Classical Coexistence Network Tomography
+*Wang, Chapman, Ramaswamy, Guedes de Andrade, Chen, Lukens, Vardoyan, Towsley. Submitted 2026-08-10.*
+- **status:** UNREAD (abstract read 2026-08-17; the paper itself is the debt)
+- **touches:** Q2
+- **would change:** Q2 asks whether the instantaneous gap between
+  calibration-published and true fidelity is large enough to be OS-visible.
+  This paper builds a tomography framework that infers per-link channel
+  parameters of a fibre-shared quantum-classical network from end-to-end
+  measurements, and on single-link testbed data reports estimated process
+  fidelities "closely tracking the Bayesian-process-tomography baseline...
+  residual gaps reflect the depolarization-only approximation." If those
+  residual gaps are read against the full paper and turn out small relative
+  to scheduler decision resolution, that weakens the case for carrying a
+  calibration-uncertainty field at all; if large or systematic, it ratifies
+  Q2's premise that a calibration-published number needs an attached
+  uncertainty (and age) before the OS can trust it.
+
+### arXiv 2608.07163 — Rate-Fidelity Control for Wide-Area Quantum Links
+*Clayton, Nunn, Carmack, McKenzie, Richards, Wu, Bhattacharjee. Submitted 2026-08-07.*
+- **status:** UNREAD (abstract read 2026-08-17; the paper itself is the debt)
+- **touches:** Q7 — and *possibly* Q6
+- **would change:** Q7 asks how long "the best path" stays best at
+  OS-actionable lead times. This paper reports a 24-hour trace-driven
+  evaluation on a 64 km deployed fibre link where polarization drift
+  "destabilizes end-to-end fidelity and forces periodic compensation," and a
+  software controller that re-adapts pump power and polarization
+  compensation to hold a 14% mean-rate improvement over static policy. If
+  the full paper's drift autocorrelation time is short relative to our
+  modeled scheduling lead times, it ratifies Q7's "chasing a ghost" failure
+  mode for comparative routing; if long, a comparative read stays durable
+  and Q7 resolves the other way. *Possibly* Q6: the abstract describes
+  continuous actuation (pump power, polarization compensation) against
+  "uncontrollable link drift," which could carry a duty-cycle or wear cost,
+  but no such figure is stated — this is inference from "active
+  stabilization with fixed control policies," not a claim.
+- **mapping note:** this is a single link's fidelity drifting over time, not
+  a cross-sectional spread across simultaneously available paths — it
+  answers Q7's temporal-persistence framing, not Q2's instantaneous-spread
+  framing, even though both quantities are "fidelity."
+
+### arXiv 2608.04093 — An optical-fibre-integrated buffer for packet-switched quantum networks
+*Spegel-Lexne, Argillander, Clason, Claesson, Hey Tow, Lima, Pereira, Xavier. Submitted 2026-08-04.*
+- **status:** UNREAD (abstract read 2026-08-17; the paper itself is the debt)
+- **touches:** fence — and *possibly* Q1
+- **would change:** The fence excludes work unless it occupies the full form
+  of perishable good + custody + admission, not a component of it. This
+  paper demonstrates a fibre-integrated recirculating-loop buffer that holds
+  a polarisation-encoded qubit payload in custody for storage times up to
+  47 μs, with a measured cost of that custody (1.8% average QBER) and
+  releases the payload on a routing decision read from an attached packet
+  header — a physical custody primitive gated by a header-triggered
+  admission signal, at packet granularity. As described, it holds and
+  releases a single payload rather than arbitrating among competing holds,
+  so this looks like a component (custody + a trigger), not an occupant of
+  the fence's full form; but if the full paper's header logic turns out to
+  arbitrate between multiple buffered payloads under contention, that would
+  push it toward occupying more of the form and the fence would need
+  re-examining — that check is the reason this entry exists. *Possibly* Q1:
+  the "ultra-low-loss poled fibre phase modulator" is described only as
+  providing "fast, polarisation-insensitive switching," with no latency
+  distribution reported, so a Q1 reading is inference, not a claim.

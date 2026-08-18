@@ -1,0 +1,1497 @@
+Rate-Fidelity Control for Wide-Area Quantum Links
+
+CONNOR CLAYTON, University of Maryland
+CORY NUNN, National Institute of Standards and Technology; University of Maryland
+QUINN CARMACK, University of Maryland
+WAYNE MCKENZIE, Laboratory for Telecommunication Sciences
+ANNE MARIE RICHARDS, Laboratory for Telecommunication Sciences
+XIAODI WU, University of Maryland
+BOBBY BHATTACHARJEE, University of Maryland
+
+Quantum network links must distribute entanglement at high rates while satisfying application-specified
+fidelity demands. However, wide-area deployed fiber links suffer from polarization drift which destabilizes
+end-to-end fidelity and forces periodic compensation. Current deployments often use active stabilization with
+fixed control policies, and improvements generally stem from advances in quantum hardware. Meanwhile,
+software control remains relatively underexplored.
+
+Here, we formulate quantum link operation as a joint control problem over tunable rate-fidelity tradeoffs and
+uncontrollable link drift. From this framework, we construct a link control protocol that dynamically adapts
+source pump power and polarization compensation to maximize entanglement distribution rate subject to a
+minimum fidelity constraint. We evaluate the protocol through trace-driven simulations driven by data from a
+64 km deployed optical fiber. Compared with optimized static policies, our adaptive controller improves mean
+entanglement distribution rate by 14% over a 24 hour trace, without requiring any offline policy optimization.
+Our results show that software-based physical layer control can provide a practical mechanism for improving
+near-term quantum link performance without requiring additional quantum hardware.
+
+1 INTRODUCTION
+Quantum networks promise to provide revolutionary capabilities in areas such as secure communi-
+cations [5, 16], distributed quantum sensing [17, 19], and modular quantum computing [1, 32]. To
+realize the utility of these technologies, quantum network architectures and protocols must scale
+both in terms of geographic distance and quality of information transfer [47].
+
+The scaling of these metrics are at odds with each other. Information in a quantum network exists
+in the form of quantum bits (qubits) whose signals are necessarily weak, with each transmitted qubit
+generally consisting of a single photon. Quantum communication is therefore highly susceptible to
+loss and noise, both of which scale unfavorably with increasing distance.
+
+Most applications of quantum networks require the distribution of high-quality entanglement
+between remote parties. Entanglement is a property of two or more qubits that allows for correla-
+tions even across large distances. The quality of an entangled quantum system can be measured by
+its fidelity 𝐹 , where 0 ≤ 𝐹 ≤ 1 and 𝐹 = 1 indicates that the system is in the “ideal” target state. In
+practice, system imperfections and environmental noise cause 𝐹 to be less than 1; however, such
+noisy states are often sufficient and a higher-fidelity state may be attained by consuming many
+noisy copies through a process known as entanglement distillation [21].
+
+Significant efforts are underway to design, develop, test, and deploy hardware components which
+will enable high-fidelity transmission of entanglement [6, 24, 29]. Concurrently, considerable effort
+has been put into developments at higher layers of the quantum protocol stack [22] which manage
+
+Authors’ Contact Information: Connor Clayton, cbclayto@cs.umd.edu, University of Maryland; Cory Nunn, cory.nunn@nist.
+gov, National Institute of Standards and Technology; University of Maryland; Quinn Carmack, qcarmack@terpmail.umd.edu,
+University of Maryland; Wayne McKenzie, wmckenzie@ltsnet.net, Laboratory for Telecommunication Sciences; Anne Marie
+Richards, arichards@ltsnet.net, Laboratory for Telecommunication Sciences; Xiaodi Wu, xwu@cs.umd.edu, University of
+Maryland; Bobby Bhattacharjee, bobby@cs.umd.edu, University of Maryland.
+
+arXiv:2608.07163v1  [quant-ph]  7 Aug 20262
+
+Connor Clayton et al.
+
+resources to deliver entanglement in complex networks [9, 12, 13, 42, 46]. However, there is a gap in
+the current research landscape: most protocols for wide-area quantum networks generally assume
+high-volume, consistent-fidelity entanglement generation — conditions that the physical layer is
+not expected to meet in the near- to medium-term [29].
+
+We propose a framework for considering optimization problems relevant to the performance
+of present-day quantum networks. The family of optimization problems we define here accounts
+for both controllable parameters of quantum link hardware, which admit tradeoffs between fidelity
+and performance metrics like entanglement distribution rate, and uncontrollable parameters that
+diminish link fidelity, such as polarization drift. Neither set of parameters has been systematically
+analyzed for wide-area links, especially in conjunction. We introduce an optimization problem that
+considers both sets of parameters simultaneously, and present a link control protocol that tunes the
+controllable parameters and adapts to the uncontrollable to achieve high entanglement distribution
+rates over a wide-area link.
+
+Our adaptive control protocol takes as input an end-to-end entanglement fidelity target, and
+aims to maximize the entanglement distribution rate over the link. Absent link degradation, the
+entanglement rate can be easily maximized with a proper selection of controllable parameters.
+However, in a realistic wide-area setting, physical properties and environmental factors (e.g.,
+temperature, cloud cover, wind) degrade entanglement in volatile ways. Our protocol queries a
+pre-built model of link degradation to try to predict how the link will behave, and then sets the
+controllable parameters to compensate for the expected degradation.
+
+Our main result is a classical control protocol that boosts the practical utility of wide-area
+quantum links by maximizing the rate of entanglement distribution at a consistent, user-defined
+fidelity. The protocol requires no additional quantum hardware and introduces minimal classical
+overhead. To make things concrete, we analyze an instance of our protocol based around a 64-km
+deployed fiber in a major metropolitan area of the US (specific location omitted for anonymity
+during double-blind review). Our link layer protocol directly benefits wide-area quantum networks
+based on quantum repeaters, as these networks operate by swapping elementary entanglements
+and therefore the rate and fidelity of each physical hop directly constrains end-to-end performance.
+The rest of this paper is structured as follows: we introduce relevant hardware properties and
+discuss the specific quantum hardware used in our experiments in Section 2. In Section 3, we
+present modeling of the components used by our adaptive protocol. Section 4 introduces a sequence
+of optimization problems that decompose different aspects of entanglement distribution, while
+Section 5 describes the control protocol itself. Section 6 evaluates the protocol against existing
+techniques, Section 7 discusses generalization to other hardware and higher network layers, and
+Section 8 concludes.
+
+2 ENTANGLEMENT DISTRIBUTION AT THE PHYSICAL LAYER
+The elementary unit of a quantum network is a physical link that generates and transmits entan-
+glement. The hardware involved in this point-to-point entanglement distribution consists of a
+source, link, and receiver, and is directly relevant for applications like entanglement-based quantum
+key distribution [40], sensing, and metrology [50], wherein the receiver immediately character-
+izes entangled states. This framework can be extended to more sophisticated link models, like
+those in future quantum repeater networks, which rely on additional technologies like quantum
+memories [48].
+
+2.1 Entanglement Sources
+An entanglement source is a device capable of generating pairs of entangled qubits. For long-
+distance quantum communication, information is encoded into one of many physical degrees
+
+Rate-Fidelity Control for Wide-Area Quantum Links
+
+3
+
+of freedom within individual photons. These “flying qubits” must be generated with dedicated
+quantum hardware.
+
+Entanglement can be generated via clever manipulation of individual qubits from single-photon
+sources (as in [14]), or from sources that natively produce entangled photon pairs. In practice,
+entanglement generation is typically a probabilistic process, though technology for on-demand,
+deterministic sources is improving [15, 29]. Sources can be characterized in part by their photon
+generation rate, single-photon purity (quantifying the degree of errant multi-photon emission),
+and the resulting quantum state fidelity [7].
+
+Many source properties are fixed during the engineering process; however, these systems still
+typically allow some degree of tunability. In this work, we consider a simple example of modulating
+the pump laser power for a source based on spontaneous parametric down-conversion (SPDC);
+details are covered in Section 3.1. Sources based on four-wave mixing or emission from solid state
+quantum memories also often exhibit tunability via pump laser power. Additional examples of
+controllable parameters include central wavelength and bandwidth temperature tuning for both
+SPDC and quantum dot sources.
+
+2.2 Quantum Receivers
+Once an entangled qubit reaches its destination, the information may be stored, measured, or
+processed through some logical operation. Ubiquitous across all receiver operations is the single-
+photon detector, a device capable of identifying the presence of individual photons [7].
+
+Single-photon detectors are characterized by their efficiency and dark count rate (among other
+measures) which indicate the true-positive and false-positive rate of photon detection, respectively.
+State-of-the-art performance is achieved using superconducting nanowire single-photon detectors
+(SNSPDs), reaching upwards of 98% efficiency at standard telecom wavelengths [30, 39].
+
+Similar to sources, detectors can offer some degree of tunability. For example, SNSPD bias current
+can be adjusted to achieve (limited) increased detector efficiency. This comes at the expense of
+increased dark counts, but may still yield an overall advantage in some applications [34]. Addi-
+tional tradeoffs can be introduced in the processing of photodetection signals, such as tuning the
+“coincidence window” to qualify the simultaneity of detection events [37], or the duration of a
+measurement for state characterization, trading integration time for reduced statistical uncertainty.
+
+2.3 Polarization Drift Across a Link
+Ideal quantum channels would perfectly preserve quantum states between source and receiver, but
+real-world links invariably introduce some degree loss and decoherence of quantum information
+as photons interact with the environment.
+
+A central characteristic of optical communication, classical or quantum, is polarization. Physically,
+polarization describes the direction of oscillating electromagnetic fields that comprise light. For
+most quantum networking purposes, maintaining consistent polarization between all parties is
+strictly required, especially when the polarization itself encodes the quantum information. This
+poses a great challenge for transmission over realistic quantum links, whereby polarization state
+fidelities inevitably decay without intervention.
+
+The objective of polarization stabilization is to ensure a photon’s state of polarization (SOP)
+remains unchanged from source to receiver. For our purposes, the SOP can be described by three
+parameters (𝑆1, 𝑆2, 𝑆3) which define a unit vector known as a Stokes vector. The received vector
+(cid:174)𝑣 ′ = (𝑆 ′
+3) will be altered by optical fiber imperfections and environmental conditions. These
+1
+can also change over time — a phenomenon known as polarization drift. While the magnitude of (cid:174)𝑣 ′
+
+, 𝑆 ′
+2
+
+, 𝑆 ′
+
+4
+
+Connor Clayton et al.
+
+Fig. 1. (a) Schematic of our quantum link. Entanglement generation and automated polarization compensation
+(APC) signals are time multiplexed. Measurements at the APC receiver inform corrections at the polarization
+controller. (b) Feedback loop used for link control. Polarization fidelity (𝐹pol) measured by the APC acts as
+input to the link control protocol and its associated models, which in turn determine hardware parameters at
+the source site.
+
+may change1, the most significant and dynamic changes are usually in the vector direction. The
+angle between the desired and received vectors is the drift angle 𝜃 , from which the polarization
+fidelity 𝐹pol is calculated [23]:
+
+𝐹pol =
+
+1
+2
+
+(1 + cos(𝜃 ))
+
+(1)
+
+The exact drift conditions are unique to each link, and can be highly variable over time depending
+on the environment.
+
+Significant effort goes into maintaining polarization over a quantum link. This process commonly
+works by sending classical reference signals, measuring the change in polarization of those signals,
+then applying a correction to offset this change [26, 28]. In the following subsection, we discuss a
+commercial solution to polarization stabilization that operates on this principle.
+
+2.4 Concrete Hardware Instance
+To make the ideas of this paper concrete, we analyze a protocol instance based around hardware
+available to us, described here and sketched in Figure 1. However, the same ideas extend naturally
+to many other experimental setups, see Sections 2.5 and 7.2.
+
+Our simulations are driven by polarization data gathered over a 64km quantum link in the the
+Washington DC metropolitan quantum network (DC-QNet) [33]. The link consists of a 2km buried
+optical fiber connecting the Laboratory for Telecommunication Sciences (LTS) to a switch at the
+University of Maryland, which routes photons through a 62km partially-aerial fiber to the National
+Institute of Standards and Technology (NIST). Figure 2 sketches the route of this link. Transmission
+loss over this fiber link was measured to be approximately 18dB. Over 70% of the fiber is aerial,
+which leads to greater polarization instability compared to buried fiber due to its more direct
+interaction with environmental changes.
+
+A schematic of our entanglement source and detector setup is shown in Figure 3. Our source
+of polarization-entangled photon pairs is based on SPDC, the most mature (and therefore widely-
+deployed) class of sources used for quantum communications [15]. The power of the input pump
+laser driving the source can be easily modulated to determine the rate and fidelity of entanglement
+generation (see Section 3.1 and Figure 4a). A more detailed description and diagram can be found
+in Appendix A.
+
+Our receiver is comprised of a pair of polarization analyzers and SNSPDs (single-photon detec-
+tors). The analyzers allow us to perform full quantum state characterization (tomography) on the
+
+1via polarization-dependent loss or polarization mode dispersion [18].
+
+APC SourceEntanglementSourceAPC ReceiverEntanglement ReceiverTwo-way SwitchTwo-way SwitchLink ControlProtocolSource/Detector ModelPolarization Prediction ModelLTSNISTFpolFpol! FsdFidelity check probe (Ftrigger, Ftarget, Ttimeout)Pump power(a)(b)64km fiber (>70% aerial)Polarization ControllerPolarization Feedback ControlRate-Fidelity Control for Wide-Area Quantum Links
+
+5
+
+Fig. 2. Metropolitan context of the 64km deployed fiber link, part of the Washington DC metropolitan
+quantum network (DC-QNet). The source is located at the Laboratory for Telecommunication Sciences
+(LTS) in College Park, MD, USA. The route passes through a switch at the University of Maryland, then
+continues through a 62km partially-aerial fiber to the National Institute of Standards and Technology (NIST)
+in Gaithersburg, MD, USA. The exact routes of these two fibers are not known and therefore sketched as
+straight dashed lines.
+
+polarization-encoded photons emitted from the source [2]. From this, we compute the entanglement
+fidelity to an ideal Bell state. Note that the procedure in Figure 3 depicts local characterization of
+the source-receiver system. For entanglement distribution, one qubit is detected locally near the
+source, while the other is instead measured at remote location across a fiber link (see Figure 1a).
+
+2.4.1 Polarization Drift. In our experiments, polarization drift causes the fidelity 𝐹pol of our
+polarization-encoded qubits to degrade over time. Our protocol relies on a sufficient understanding
+of the rate of change in polarization (the “drift rate”) in order to make informed parameter adjustment
+decisions. Figure 5 displays measured polarization drift over a 48 hour period over the link. The
+plot shows the raw polarization Stokes parameters during this period with the distilled mean drift
+rate | 𝑑𝜃
+𝑑𝑡 | overlaid. Drift rates are strongly correlated with time of day, with significantly higher
+drift over daytime hours.
+
+VirginiaNISTGaithersburg62 km partially-aerial fiber (exact route unknown)University ofMaryland2 km buriedfiberWashington, DC© OpenStreetMap contributorsLTS6
+
+Connor Clayton et al.
+
+Fig. 3. Schematic of experimental setup used to characterize SPDC entanglement source and receiver with
+controllable pump laser power. A complete diagram and its description can be found in Appendix A.
+
+2.4.2 Polarization Compensator. During operation, the polarization drift on our link is measured
+and corrected using a commercial2 Automated Polarization Compensation (APC) device [10]. The
+APC measures polarization using in-band classical signals, meaning that no quantum data can be
+transmitted while it is in operation. Figure 1a illustrates how the path must be fully switched away
+from the entanglement source and detector while the APC is in use.
+
+The APC may be probed at any time. On each probing, three parameters must be passed to the
+device: (1) a triggering fidelity threshold 𝐹trigger, (2) a target fidelity threshold 𝐹target, and (3) a timeout
+duration 𝑇timeout. When the APC is probed, it initiates a “fidelity check”. A fidelity check takes a
+constant amount of time, 44ms for our link, and measures the current polarization fidelity 𝐹pol. If
+𝐹pol > 𝐹trigger, the APC concludes operation and entanglement distribution resumes. However, if
+𝐹pol ≤ 𝐹trigger, the device initiates a compensation routine, during which it adjusts the polarization
+controller in an attempt to raise the polarization fidelity until 𝐹pol ≥ 𝐹target. This routine takes an
+unspecified amount of time and is not guaranteed to succeed. If the target fidelity has not been met
+after 𝑇timeout seconds, the routine aborts and entanglement distribution resumes.
+
+2.5 Generality of the Control Abstraction
+While the results in this paper are evaluated using a particular wide-area link with a particular
+source, detector, and polarization controller, the control logic is defined over a hardware-agnostic
+link interface. This interface consists of three replaceable components: (1) a set of controllable
+hardware settings that define a tradeoff between entanglement generation rate and fidelity, (2) a
+model for time-varying link degradation, and (3) a compensation mechanism and corresponding
+model mapping corrective actions to expected fidelity improvement and overhead.
+
+For the source-detector setup, the relevant requirement is a controllable rate-fidelity operating
+frontier. In our evaluated system, pump power provides this control. Figure 4 shows this behavior for
+our SPDC source and for a second commercial source based on four-wave mixing [11]. Four-wave
+mixing probabilistically generates entangled photon pairs by a fundamentally different physical
+mechanism than SPDC [15], yet importantly, both systems exemplify the same control abstraction:
+increasing pump power increases the entanglement generation rate while reducing entanglement
+fidelity over the operating regime.
+
+Note, in addition, that our approach extends well beyond these examples. The same abstraction
+encompasses many quantum memory-based links as well, with controllable rate-fidelity tradeoffs
+common in links that entangle pairs of trapped ions [25], neutral atoms [38], and color centers in
+diamond [12, 45]. In all these examples, the tradeoffs are modulated by source laser power; however,
+
+2Commercial equipment and software referred to in this work is identified for informational purposes only, and does not
+imply recommendation of or endorsement by the National Institute of Standards and Technology, nor does it imply that the
+products so identified are necessarily the best available for the purpose.
+
+DetectorsRate-Fidelity Control for Wide-Area Quantum Links
+
+7
+
+(a) Characterization of an in-house entanglement
+source based on spontaneous parametric down-
+conversion (SPDC).
+
+(b) Characterization of a commercial Qunnect Qu-
+SRC entanglement source [11] based on four-wave
+mixing.
+
+Fig. 4. Controllable rate-fidelity tradeoffs across two entanglement source technologies. In both sources,
+increasing pump power increases entanglement generation rate but reduces entanglement fidelity. The
+simulations in this paper use the SPDC characterization in (a).
+
+this need not be the case, as many other control knobs exist depending on source and detector
+configurations. We list several such parameters in Sections 2.1 and 2.2. The protocol also does not
+require the rate-fidelity relationship to be linear or one-dimensional, as the same role can be played
+by any calibrated set of operating points, including a multidimensional Pareto front over rate and
+fidelity.
+
+On the link side, the relevant requirement is time-varying degradation that can be measured
+or conservatively bounded over the control horizon, together with a corrective action that can
+improve the link state at some cost. Polarization drift is a ubiquitous example of a link-degrading
+phenomenon in optical quantum communication, and its magnitude depends on link-specific factors
+such as length and deployment environment. These factors enter the protocol through the learned
+drift model rather than through hardware-specific assumptions. A different deployment would
+replace or update the training data and prediction model, but the structure of the controller remains
+unchanged.
+
+Similarly, our use of a commercial APC device is one instance of a more general compensation
+primitive. The protocol’s only requirement is a way to estimate when compensation is worth its
+cost through a sufficiently validated model. Other compensation hardware may expose different
+parameters or incur different overheads, but these differences can be incorporated by reworking the
+compensation response model. The APC model used in our simulator is therefore an instantiation
+of this interface, not a protocol requirement.
+
+3 MODELING THE EVALUATED QUANTUM LINK
+We now instantiate the three required interfaces described in Section 2.5 for the deployed link used
+in our evaluation by describing the modeling of relevant hardware components. These models
+
+0.800.850.900.951.00Fidelity050100150200250300Pump Power (mW)0.00.20.40.60.81.0Normalized EntanglementGeneration Rate0.9800.9850.9900.9951.000Fidelity012345Pump Power (mW)0.20.40.60.81.0Normalized EntanglementGeneration Rate8
+
+Connor Clayton et al.
+
+Fig. 5. Measured polarization drift over 48 hours on a 64km fiber link. The top figure shows the evolution of
+raw Stokes parameters over time; the bottom plot shows the calculated drift rate averaged over 15 minute
+intervals. On average, drift is significantly higher during the day.
+
+abstract the performance characteristics of each component and are used as input to our control
+protocol described in Section 5.
+
+3.1 Source-Detector Model
+For the evaluated deployment, we instantiate the source-detector model using empirical data from
+an SPDC source designed to produce polarization-entangled photon pairs. In Figure 4a, our source
+is characterized for a range of input pump powers, from 25 to 300 mW. The upper subplot shows
+the quantum state fidelity to an ideal Bell state, computed from the tomographic measurement
+shown in Figure 3. The lower subplot shows the rate of coincident detection events at each of the
+two SNSPDs, normalized to the maximum observed value. This rate depends on the efficiency of
+the SPDC process, coupling into optical fiber, detector efficiency, and other link losses between
+source and receiver. Details of the data in Figure 4a and its processing are given in Appendix B.
+
+As pump power increases, the photon pair generation rate increases linearly in this regime.
+However, due to the probabilistic nature of SPDC, increasing the probability of emission per each
+laser pulse also increases multipair emission– the likelihood that more than one photon pair is
+generated from a single pulse. This effectively adds noise and reduces the entanglement fidelity
+𝐹sd, as the measured polarization correlations are masked by independently generated pairs that
+are not correlated to one another. The maximum fidelity in the source-detector setup of Figure 3
+(average 𝐹sd ≈ 0.95) is observed at low pump powers where multipair probability is negligible, but
+the rate is also reduced. Hence, the pump power serves as a control parameter to appropriately
+balance rate and source fidelity.
+
+3.2 Polarization Drift Prediction Model
+Polarization drift is a complex physical process that we do not attempt to model precisely in this
+paper, although related models have been constructed [4]. In principle, one could model polarization
+
+1.00.50.00.51.0Stokes Parameter Value09-29 1809-30 0009-30 0609-30 1209-30 1810-01 0010-01 0610-01 12Time (Date / Hour)0.000.020.040.06Mean Polarization Drift Rate (rad/s)Rate-Fidelity Control for Wide-Area Quantum Links
+
+9
+
+Algorithm 1 Simulation of Polarization Compensation
+Input: the initial fidelity 𝐹0,pol, the target fidelity 𝐹target, the start time 𝑡0
+Output: total compensation time, final fidelity
+1: 𝜃, 𝜃target ← angles_from_fids(𝐹0,pol, 𝐹target)
+2: 𝑡 ← 𝑡0
+3: while 𝜃 > 𝜃target do
+𝜃 = 𝜃 −
+4:
+𝑡 ← 𝑡 + Δ
+5:
+6: end while
+7: return 𝑡 − 𝑡0, fid_from_angle(𝜃 )
+
+2 sin 𝜃 + Δ · 𝑑 (𝑡)
+
+𝜂
+
+⊲ Convert fidelities to drift angles via Eq. 1
+
+⊲ Simulate a noisy gradient descent step
+
+drift by monitoring the relevant environmental factors (wind, incident sunlight, vibrations from
+vehicles, etc.); however, in practice, it is impractical over a link with 10s of kilometers of aerial fiber.
+Since we are only interested in the aggregate change in polarization over time, a simpler empirical
+method suffices for our purposes.
+
+To develop our model, we instead turn to a more readily accessible variable: measured drift rates.
+We find that polarization drift over a short period of time is strongly correlated with drift over
+a subsequent short period of time. We build our model empirically from a dedicated experiment
+which tracked the state of polarization over a period of 48 hours3. This data is shown in Figure 5.
+The training of our model is simple: for a pair of durations (Δ𝑡1, Δ𝑡2), we sample a time 𝑡 and
+find the corresponding three stokes vectors 𝑣𝑡 −Δ𝑡1
+, 𝑣𝑡, 𝑣𝑡 +Δ𝑡2. Then we compute the two consecutive
+, 𝑣𝑡 ) and 𝜃2 = angle_between(𝑣𝑡, 𝑣𝑡 +Δ𝑡2 ). Repeating this
+drift angles as 𝜃1 = angle_between(𝑣𝑡 −Δ𝑡1
+for 𝑁 = 106 randomly chosen values of 𝑡 results in a distribution of drift angles 𝜃2 given parameters
+(Δ𝑡1, Δ𝑡2, 𝜃1). We repeat this for 64 representative values of (Δ𝑡1, Δ𝑡2) to create a general and
+practical model.
+
+3.3 Modeling the Polarization Compensator
+Simulating the effects of the APC requires a model to predict its run time and resulting fidelity
+upon termination, given the current link state. These aspects of the device have not been studied,
+so we developed a model based on conversations with the device manufacturer and 70 hours of
+experimental data from an APC test over a similar link (62km aerial fiber).
+
+The details of the APC’s compensation algorithm are proprietary, so we make several assumptions
+in the construction of our model. We know that the routine is gradient-descent-based, repeatedly
+measuring the polarization state and applying corrections until the fidelity target is met or the
+routine times out. We assume vanilla Riemannian gradient descent, which is designed for optimiza-
+tion on smooth manifolds such the surface of the 3-dimensional unit sphere of Stokes vectors. The
+update step of this algorithm is
+
+𝜃𝑘+1 = 𝜃𝑘 −
+
+sin 𝜃𝑘
+
+(2)
+
+𝜂
+
+2
+
+where 𝜃𝑘 is the angle between the ideal and realized vectors at iteration 𝑘 of gradient descent and
+𝜂 is the step size.
+
+Second, we assume that the effect of polarization drift on compensation can be modeled by a
+noise term within each gradient descent step. We assume this term is equal to the product of the
+current drift rate 𝑑 (𝑡) and the duration of each step Δ = 27.7ms.
+
+3Given a sufficiently long operation time, such a model could be built without a dedicated experiment by gathering drift
+statistics during operation.
+
+10
+
+Connor Clayton et al.
+
+The modeled compensation routine is shown in Algorithm 1; more details on the fit to experi-
+mental data can be found in Appendix C. We note that the results in this paper assume this model,
+and deviations from this model may affect the results upon deployment.
+
+4 OPTIMIZING ENTANGLEMENT DISTRIBUTION
+Given an understanding of the available hardware and modeling techniques, described in the previ-
+ous section for one deployed link, we now introduce a more general framework that decomposes
+entanglement generation into a sequence of optimization problems. In this section, we focus on
+optimizing the performance of a single link. We extend the framework to consider entanglement
+across multiple links in Section 7.3.
+
+4.1 Opt-0: Optimizing Controllable Parameters
+We first consider a stable experimental setting in which link drift is negligible or ignored, such as a
+short, closed laboratory link or a brief experiment with pre- and post-calibration checks. Even in
+this regime, source- and receiver-side parameters must be tuned to maximize entanglement rates
+under a minimum (and possibly time-varying) fidelity constraint. We define Opt-0 as the problem of
+selecting controllable parameters (e.g., pump power at the source, integration time at the receiver)
+to maximize entanglement rate subject to a target fidelity.
+
+An Opt-0-type optimization has been integrated into a quantum link layer protocol [12, 36],
+where a parameterized microwave pulse at the source is used to control the rate-fidelity tradeoff.
+The class of problems posed by Opt-0 is more general, as it encompasses multiple controllable
+parameters at both the source and receiver and potentially more complex tradeoffs. Nevertheless,
+these remain the primary studies to consider link-level control in this context.
+
+4.2 Opt-1: Managing Uncontrollable Parameters
+For wide-area entanglement distribution, links are inevitably subject to time-varying and unpre-
+dictable noise, particularly for above-ground deployments exposed to environmental factors such
+as temperature, wind, and human activity. Some effects exhibit predictable patterns (e.g., diurnal
+temperature cycles), while others do not, complicating long-duration experiments.
+
+We define Opt-1 as the problem of optimizing the mitigation of these uncontrollable, performance-
+degrading link parameters. Prior work has addressed physical-layer aspects of Opt-1 over long-
+distance links, including clock synchronization [33] through the IEEE-1588 Standard (PTP [41] and
+related White Rabbit [31] protocols) and polarization stabilization using commercial compensation
+devices [10, 43]. However, prior to this work, these techniques have not been systematically
+optimized, particularly with respect to their impact on end-to-end system performance.
+
+Solutions to Opt-1 must maintain acceptable operating conditions while balancing downtime,
+compensation accuracy, and interference with the quantum signal. Compensation often requires
+pausing quantum data transmission, making its frequency and duration critical design parameters.
+Thus, Opt-1 involves trading off improved link quality against compensation overhead to maximize
+overall link utility.
+
+4.3 Opt-2: Joint Optimization
+Finally, consider again a general wide-area quantum link. Practical entanglement distribution
+can only be achieved if the link is able to consistently produce high-fidelity entanglement at a
+sufficient rate. Achieving this requires tuning of controllable parameters according to application-
+specified fidelity requirements and the current state of the link. Further, invocation of any link
+compensation algorithm must take into account the overhead of drift correction in conjunction
+with the current link state. This is problem Opt-2: joint optimization of controllable parameters
+
+Rate-Fidelity Control for Wide-Area Quantum Links
+
+11
+
+Variable Definition
+𝐹
+𝑟
+𝐹min
+𝐹sd
+𝐹pol
+𝐹 𝛿
+pol
+𝐹trigger
+𝐹target
+𝑇timeout
+𝑇eff
+¯𝑟
+
+end-to-end fidelity
+end-to-end entanglement distribution rate
+minimum fidelity requirement
+source-detector fidelity
+polarization fidelity
+𝛿-conservative prediction of 𝐹pol
+APC triggering fidelity threshold
+APC target fidelity threshold
+APC timeout duration
+expected time until the next fidelity check
+average rate within a period
+Table 1. Summary of variables used in this paper.
+
+while compensating for the uncontrollable. A salient feature of Opt-2 solutions is the feedback loop
+between compensation overhead and controllable parameter settings, as both must be considered
+in concert to achieve high entanglement rates.
+
+The focus of this paper is a protocol for Opt-2. Part of our work concerned with source control is
+similar to [12], though the hardware involved, as we have described, is markedly different. The
+primary focus of our protocol is to explore the feedback loop intrinsic in solutions for Opt-2:
+scheduling compensations based on link performance, which depends on the parameter settings
+and compensation quality. We describe this protocol next.
+
+5 DYNAMIC CONTROL PROTOCOL
+The experimental setup described above defines a control problem. Our link protocol therefore has
+access to five control variables:
+
+• Source-detector parameter: (1) pump laser power
+• Drift parameters: (2) timing of fidelity checks, (3) APC triggering fidelity threshold, (4) APC
+
+target fidelity threshold, (5) APC timeout duration
+
+At time 𝑡, the link distributes entanglement at a rate of 𝑟 (𝑡) entangled pairs per second with
+approximate4 fidelity 𝐹 (𝑡) ≈ 𝐹sd(𝑡)𝐹pol(𝑡). The objective of a protocol here is to maximize the
+expected long-run average entanglement distribution rate subject to a hard minimum fidelity
+constraint 𝐹min. Entangled pairs are discarded when the fidelity requirement is not met; i.e., 𝑟 (𝑡) = 0
+whenever 𝐹 (𝑡) < 𝐹min. The choice of this strict fidelity requirement is to ensure robust entanglement
+generation at the link level, as applications of quantum networks require entanglement of sufficient
+fidelity [12] and protocols involving multiple links typically assume a constant fidelity for each
+link.
+
+Static Protocols. Existing entanglement distribution protocols of this type make straightforward
+use of available resources and APIs by setting constant values for the five control variables. A
+recent experiment demonstrating state-of-the-art entanglement distribution across a metropolitan
+scale link uses constant values for all five control variables [43].
+
+4The true end-to-end fidelity would be estimated experimentally by a prolonged measurement of many copies of the
+transmitted quantum states, destroying the entanglement [3, 49]. In contrast, this 𝐹 (𝑡 ) model is efficiently computable for
+our real-time protocol, and should well approximate and scale monotonically with the true fidelity.
+
+12
+
+Connor Clayton et al.
+
+5.1 Intuition
+It is useful to think of the system as two independent components:
+
+(1) The source and detector form a single logical unit responsible for the creation and mea-
+surement of Bell states. The rate 𝑟 (𝑡) and fidelity 𝐹sd of entangled pair generation are fully
+and continuously controllable by the pump laser power (see Section 3.1, Figure 4a).
+
+(2) The transmission medium responsible for distributing entangled photons between the source
+and detector is not directly controllable and only adds noise (and loss) to the entanglement
+generated through subsystem (1). Much of the effect of transmission is determined by the
+environment, can only be measured through active probing, and can only be controlled
+through active compensation (see Figure 5).
+
+From this decomposition, it becomes clear that the role of the pump power should be to counteract
+the effect of polarization drift. Since 𝐹pol tends to decrease over time, we want to lower the pump
+power over time in order to raise 𝐹sd and therefore sustain 𝐹 (𝑡) = 𝐹sd(𝑡)𝐹pol(𝑡) ≥ 𝐹min. This
+approach will decrease our end-to-end rate over time, as a consequence of the decreasing pump
+laser power.
+
+Ideally, we would like keep our pump power as high as possible to maximize the end-to-end
+rate. However, this is likely sub-optimal as the polarization drift is unknown. Instead, we use
+our polarization drift prediction model to estimate the extent of polarization drift, and select
+pump power conservatively to ensure that we maintain 𝐹 (𝑡) ≥ 𝐹min with high probability. Our
+methodology for meeting this criterion is explained in Section 5.2.
+
+This conservative power adjustment, while necessary to avoid high-penalty 𝐹min violations, tends
+to reduce our rate more than is strictly necessary. In addition, the uncertainty in our polarization
+estimate increases with time. In order to correct possible sub-optimality, it is desirable to invoke
+a fidelity check to learn the current value of 𝐹pol(𝑡). Doing so allows us to reset the pump power
+to the optimal value and gives us updated information on the current polarization drift levels.
+However, we do not want to invoke this capability too often, as we want to balance the information
+gain of a fidelity check with the downtime it incurs. The full policy is explained in Section 5.3.
+
+After some amount of time, we should perform polarization compensation in order to mitigate
+the effects of polarization drift, which forces our rate to generally decrease over time. To do so, we
+set the APC triggering fidelity such that we trigger a compensation when the fidelity has drifted low
+enough that the increase in rate from compensating outweighs the opportunity cost of downtime
+during compensation. We also set the value of the target fidelity threshold and timeout duration to
+balance the increase in 𝐹pol with downtime. The details of our policy for setting the APC device
+parameters are given in Sections 5.4 and 5.5.
+
+5.2 Pump Power Control Policy
+Given perfect information of 𝐹pol (𝑡), the optimal pump power control policy is to choose the pump
+power such that 𝐹 (𝑡) = 𝐹min, i.e.,
+
+𝐹sd = 𝐹min/𝐹pol.
+
+(3)
+
+This choice is guaranteed to maximize rate subject to the minimum fidelity constraint.
+
+During execution, however, the exact value of 𝐹pol is only known immediately after a fidelity
+check. Given this uncertainty, our polarization drift model allows us to maintain a belief distribution
+over 𝐹pol(𝑡). Using this, we control the pump power conservatively such that
+
+Pr[𝐹 (𝑡) < 𝐹min] ≤ 𝛿
+
+(4)
+
+Rate-Fidelity Control for Wide-Area Quantum Links
+
+13
+
+for a fixed confidence parameter 𝛿 ∈ (0, 1). Equivalently, power is chosen as if the transmission
+fidelity were equal to the 𝛿-quantile of the belief distribution. In our simulations, we select 𝛿 = 0.10,
+meaning that we assume a polarization drift rate in the 90th percentile according to our model.
+
+5.3 Fidelity Check Initiation Policy
+A fidelity check returns the exact current value of 𝐹pol after a fixed downtime duration 𝑡check, during
+which the rate 𝑟 (𝑡) = 0. Fidelity checks may be initiated at any time.
+
+The protocol schedules fidelity checks adaptively, based on a value-of-information criterion. Let
+𝑟 (𝐹 𝛿
+) denote the rate achieved using our current predicted 𝛿-conservative polarization fidelity. Let
+pol
+𝑇eff denote the expected time until the next check, and let Λ1 and Λ2 be the expected throughput
+over the next 𝑇eff seconds if we do and do not perform a check, respectively. A fidelity check is
+initiated when
+
+Λ1 − Λ2 ≥ 𝑟 (𝐹 𝛿
+
+pol)𝑡check.
+
+(5)
+
+This condition compares the expected rate gain from resolving uncertainty to the opportunity cost
+of downtime. Fidelity checks are therefore performed only when uncertainty induces a sufficiently
+large rate penalty. Λ1, Λ2 may be calculated through estimates of future rates using the polarization
+drift predictor — see Appendix D for details on efficient computation of Λ𝑖 .
+
+5.4 Fixing Compensation Duration
+Our choice of polarization compensation target fidelity 𝐹target and timeout duration 𝑇timeout is based
+on a simple observation: that setting
+
+𝐹target = 1.0 ; 𝑇timeout = 𝑐
+
+(6)
+
+for some constant 𝑐 ensures that the compensation routine will take time 𝑐. To see this, note that the
+APC’s gradient descent approach combined with continuous drift effectively ensures 𝐹pol(𝑡) < 1.0
+at all times 𝑡. In our simulations, we choose 𝑐 := 1 second.
+
+This choice is unconventional but carries several benefits. First, assuming a constant compen-
+sation duration greatly simplifies the analysis of optimal compensation initiation, allowing for a
+much cleaner triggering policy (see Section 5.5). It also removes the need for potentially complex
+control policies governing 𝐹target and 𝑇timeout.
+
+Second, limiting compensation time makes efficient use of the diminishing returns seen during the
+compensation routine. From Section 3.3, we expect that the increase in fidelity decays exponentially
+with each gradient descent iteration, while the loss of throughput during compensation is linear in
+time. As a result, the net benefit of additional compensation time is strictly decreasing; fixing the
+compensation time truncates this low-value tail in a principled manner.
+
+Finally, this policy is robust against unknown, time-varying polarization drift. From Section 3.3,
+we find that a high drift rate can prevent the compensator from reaching the target fidelity; this
+phenomenon commonly results in expensive compensation routines trying to reach an unachievable
+𝐹target (see [43]). In contrast, a fixed-duration policy avoids implicit assumptions about the achievable
+polarization fidelity and guarantees bounded downtime regardless of drift conditions.
+
+5.5 Polarization Compensation Initiation
+Polarization compensation routines naturally define “periods” of protocol execution, which we
+define to be the time between the end of one compensation routine and the end of the next. As an
+approximation to our objective of maximizing the long-run average entanglement distribution rate,
+we aim to maximize the average rate of each individual period.
+
+14
+
+Connor Clayton et al.
+
+Fig. 6. Example execution of the adaptive protocol across one period, showing all major characteristics. From
+top to bottom: end-to-end rate, pump power and source-detector fidelity, actual and predicted polarization
+fidelity, and end-to-end fidelity. See Section 5.6 for a detailed explanation.
+
+For a given time 𝑡, let ¯𝑟 (𝑡) be the average rate of the current period if we were to initiate
+compensation at time 𝑡. Then we can show that the average rate of the period is maximized
+when the instantaneous rate equals the period’s average rate, and therefore we should initiate a
+compensation whenever
+
+𝑟 (𝑡) ≤ ¯𝑟 (𝑡).
+
+(7)
+
+See Appendix E for a derivation of this policy.
+
+Since the rate is determined by our chosen pump power and the compensation duration is set to
+a constant, we can easily track the quantities 𝑟 (𝑡) and ¯𝑟 (𝑡). We initiate a fidelity check whenever
+the condition in Equation 7 is met to ensure that we do not operate in this suboptimal regime5.
+
+Upon initiation, it is possible that 𝑟 (𝑡) is simply suboptimal due to our conservative choice of
+pump power. Therefore, we set 𝐹trigger to be the value of 𝐹pol that, if measured, would result in a
+rate that violates the condition in Equation 7. This is computed directly from our pump power
+policy.
+
+5.6 Putting It All Together
+We explain how the components of our link control protocol work together through a representative
+run over a 29-second period between two polarization compensations, shown in Figure 6. The
+following descriptions correspond to the circled numbers in Figure 6:
+(0) The solid green curve in the topmost subplot shows the end-to-end entanglement distribution
+rate 𝑟 (𝑡) at each time 𝑡. Notice that 𝑟 (𝑡) decreases in the time between each fidelity check (thin
+vertical lines), and that 𝑟 (𝑡) trends downward throughout the period overall.
+
+(1) The second subplot shows pump power and 𝐹sd over time. Pump power is chosen to satisfy the
+condition in Equation 4. Notice that the trends in 𝐹sd mirror that of the pump power, while
+
+5Note that this is a second criterion to initiate a fidelity check, supplemental to the condition given in Section 5.3
+
+Time(hh:mm:ss)0.860.870.88Source-DetectorFidelity175200225Pump Power (mW)FsdPump Power10.981.00Polarization FidelityFpolF=0.1pol208:04:1008:04:1508:04:200.850.860.87End-to-End FidelityF(t)Fmin3607080EntanglementDistribution Rater(t)r(t)04657Fidelity CheckPolarization CompensationRate-Fidelity Control for Wide-Area Quantum Links
+
+15
+
+trends in 𝑟 (𝑡) mimic the pump power. This stems directly from the experimental relationships
+between these quantities shown in Figure 4a.
+
+(2) The third subplot shows the trends in actual and predicted polarization fidelity. After each
+changes based on the observed drift since the previous check.
+< 𝐹pol throughout this example; in general, we expect this to be true at least 90% of the
+
+fidelity check, our estimate 𝐹 𝛿=0.1
+𝐹 𝛿=0.1
+pol
+time based on our choice of 𝛿 = 0.10.
+
+pol
+
+(3) The bottom-most subplot shows the end-to-end fidelity as a result of the parameters from the
+plots above. At all times, the algorithm attempts to maintain an end-to-end fidelity above the
+minimum requirement 𝐹min.
+
+(4) Most fidelity checks occur due to the condition in Equation 5. In this instance, the protocol
+determines that the expected rate gain from performing a fidelity check outweighs the associated
+loss.
+
+(5) To ensure ¯𝑟 is monotonically increasing, the protocol initiates a fidelity check whenever the
+instantaneous rate drops below the running average for the period (Equation 7). In this particular
+instance, the polarization prediction 𝐹 𝛿
+pol was overly pessimistic, so 𝑟 (𝑡) was unnecessarily low
+and a full compensation was not triggered.
+
+(6) Once again 𝑟 (𝑡) dips below ¯𝑟 (𝑡), but this time the rate cannot be recovered above 𝑟 (𝑡) and a
+polarization compensation is initiated. Notice that this event coincides with a substantial drop
+in 𝐹pol.
+
+(7) Each polarization compensation routine lasts a fixed duration of 1 second, as described in
+
+Section 5.4.
+
+6 RESULTS
+Here we present evaluations of our link control protocol, starting with a discussion of how the
+results were derived. Next, we compare our protocol to currently adopted practices, and present
+results under varying fidelity requirements as determined by higher level applications. Finally, we
+benchmark against a theoretical upper bound which assumes no polarization drift.
+
+6.1 Methodology
+All results are derived from a custom trace-driven simulator. Source code for this simulator and the
+underlying trace data are publicly available [8].
+
+The underlying trace data were derived over the 64 km partially-aerial LTS-NIST fiber link and
+span three days. Each data point contains the Stokes parameters measured every 100 milliseconds,
+enabling fine-grained reconstruction of polarization drift. In our simulations, we use the drift data
+to compute the polarization fidelity 𝐹pol over time, which is then used to evaluate the decisions
+made by the control algorithms.
+
+Now consider a “static” protocol that issues an APC probe with some fixed input parameters
+(𝐹trigger, 𝐹target,𝑇timeout) every 5 seconds and maintains constant pump power. After each probe,
+𝐹pol ≥ 𝐹trigger by construction; polarization fidelity then degrades over the next five seconds until
+the next probe. The end-to-end fidelity is given by the product of the fixed source–receiver fidelity
+𝐹sd and 𝐹pol(𝑡), and the entanglement rate is derived directly from the pump power. While evaluating
+static protocols, we optimize over fidelity check frequency and 𝐹sd (a linear function of pump power,
+see Figure 4a). The values of the APC parameters are fixed at 𝐹trigger = 0.98, 𝐹target = 0.99,𝑇timeout =
+55𝑠, consistent with a recent demonstration using the same device [43].
+
+We apply the same method to evaluate our adaptive protocol, accounting for dynamically adjusted
+parameters. Pump power is updated every 100ms. attenuator that sets the pump power to the
+desired value. APC probes are scheduled as needed based on the protocol state (Sections 5.3-5.5).
+
+16
+
+Connor Clayton et al.
+
+(a) Overall (24hr period)
+
+(b) Nighttime (10pm-6am)
+
+(c) Daytime (10am-6pm)
+
+Fig. 7. Results comparing our adaptive link control protocol with static protocols (with different pump
+powers/𝐹sd and fidelity check frequencies) under static application demands (𝐹min = 0.85).
+
+6.2 Static Application Demands
+Figure 7 compares our adaptive protocol to different static protocols over different time intervals:
+24 hours (Figure 7a), 8 hours of night time (Figure 7b), and 8 hours of day time (Figure 7c). Here,
+we set the application fidelity demand (𝐹min) as a constant (0.85). For the static protocols, we vary
+both 𝐹sd and fidelity check intervals.
+
+The result shows that the adaptive protocol performs well across all time intervals, whereas
+static protocol parameters require careful selection for reasonable performance. Over a 24 hour
+period, the adaptive protocol outperforms the best static protocol by 14%, and this increases to 16%
+at night. The gap is smaller during the day (6%), but it is important to understand that the “best”
+static protocol for one day could be very different for another.
+
+Static protocol performance shows an expected trend: if the source-detector fidelity 𝐹sd is set too
+close to 𝐹min, then these protocols are not able to provide high entanglement throughput. Conversely,
+setting a more conservative 𝐹sd does not allow the static protocols to maximize entanglement rate.
+Even with a well-chosen 𝐹sd, the best fidelity check interval varies over time (e.g., ~1s during the
+day versus ~10s at night). Further, these parameter values are sensitive to application demands
+(𝐹min) and the polarization drift rate, both of which may vary unpredictably. No parameter choices
+are required for the adaptive algorithm.
+
+6.3 Varying Application Demands
+The previous result fixed the application requirement of fidelity (𝐹min) to 0.85. However, we expect
+a real-world deployment of quantum networks will have to support multiple applications, each of
+which may have different requirements. One of the major advantages of our adaptive protocol is
+that it can adapt to changing 𝐹min “on-the-fly”.
+
+Figure 8 shows entanglement distribution rates achieved (𝑦-axis) by the adaptive protocol and
+different static protocols with changing 𝐹min (𝑥-axis). The results (obtained over a 24-hour run) again
+show that the adaptive protocol is able to outperform each static protocol, but more importantly,
+each static protocol optimizes for a single 𝐹min.
+
+The result also shows the limits of the adaptive protocol, as entanglement rate steadily dips (and
+reaches 0 for 𝐹min ≈ 0.9475). This is expected, as the higher values of 𝐹min cannot be sustained by
+
+Static protocol with constant ﬁdelity check freqency:0.5s1s2s3s5s10s20sAdaptive protocolMean entanglement distribution rate               (entangled pairs/s)               0.850.860.870.880.89Fsd0204060800.850.860.870.880.89Fsd0.850.860.870.880.89FsdRate-Fidelity Control for Wide-Area Quantum Links
+
+17
+
+Fig. 8. Comparison of adaptive protocol against static protocols with changing fidelity targets 𝐹min.
+
+the adaptive (or indeed, any protocol), as even the most conservative source setting (25mW pump
+power) provides 𝐹sd ≈ 0.9475 (see Figure 4a).
+
+The previous result shows that the adaptive protocol is able to adapt to different 𝐹min requirements
+(over 24 hours). However, the protocol can also adapt to instantaneously changing 𝐹min, as 𝐹min is
+simply used as an input to Equation 3. We show the results from an artificial scenario where the
+required 𝐹min changes continuously in the shape of a sine curve. While we do not expect application
+demands to necessarily change with every entanglement requested, this experiment provides an
+“extreme” scenario to understand and visualize the dynamics of the adaptive protocol. It’s important
+to note that the adaptive protocol is not only adapting to the changing 𝐹min, but also to the unknown
+link drift simultaneously. Finally, it is perhaps not a stretch to emphasize that no static protocol
+would perform well in such a scenario.
+
+Figure 9 shows the performance of the adaptive protocol with continuously changing 𝐹min (red
+curve in Figure 9a). The figure shows that the adaptive protocol is able to maintain requisite fidelity
+(blue line in Figure 9a) with changing 𝐹min. Figures 9b and 9c shows the entanglement rate achieved
+and pump powers set by the protocol over time. As expected, the achievable entanglement rate
+mirrors 𝐹min, as does the pump power set. It is interesting to note that the protocol is compensating
+for two changing variables at each step here: polarization drift over the link, and 𝐹min. We also
+see that the protocol invokes the APC probes more frequently as we approach the maximum
+feasible 𝐹min, and less frequently as 𝐹min recedes. This behavior can be explained as follows: as 𝐹min
+approaches the maximum attainable 𝐹min with this experimental setup, the protocol is frequently
+forced to set pump power to the minimum available, triggering an APC probe. On the other hand,
+as the required 𝐹min decreases, the instantaneous rate and average rate curves tend to not converge
+(See Equation 7 in Section 5.5), allowing for longer runs without re-calibration.
+
+6.4 Evaluation Against Theoretical Upper Bound
+The adaptive protocol presented here provides no guarantees of optimality, and indeed the process
+of defining an optimal protocol is unclear. Even if we consider an “optimal” that has perfect future
+knowledge of drift, it is unclear how often to initiate APC probing, and with what parameters. If
+we further assume polarization compensations take zero time, then the best policy would be to
+continuously compensate.
+
+0.840.860.880.900.920.94Minimum Fidelity Requirement (Fmin)020406080Mean Entanglement Distribution Rate               (entangled pairs/s)AdaptiveStatic:Fsd0.850.870.890.910.9318
+
+Connor Clayton et al.
+
+Fig. 9. Protocol adaptivity under continuously-changing link demands following a sine curve (dashed red
+line): (top) end-to-end fidelity, (middle) entanglement distribution rate, (bottom) pump power and 𝐹sd. Vertical
+black lines indicate polarization compensations.
+
+In this “optimal” scenario, the system is equivalent to a link with no drift, and pump power should
+be chosen such that 𝐹sd = 𝐹min. The throughput in the zero-drift scenario therefore constitutes an
+(unachievable) upper bound on the performance of any protocol. We compare the performance of
+the adaptive protocol to this theoretical upper bound.
+
+For the experiments in Figure 7, this bound is a rate of 85.6 entanglements/second. Over a 24-hour
+period, the adaptive protocol performs within 21% of the upper-bound (with ~9% of that time being
+devoted to probes and compensation). The comparison at night is more interesting, as drift rate is
+lower and more closely resembles the upper bound scenario. At night, the gap is < 8%, of which
+3.4% is due to probes and compensation. These results indicate that the scope for improvement for
+more sophisticated prediction and compensation is relatively modest (<5%). Moreover, the adaptive
+protocol is relatively simple and lightweight, and can easily be integrated into existing deployments
+without major investment in computing hardware.
+
+7 DISCUSSION
+
+7.1 Deployment Considerations
+A practical advantage of the proposed protocol is that it requires only software access to control
+interfaces already common in deployed wide-area quantum links. In the system studied here, the
+controller adjusts the source pump power via an electronically-tunable attenuator and adjusts the
+APC probe parameters through an API provided by the manufacturer. Thus, deployment requires
+no additional quantum hardware. It requires only a classical control process with access to existing
+control knobs
+
+The online control logic is lightweight. Runtime decisions consist of table lookups and 𝑂 (1) time
+parameter calculations. The APC simulation used in our evaluation (Algorithm 1) is not part of
+deployment, since compensation is executed directly by the APC device. Similarly, the controller
+requires only low-bandwidth communication for distributing parameters and fidelity check results.
+The relevant timescale in our simulations is 100ms; we expect that the lightweight computation,
+control, and communication requirements will fit well within this window.
+
+0.850.90End-to-End FidelityF(t)Fmin050100EntanglementDistribution Rater(t)30 09:0030 09:0530 09:1030 09:15Time (day hh:mm)0.850.900.95Source-DetectorFidelityFsdPump Power100200Pump Power (mW)Rate-Fidelity Control for Wide-Area Quantum Links
+
+19
+
+The main deployment cost is characterization. The entanglement source must have a well-
+characterized rate-fidelity curve and there must be sufficient polarization drift statistics to initialize
+the prediction model. These measurements are standard characterization procedures that can be
+performed during commissioning and refined during normal operation. This makes the protocol
+suitable for near-term deployment as a software control layer over existing wide-area quantum
+link infrastructure.
+
+7.2 Extension to General Quantum Links
+While the control protocol presented here was developed around specific quantum hardware, we
+believe that the fundamental concepts apply broadly. The problem classes Opt-0 (optimization of
+controllable parameters) and Opt-1 (compensation of uncontrollable parameters) are universal to
+all quantum links and therefore Opt-2 (the joint optimization of Opt-0 and Opt-1 over the same
+link) represents a general and practical class of problems for which the methods presented here
+provide a blueprint.
+
+Opt-0 formalizes the idea of managing tunable hardware parameters to improve end-to-end
+system performance, rather than simply maximizing the performance of individual components.
+Quantum hardware often exposes many parameters that can be tuned. Many intrinsic hardware
+tradeoffs beyond pump power can be exploited for optimization; we discussed several examples in
+Sections 2.1 and 2.2. As a further example, consider the following binary tradeoff: two successful
+measurement outcomes occur with equal probability, but only one corresponds to higher-fidelity
+entanglement [24]. This forces a choice between discarding low-fidelity events to maximize fidelity
+or retaining all events to maximize rate.
+
+Opt-1 concerns compensation of uncontrollable noise parameters, which is again universal.
+Polarization stabilization is required for all photonic quantum links regardless of encoding, and
+notably is relevant for optical entanglement swapping, where increasing polarization mismatch
+reduces success probability. The magnitude and timescale of polarization drift depend on link
+characteristics (e.g., length, aerial versus buried fiber), but every compensation strategy induces
+tradeoffs. Coexistence schemes that multiplex reference light with quantum signals avoid system
+downtime but yield imperfect compensation due to wavelength-dependent drift. Conversely, us-
+ing same-wavelength reference signals enables high-precision compensation but necessaitates
+downtime as the reference signals overwhelm the quantum signals.
+
+Taken together, these considerations make Opt-2 a general problem that applies to all wide-area
+quantum settings. While the specific control and response variables will vary by link, a common
+general structure emerges: controllable parameters induce tunable tradeoffs between entanglement
+rate and fidelity, while uncontrollable drift introduces noise that must be mitigated at the cost of
+rate and/or fidelity. The core control-theoretic principle is to adjust controllable parameters to
+offset the effects of drift while compensating for uncontrollable parameters in a way that balances
+the cost and benefit of compensation. We expect these concepts to extend naturally to a wide range
+of quantum links beyond the specific system studied here.
+
+7.3 Extension to Higher Layers of the Quantum Networking Stack
+A natural extension of the above framework is the joint optimization of two or more links working
+in tandem to distribute entanglement over multiple hops. Each link has its own sets of controllable
+parameters (Opt-0) and time-varying noise parameters (Opt-1); we refer to the resulting multi-link
+problem as Opt-3. Unlike earlier cases, Opt-3 must account for network topology while jointly
+configuring parameters and compensation strategies on a per-link basis.
+
+20
+
+Connor Clayton et al.
+
+Even for two links, Opt-3 is a broad and largely open problem when realistic hardware constraints
+are considered. Although out of scope for this paper, we illustrate the key considerations with a two-
+hop example. Consider three nodes 𝐴, 𝐵, and 𝐶, connected by links 𝐴-𝐵 (Link 0) and 𝐵-𝐶 (Link 1),
+with entanglement swapping at 𝐵 [35]. Suppose Link 0 is stable (e.g., short underground fiber),
+while Link 1 exhibits significant drift. An application specifies a minimum end-to-end entanglement
+quality requirement, which constrains the allowable operating points of each link.
+
+Under an Opt-2 protocol, each link exposes a set of achievable rate–fidelity operating points.
+Because Link 1 is more unstable, its feasible region is more restricted. An Opt-3 controller must
+then choose how Link 0 operates relative to Link 1: matching its rate, increasing fidelity to improve
+the end-to-end fidelity, increasing its rate to enable entanglement distillation [27], or adopting
+another strategy. The optimal choice depends on hardware capabilities and how entanglement is
+ultimately consumed by higher layers.
+
+This scenario demonstrates that Opt-2 (and our protocol) provides a useful abstraction for link
+behavior. By exposing a feasible set of rate–fidelity operating points, Opt-2 grants higher-layer
+Opt-3 protocols flexibility in optimizing end-to-end performance.
+
+8 CONCLUSIONS
+In this work, we presented a control protocol for quantum links that explicitly accounts for
+physical-layer impediments while exploiting controllable rate-fidelity tradeoffs in modern quantum
+networking hardware. Improvements in the performance of present-day quantum networks are
+typically driven by advances in hardware, yet our results demonstrate that carefully designed
+software control can yield substantial gains without increasing hardware requirements. Importantly,
+the proposed protocol has a clear path to deployment within existing experimental infrastructures.
+More broadly, the optimization framework introduced here extends beyond the specific link studied
+and highlights the potential for software-based control to play a significant role in improving the
+performance of near-term quantum networks.
+
+9 ACKNOWLEDGMENTS
+We thank Mael Flament, Gabriel Bello Portmann, Rourke Sekelsky, and Aditya Varma of the Qunnect
+team for helpful discussions about the mechanics of the APC and for characterization data of the
+Qu-SRC. We also thank Ivan Burenkov, Alan Migdall, and Thomas Gerrits for helpful conversations
+and comments during the preparation of the manuscript. This work was supported by a National
+Science Foundation Graduate Research Fellowship (Grant No. DGE 2236417).
+
+REFERENCES
+[1] H Aghaee Rad, T Ainsworth, RN Alexander, B Altieri, MF Askarani, R Baby, L Banchi, BQ Baragiola, JE Bourassa, RS
+
+Chadwick, et al. 2025. Scaling and networking a modular photonic quantum computer. Nature (2025), 1–8.
+
+[2] J. B. Altepeter, E. R. Jeffrey, and P. G. Kwiat. 2005. Photonic State Tomography. Advances In Atomic, Molecular, and
+
+Optical Physics, Vol. 52. Academic Press, 105–159. doi:10.1016/S1049-250X(05)52003-2
+
+[3] Joseph B Altepeter, Evan R Jeffrey, and Paul G Kwiat. 2005. Photonic state tomography. Advances in atomic, molecular,
+
+and optical physics 52 (2005), 105–159.
+
+[4] Patrick R. Banner, Steven L. Rolston, and Joseph W. Britton. 2025. BIFROST: A First-Principles Model of Polarization
+
+Mode Dispersion in Optical Fiber. arXiv:2510.01212 [physics.optics] https://arxiv.org/abs/2510.01212
+
+[5] Charles H Bennett and Gilles Brassard. 1984. Quantum cryptography: Public key distribution and coin tossing. In
+
+Proceedings of the international conference on computers, systems and signal processing. 175–179.
+
+[6] Eric Bersin, Matthew Grein, Madison Sutula, Ryan Murphy, Yan Qi Huan, Mark Stevens, Aziza Suleymanzade, Catherine
+Lee, Ralf Riedinger, David J. Starling, Pieter-Jan Stas, Can M. Knaut, Neil Sinclair, Daniel R. Assumpcao, Yan-Cheng
+Wei, Erik N. Knall, Bartholomeus Machielse, Denis D. Sukachev, David S. Levonian, Mihir K. Bhaskar, Marko Lončar,
+Scott Hamilton, Mikhail Lukin, Dirk Englund, and P. Benjamin Dixon. 2024. Development of a Boston-area 50-km
+fiber quantum network testbed. Phys. Rev. Appl. 21 (Jan 2024), 014024. Issue 1. doi:10.1103/PhysRevApplied.21.014024
+
+Rate-Fidelity Control for Wide-Area Quantum Links
+
+21
+
+[7] Joshua Bienfang, Thomas Gerrits, Paulina Kuo, Alan Migdall, Sergey Polyakov, and Oliver Slattery. 2025.
+https://www.nist.gov/publications/
+
+Single-photon Sources and Detectors Dictionary.
+single-photon-sources-and-detectors-dictionary-0 Last Modified: 2025-08-04T15:08-04:00.
+
+NIST (Aug. 2025).
+
+[8] Connor Clayton and Quinn Carmack. 2026. Source Code for “Rate-Fidelity Control for Wide-Area Quantum Links”.
+
+https://github.com/cbclayton/dynamic-quantum-link-control
+
+[9] Connor Clayton, Xiaodi Wu, and Bobby Bhattacharjee. 2024. Efficient Routing on Quantum Networks using Adaptive
+
+Clustering. In 2024 IEEE 32nd International Conference on Network Protocols (ICNP). IEEE, 1–12.
+
+[10] Alexander N Craddock, Anne Lazenby, Gabriel Bello Portmann, Rourke Sekelsky, Mael Flament, and Mehdi Namazi.
+2024. Automated distribution of polarization-entangled photons using deployed New York City fibers. PRX Quantum
+5, 3 (2024), 030330.
+
+[11] Alexander N Craddock, Yang Wang, Felipe Giraldo, Rourke Sekelsky, Mael Flament, and Mehdi Namazi. 2024. High-rate
+subgigahertz-linewidth bichromatic entanglement source for quantum networking. Physical Review Applied 21, 3
+(2024), 034012.
+
+[12] Axel Dahlberg, Matthew Skrzypczyk, Tim Coopmans, Leon Wubben, Filip Rozpędek, Matteo Pompili, Arian Stolk,
+Przemysław Pawełczak, Robert Knegjens, Julio de Oliveira Filho, et al. 2019. A link layer protocol for quantum
+networks. In Proceedings of the ACM special interest group on data communication. 159–173.
+
+[13] C Delle Donne, M Iuliano, B Van Der Vecht, GM Ferreira, H Jirovská, TJW Van Der Steenhoven, A Dahlberg, M
+Skrzypczyk, D Fioretto, M Teller, et al. 2025. An operating system for executing applications on quantum network
+nodes. Nature 639, 8054 (2025), 321–328.
+
+[14] L.-M. Duan, M. D. Lukin, J. I. Cirac, and P. Zoller. 2001. Long-distance quantum communication with atomic ensembles
+
+and linear optics. Nature 414, 6862 (Nov. 2001), 413–418. doi:10.1038/35106500
+
+[15] M. D. Eisaman, J. Fan, A. Migdall, and S. V. Polyakov. 2011. Invited Review Article: Single-photon sources and detectors.
+
+Review of Scientific Instruments 82, 7 (2011), 071101. doi:10.1063/1.3610677
+
+[16] Artur K Ekert. 1991. Quantum cryptography based on Bell’s theorem. Physical review letters 67, 6 (1991), 661.
+[17] Vittorio Giovannetti, Seth Lloyd, and Lorenzo Maccone. 2004. Quantum-enhanced measurements: beating the standard
+
+quantum limit. Science 306, 5700 (2004), 1330–1336.
+
+[18] N. Gisin and B. Huttner. 1997. Combined effects of polarization mode dispersion and polarization dependent losses in
+
+optical fibers. Optics Communications 142, 1 (1997), 119–125. doi:10.1016/S0030-4018(97)00236-8
+
+[19] Daniel Gottesman, Thomas Jennewein, and Sarah Croke. 2012. Longer-Baseline Telescopes Using Quantum Repeaters.
+
+Phys. Rev. Lett. 109 (Aug 2012), 070503. Issue 7. doi:10.1103/PhysRevLett.109.070503
+
+[20] C. K. Hong, Z. Y. Ou, and L. Mandel. 1987. Measurement of subpicosecond time intervals between two photons by
+
+interference. Phys. Rev. Lett. 59 (Nov 1987), 2044–2046. Issue 18. doi:10.1103/PhysRevLett.59.2044
+
+[21] Michał Horodecki, Paweł Horodecki, and Ryszard Horodecki. 1997. Inseparable Two Spin- 1
+
+2 Density Matrices Can Be
+
+Distilled to a Singlet Form. Phys. Rev. Lett. 78 (Jan 1997), 574–577. Issue 4. doi:10.1103/PhysRevLett.78.574
+
+[22] Jessica Illiano, Marcello Caleffi, Antonio Manzalini, and Angela Sara Cacciapuoti. 2022. Quantum internet protocol
+
+stack: A comprehensive survey. Computer Networks 213 (2022), 109092.
+
+[23] Richard Jozsa. 1994. Fidelity for Mixed Quantum States.
+
+Journal of Modern Optics 41, 12 (1994), 2315–2323.
+
+arXiv:https://doi.org/10.1080/09500349414552171 doi:10.1080/09500349414552171
+
+[24] Can M Knaut, Aziza Suleymanzade, Y-C Wei, Daniel R Assumpcao, P-J Stas, Yan Qi Huan, Bartholomeus Machielse,
+Erik N Knall, Madison Sutula, Gefen Baranes, et al. 2024. Entanglement of nanophotonic quantum memory nodes in a
+telecom network. Nature 629, 8012 (2024), 573–578.
+
+[25] Viktor Krutyanskiy, Maria Galli, Vojtech Krcmarsky, Simon Baier, DA Fioretto, Yunfei Pu, Azadeh Mazloom, Pavel
+Sekatski, Marco Canteri, Markus Teller, et al. 2023. Entanglement of trapped-ion qubits separated by 230 meters.
+Physical Review Letters 130, 5 (2023), 050803.
+
+[26] Stephan Kucera, Christian Haen, Elena Arenskötter, Tobias Bauer, Jonas Meiers, Marlon Schäfer, Ross Boland, Milad
+Yahyapour, Maurice Lessing, Ronald Holzwarth, Christoph Becher, and Jürgen Eschner. 2024. Demonstration of
+quantum network protocols over a 14-km urban fiber link. npj Quantum Information 10, 1 (Sept. 2024), 88. doi:10.1038/
+s41534-024-00886-x
+
+[27] Paul G Kwiat, Salvador Barraza-Lopez, Andre Stefanov, and Nicolas Gisin. 2001. Experimental entanglement distillation
+
+and ‘hidden’non-locality. Nature 409, 6823 (2001), 1014–1017.
+
+[28] Dong-Dong Li, Song Gao, Guo-Chun Li, Lu Xue, Li-Wei Wang, Chang-Bin Lu, Yao Xiang, Zi-Yan Zhao, Long-Chuan
+Yan, Zhi-Yu Chen, Gang Yu, and Jian-Hong Liu. 2018. Field implementation of long-distance quantum key distribution
+over aerial fiber with fast polarization feedback. Opt. Express 26, 18 (Sep 2018), 22793–22800. doi:10.1364/OE.26.022793
+[29] Zhonghui Li, Kaiping Xue, Jian Li, Lutong Chen, Ruidong Li, Zhaoying Wang, Nenghai Yu, David S. L. Wei, Qibin
+Sun, and Jun Lu. 2023. Entanglement-Assisted Quantum Networks: Mechanics, Enabling Technologies, Challenges,
+and Research Directions. IEEE Communications Surveys & Tutorials 25, 4 (2023), 2133–2189. doi:10.1109/COMST.2023.
+3294240
+
+22
+
+Connor Clayton et al.
+
+[30] Zhen-Guo Li, Jun Mao, Yi-Jin Zhou, Jia-Wei Guo, Shi Chen, Hao Hao, Yang-Hui Huang, Sai-Ying Ru, Nai-Tao Liu,
+Zhen Liu, Jie Deng, Fan Yang, Xue-Cou Tu, La-Bao Zhang, Xiao-Qing Jia, Jian Chen, Lin Kang, Jianwei Wang,
+Qing-Yuan Zhao, Qihuang Gong, and Pei-Heng Wu. 2025. Surpassing 99% detection efficiency by cascading two
+superconducting nanowires on one waveguide with self-calibration. Light: Science & Applications 14, 1 (Oct. 2025), 369.
+doi:10.1038/s41377-025-02031-5
+
+[31] Maciej Lipiński, Tomasz Włostowski, Javier Serrano, and Pablo Alvarez. 2011. White rabbit: A PTP application for
+robust sub-nanosecond synchronization. In 2011 IEEE International Symposium on Precision Clock Synchronization for
+Measurement, Control and Communication. IEEE, 25–30.
+
+[32] D Main, P Drmota, DP Nadlinger, EM Ainley, A Agrawal, BC Nichol, R Srinivas, G Araneda, and DM Lucas. 2025.
+
+Distributed quantum computing across an optical network link. Nature (2025), 1–6.
+
+[33] Wayne McKenzie, Anne Marie Richards, Shirali Patel, Thomas Gerrits, T. G. Akin, Steven Peil, Adam T. Black, David
+Tulchinsky, Alexander Hastings, Ya-Shian Li-Baboud, Anouar Rahmouni, Ivan A. Burenkov, Alan Mink, Matthew Diaz,
+Nijil Lal, Yicheng Shi, Paulina Kuo, Pranish Shrestha, Mheni Merzouki, Alejandro Rodriguez Perez, Eleanya Onuma,
+Daniel E. Jones, Atiyya A. Davis, Thomas A. Searles, J. D. Whalen, Qudsia Sara Quraishi, Kate S. Collins, La Vida
+Cooper, Harry Shaw, Bruce Crabill, Oliver Slattery, and Abdella Battou. 2024. Clock synchronization characterization
+of the Washington DC metropolitan quantum network (DC-QNet). Applied Physics Letters 125, 16 (Oct. 2024), 164004.
+doi:10.1063/5.0225082
+
+[34] C. M. Nunn, J. D. Franson, and T. B. Pittman. 2021. Heralding on the detection of zero photons. Phys. Rev. A 104 (Sep
+
+2021), 033717. Issue 3. doi:10.1103/PhysRevA.104.033717
+
+[35] Jian-Wei Pan, Dik Bouwmeester, Harald Weinfurter, and Anton Zeilinger. 1998. Experimental entanglement swapping:
+
+entangling photons that never interacted. Physical review letters 80, 18 (1998), 3891.
+
+[36] Matteo Pompili, Carlo Delle Donne, Ingmar te Raa, Bart van der Vecht, Matthew Skrzypczyk, Guilherme Ferreira, Lisa
+de Kluijver, Arian J Stolk, Sophie LN Hermans, Przemysław Pawełczak, et al. 2022. Experimental demonstration of
+entanglement delivery using a quantum network stack. npj Quantum Information 8, 1 (2022), 121.
+
+[37] Anouar Rahmouni, PS Kuo, Ya-Shian Li-Baboud, IA Burenkov, Yicheng Shi, MV Jabir, N Lal, Dileep Reddy, Mheni
+Merzouki, Lijun Ma, et al. 2024. 100-km entanglement distribution with coexisting quantum and classical signals in a
+single fiber. Journal of Optical Communications and Networking 16, 8 (2024), 781–787.
+
+[38] Mohsen Razavi and Jeffrey H Shapiro. 2006. Long-distance quantum communication with neutral atoms. Physical
+
+Review A—Atomic, Molecular, and Optical Physics 73, 4 (2006), 042303.
+
+[39] Dileep V. Reddy, Robert R. Nerem, Sae Woo Nam, Richard P. Mirin, and Varun B. Verma. 2020. Superconducting
+nanowire single-photon detectors with 98% system detection efficiency at 1550nm. Optica 7, 12 (Dec 2020), 1649–1653.
+doi:10.1364/OPTICA.400751
+
+[40] Davide Rusca and Nicolas Gisin. 2024. Quantum Cryptography: an overview of Quantum Key Distribution.
+
+arXiv:2411.04044 [quant-ph] https://arxiv.org/abs/2411.04044
+
+[41] Vinay Shankarkumar, Laurent Montini, Tim Frost, and Greg Dowd. 2017. Precision Time Protocol Version 2 (PTPv2)
+
+Management Information Base. RFC 8173. doi:10.17487/RFC8173
+
+[42] Shouqian Shi and Chen Qian. 2020. Concurrent Entanglement Routing for Quantum Networks: Model and Designs. In
+
+Proceedings of ACM SIGCOMM (Virtual Event, USA). 62–75. doi:10.1145/3387514.3405853
+
+[43] Yicheng Shi, Jing Su, Anouar Rahmouni, Pranish Shrestha, Mheni Merzouki, Gabriel Bello Portmann, Anne Lazenby,
+Mael Flament, Mehdi Namazi, Abdella Battou, et al. 2026. Entanglement distribution over a polarization-stabilized
+aerial fiber. Journal of Optical Communications and Networking 18, 8 (2026), 813–819.
+
+[44] Y. H. Shih and C. O. Alley. 1988. New Type of Einstein-Podolsky-Rosen-Bohm Experiment Using Pairs of Light
+Issue 26.
+
+Quanta Produced by Optical Parametric Down Conversion. Phys. Rev. Lett. 61 (Dec 1988), 2921–2924.
+doi:10.1103/PhysRevLett.61.2921
+
+[45] P-J Stas, Y-C Wei, M Sirotin, YQ Huan, U Yazlar, F Abdo Arias, E Knyazev, G Baranes, B Machielse, S Grandi, et al. 2026.
+Entanglement-assisted non-local optical interferometry in a quantum network. Nature 651, 8105 (2026), 326–332.
+[46] E. Sutcliffe and A. Beghelli. 2023. Multiuser Entanglement Distribution in Quantum Networks Using Multipath Routing.
+
+IEEE Transactions on Quantum Engineering 4, 01 (jan 2023), 1–15. doi:10.1109/TQE.2023.3329714
+
+[47] Stephanie Wehner, David Elkouss, and Ronald Hanson. 2018. Quantum internet: A vision for the road ahead. Science
+
+362, 6412 (2018), eaam9288.
+
+[48] Shi-Hai Wei, Bo Jing, Xue-Ying Zhang, Jin-Yu Liao, Chen-Zhi Yuan, Bo-Yu Fan, Chen Lyu, Dian-Li Zhou, You Wang,
+Guang-Wei Deng, Hai-Zhi Song, Daniel Oblak, Guang-Can Guo, and Qiang Zhou. 2022. Towards Real-World Quantum
+Networks: A Review. Laser & Photonics Reviews 16, 3 (March 2022), 2100219. doi:10.1002/lpor.202100219
+
+[49] William K Wootters and Wojciech H Zurek. 1982. A single quantum cannot be cloned. Nature 299, 5886 (1982),
+
+802–803.
+
+[50] Zheshen Zhang and Quntao Zhuang. 2021. Distributed quantum sensing. Quantum Science and Technology 6, 4 (jul
+
+2021), 043001. doi:10.1088/2058-9565/abd4c3
+
+Rate-Fidelity Control for Wide-Area Quantum Links
+
+23
+
+Fig. 10. A more detailed diagram of the entanglement source sketched in Figure 3.
+
+A DETAILS OF ENTANGLEMENT SOURCES
+This section provides additional detail on the SPDC setup beyond the simplified diagram introduced
+in Figure 3. As a general overview: the SPDC process occurs within some nonlinear media, whereby
+high-energy pump photons are converted into lower-energy, entangled photon pairs. Additional
+components are then used to harness entanglement in the desired degree of freedom. Each of these
+aspects is detailed below for our source.
+
+The full experimental setup is shown in Figure 10. A mode-locked pump laser generates pulses
+at a repetition rate of 76.142 MHz. Pump power control is executed via a variable beam splitter
+(VBS) consisting of an adjustable half wave plate (HWP) followed by a polarization beam splitter
+(PBS). Adjusting the angle of the HWP changes the amount of pump light that used for SPDC.
+
+The pump pulses then enter a periodically poled potassium titanyl phosphate (PPKTP) non-linear
+crystal which serves as a medium for the SPDC process. The crystal is engineered to convert
+pump photons with central wavelength 775 nm into photon pairs centered at 1550 nm. With some
+probability (~10−4 per pulse), a pair of photons with orthogonal polarization states are generated,
+separated from the pump with spectral filters, and then split at a PBS. One of the photons passes
+through a HWP to (optionally) put both photons into the same polarization state.
+
+The photons are coupled from free space into single-mode fiber and interfered at a 50:50 fiber-
+based beam splitter (BS) [44]. Interference is maximized through tuning of a variable delay (Δ𝑡) to
+ensure photons arrive simultaneously, and a manual polarization controller (PC) to maintain photon
+polarizations in fiber. Finally, the entangled photons propagate to the receiver. The analyzers set
+polarization bases {𝜑𝐴, 𝜑𝐵 }, and detection events at each SNSPD are timestamped with a time
+tagger (not shown) to count coincident detections. Through multiple measurements in different
+bases [2], the receiver fully reconstructs the state of the polarization-entangled photons.
+
+B DETAILS OF ENTANGLEMENT SOURCE MODELING
+This Appendix includes more complete data used for SPDC and four-wave mixing source charac-
+terizations and development of the corresponding source models.
+
+B.1 SPDC Source
+Extending the main body plots from Figure 4a, additional information from the same data sets is
+shown in Figure 11a. This includes measurements at lower powers 5 mW and 10 mW, and raw
+count rates are shown without normalization. The four shown data sets correspond to measurement
+sequences taken on different days with slightly different conditions: green squares and orange
+circles on one day; purple diamonds and red triangles at a later date. Variations between trials are
+related to unstabilized polarization drift in the source-detector setup shown in Figure 10, which is
+elaborated upon below.
+
+Entanglement generation rates are clearly consistent between data sets taken subsequent trials
+on the same day, but not on different days. This indicates different overall loss between source
+
+24
+
+Connor Clayton et al.
+
+(a) Full SPDC source characterization.
+
+(b) Full commercial four-wave mixing source charac-
+terization.
+
+Fig. 11. Extension of source characterizations in Figure 4 including all collected data.
+
+and receiver, largely attributed to the polarization-dependent SNSPD detection efficiency. The
+fibers between the analyzers and detectors are relatively stable over the course of one day, but
+not over longer time scales. The same is true (to a lesser extent) of the coupling efficiency from
+free space into fiber, which may have also reduced the overall efficiency in the later data sets. This
+combined effect simulates different link losses between source and receiver, so normalization is
+used to represent the underlying source dependence on pump power in Figure 4a.
+
+State fidelity is also largely consistent between data sets, but with some increased variability
+between measurements taken on the same day. This is because entanglement is generated from
+quantum interference at a 50:50 beamsplitter, which is highly sensitive to the polarization of the
+incoming photons — more sensitive than the SNSPD efficiency dependence. We characterize the
+quality of interference with the Hong-Ou-Mandel (HOM) effect [20], observing about 96% and
+93% visibility for the two different days. This value is limited by the ability to manually match
+polarization states in fiber via polarization controller (PC). This in turn limits the state fidelity at
+low powers, as seen at the top of Figure 10, and is also affected by drift, causing higher variability
+between trials.
+
+Altogether, rates exhibit a clear linear trend over all measured pump powers, while fidelity shows
+no significant change until around 25 mW (for a given data set), above which multipair effects
+become significant and degrade fidelity. This defines an operable regime (25 mW to 300 mW) over
+which decreasing rate returns a consistent increase in state fidelity, offering a useful tradeoff that
+can be leveraged in our control protocol.
+
+B.2 Four-Wave Mixing Source
+In Figure 4b we presented source characterization data for a Qunnect Qu-SRC [11] which generates
+pairs of polarization-entangled photons via four-wave mixing (FWM) in warm atomic vapor. We
+received this characterization data directly from the device manufacturer. The full (non-normalized)
+data is presented in Figure 11b.
+
+0.800.850.900.951.00Fidelity050100150200250300Pump Power (mW)0200040006000EntanglementGeneration Rate (pairs/s)0.9800.9850.9900.9951.000Fidelity012345Pump Power (mW)51015EntanglementGeneration Rate (pairs/s)×106Rate-Fidelity Control for Wide-Area Quantum Links
+
+25
+
+Fig. 12. Histograms of APC compensation times generated by Algorithm 1 and experiment.
+
+Note the given SPDC rates include all optical losses incurred by the apparatus in Fig. 10, while this
+commercial FWM source is highly optimized. As a result, the commercial source emits photonic Bell
+states at a rate several orders of magnitude higher and an error rate one order of magnitude lower
+than our in-house SPDC-based source. The output photons also have much different wavelength
+characteristics: the SPDC source emits degenerate photons with the same center wavelength (1550
+nm); the FWM source emits non-degenerate photon pairs with wavelengths 795 nm and 1324
+nm, each with a much narrower spectral band. These spectral properties will result in completely
+different polarization drift due to the dispersive properties of optical fiber. To translate our model to
+a new source, drift characterization similar to Fig. 7 would be required for the relevant wavelengths,
+although we can expect similar dependence of drift rate on environmental conditions.
+
+C FIT OF APC MODEL TO EXPERIMENTAL DATA
+Our empirically-derived model of polarization compensation in the Qunnect APC, presented in
+Section 3.3, assumes Riemannian gradient descent and a noise term that counteracts the improve-
+ments gained in each gradient descent step. We fit our model to 70 hours of experimental data
+over a similar link and determined a gradient descent step size of 𝜂 = 0.062 and a step duration of
+Δ = 27.7ms. Figure 12 compares the histogram of compensation durations from the experimental
+APC dataset with a histogram derived from our simulations, which use our model on the data
+shown in Figure 5. Visual comparison demonstrates reasonable empirical fit.
+
+D COMPUTING THE FIDELITY CHECK CONDITION
+Here we discuss the computation of the quantity Λ1 −Λ2 introduced in Section 5.3. Λ1 −Λ2 quantifies
+the throughput gain of performing a fidelity check: Λ1 is the expected throughput if we perform
+the check, and Λ2 is the throughput if we don’t perform the check.
+
+Let 𝑒 denote the time elapsed since the last fidelity check and 𝑇eff the expected time until the
+next fidelity check. Let 𝑟 (𝐹pol) denote the rate achieved when the polarization fidelity is predicted
+to be 𝐹pol. Let 𝑡check denote the duration of a fidelity check.
+
+To ease the notation in this discussion, we define (cid:164)𝑟 (𝑡) := 𝑟 (𝑡0 + 𝑡) where the most recent fidelity
+
+check occurred at time 𝑡0 — i.e., (cid:164)𝑟 (𝑡) is the rate 𝑡 seconds after the last check.
+
+0500100015002000Compensation Time (ms)0.0000.0010.0020.0030.0040.0050.006DensityExperimentalModeled26
+
+Connor Clayton et al.
+
+The first important realization is that we can always compute the rate (cid:164)𝑟 (𝑡) for 𝑡 > 0 up until
+the next fidelity check. Intuitively this must be true: we learn no information about the system
+between fidelity checks, so we should be able to predict all protocol behavior until the next check.
+Indeed, (cid:164)𝑟 (𝑡) is determined by the pump power, which in turn is determined by our prediction of
+𝐹pol at time 𝑡 (see Section 5.2), so we can project (cid:164)𝑟 (𝑡) by querying our polarization drift prediction
+model. We employ this rate projection to estimate 𝑇eff by finding the time at which the condition in
+Equation 7 is met and taking the minimum of this quantity and the time since the last check.
+
+Given this, Λ2 is easy to compute by noticing that
+∫ 𝑒+𝑇eff
+
+Λ2 =
+
+𝑒
+
+(cid:164)𝑟 (𝑡)𝑑𝑡
+
+(8)
+
+Next, we estimate Λ1. We assume that the rate curve (cid:164)𝑟after-check (𝑡) after a hypothetical fidelity
+check would follow the same trend as the current (cid:164)𝑟 (𝑡) with an offset depending on the expected
+true polarization fidelity E[𝐹pol]. We compute E[𝐹pol] by querying our drift prediction model with
+𝛿 = 0.5 (50th percentile drift). We can now estimate Λ1:
+
+∫ 𝑇eff −𝑡check
+
+0
+∫ 𝑇eff −𝑡check
+
+Λ1 =
+
+≈
+
+0
+
+(cid:164)𝑟after-check (𝑡)𝑑𝑡
+
+(cid:164)𝑟 (𝑡) − (cid:2) (cid:164)𝑟 (0) − (cid:164)𝑟 (E[𝐹pol])(cid:3)𝑑𝑡
+
+(9)
+
+(10)
+
+This uses the same projection of (cid:164)𝑟 (𝑡) that we used to compute Λ2. Note that we only need to
+
+perform the calculations here once per fidelity check.
+
+E DERIVATION OF OPTIMAL COMPENSATION TIMING
+Here we derive Equation 7, which states the condition under which a protocol should initiate a
+polarization compensation routine. First, we approximate the objective of maximizing end-to-end
+rate by a greedy strategy of maximizing the rate of each period individually (from the end of one
+calibration routine to the end of the next).
+
+Suppose each compensation routine takes time 𝑐, the previous routine ended at time 𝑡0, 𝑟 (𝑡) is
+the entanglement distribution rate at time 𝑡, and ¯𝑟 (𝑡) is the average rate of the period if we were to
+perform a compensation routine at time 𝑡. Then the objective is to maximize
+
+¯𝑟 (𝑡) =
+
+1
+(𝑡 − 𝑡0) + 𝑐
+
+∫ 𝑡
+
+𝑡0
+
+𝑟 (𝑡)𝑑𝑡
+
+0 =
+
+=
+
+𝑑
+𝑑𝑡 ¯𝑟 (𝑡)
+(𝑐 + 𝑡 − 𝑡0)𝑟 (𝑡) − ∫ 𝑡
+𝑡0
+(𝑐 + 𝑡 − 𝑡0)2
+
+𝑟 (𝑡)𝑑𝑡
+
+A maximum must satisfy
+
+which has a unique solution at
+
+(11)
+
+𝑟 (𝑡) =
+
+1
+𝑐 + 𝑡 − 𝑡0
+
+∫ 𝑡
+
+𝑟 (𝑡)𝑑𝑡 = ¯𝑟 (𝑡)
+
+(12)
+
+𝑡0
+¯𝑟 (𝑡) is increasing at 𝑡 = 0, so assuming decreasing 𝑟 (𝑡), which is generally true as we generally
+lower pump power and therefore 𝑟 (𝑡) throughout a period, ¯𝑟 (𝑡) is maximized by 𝑡 satisfying
+Equation 12 maximizes.
+
+

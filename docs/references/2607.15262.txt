@@ -1,0 +1,1640 @@
+Dynamic Entanglement Distribution for Multi-User and Multi-Protocol
+Quantum Networking
+
+Rui Wang∗1,2, Marcus J. Clark2,3, Obada Alia1,2, Sima Bahrani1,2, Djeylan Aktas2,3,4, Matej Peranić5, Mario
+Stipčević5, Martin Lončarić5, John Rarity2,3, Siddarth K. Joshi2,3, and Dimitra Simeonidou1,2
+1Smart Internet Lab, University of Bristol, Bristol, UK
+2School of Electrical, Electronic, and Mechanical Engineering, University of Bristol, Bristol, UK
+3Quantum Engineering Technology Labs, University of Bristol, Bristol, UK
+4Institute of Physics, Slovak Academy of Sciences, Dubravska cesta 9, Bratislava 845 11, Slovakia
+5Laboratory for Photonics and Quantum Optics, Ruder Bošković Institute, Zagreb, Croatia
+
+Abstract
+
+Dynamic entanglement distribution is a key require-
+ment for scalable, multi-user and multi-protocol quan-
+tum networks. We demonstrate a metropolitan-scale
+entanglement-based quantum communication network
+enabled by a quantum reconfigurable optical add-drop
+multiplexer (q-ROADM), which dynamically distributes
+polarisation-entangled photon pairs from a broadband
+source to six users over deployed campus and metropoli-
+tan fibre. The network supports programmable full-mesh,
+partial-mesh and sliced sub-network configurations, en-
+abling flexible allocation of entanglement resources accord-
+ing to link condition and service requirement. We demon-
+strate stable six-user full-mesh operation over more than
+150 hours, compare full-mesh and time-shared partial-
+mesh strategies under different source and detector con-
+ditions, and realise quantum network slicing with op-
+tional/additional interconnection links. We also show that
+the same infrastructure can support different quantum
+protocols by showcasing Secure Inaugural Authentication-
+Transfer (SIAT) combined with Network flooding over
+multiple paths to improve the security of onboarding
+a new user. These results demonstrate a q-ROADM-
+enabled entanglement distribution architecture as a novel
+route towards reconfigurable, service-oriented quantum
+networking over optical fibre infrastructure.
+
+1
+
+Introduction
+
+The quantum Internet is expected to evolve from current
+point-to-point quantum links towards large-scale, multi-
+user quantum networking infrastructures [1–3]. In this
+context, quantum networks that interconnect multiple
+quantum nodes are essential for enabling applications
+such as quantum key distribution (QKD) [4–6], quantum
+teleportation [7–11], distributed quantum computing [12–
+14] and, ultimately, service-oriented quantum networking
+
+∗Corresponding author: rui.wang@bristol.ac.uk
+
+[15]. Similar to the classical Internet in providing com-
+munication services, one of the long-term goals of the
+quantum Internet is to offer widespread and flexible ac-
+cess to quantum resources (i.e., entanglement between
+network edges). To address the scalability limitations
+of bipartite quantum protocols, quantum network infras-
+tructure must therefore become dynamic, scalable and
+protocol-aware, supporting a growing number of users,
+protocols and application requirements [16–18]. It is es-
+sential to incorporate entanglement-based networking, as
+only entanglement can support linked quantum comput-
+ers. Further, it can be generated as a shared resource and
+dynamically distributed across different users to support
+advanced quantum communication applications beyond
+cryptographic use cases.
+
+At the physical layer, a star topology is achieved
+by employing a central entangled photon source to dis-
+tribute correlated photon pairs to different users. Many
+entanglement-based quantum networks have primarily re-
+lied on passive distribution architectures, where entangled
+photon pairs are distributed through fixed optical paths
+using wavelength-division multiplexing (WDM) and/or
+In particular, a polarisation-
+beam splitters [19–27].
+entangled source has been used to support a fixed-
+topology four-user quantum network [21]. This concept
+was extended in [22], where dense WDM (DWDM) and
+beam splitters (BSs) were used to realise an eight-user
+entanglement-based quantum communication network.
+Beam splitter-based entanglement distribution has also
+been explored as a route to interconnecting a larger num-
+ber of users [24], while entanglement-based quantum se-
+cure direct communication has been demonstrated for 15
+users [25]. However, passive entanglement distribution
+architectures only provide fixed connectivity, limiting dy-
+namic reconfiguration capability. Such architectures also
+over provision some links to the detriment of overall net-
+work performance due to the extra noise they introduce.
+To overcome the limitation, active reconfigurable en-
+tanglement distribution has been investigated using path
+and wavelength switching for flexible network control [28–
+
+1
+
+arXiv:2607.15262v1  [quant-ph]  16 Jul 2026Figure 1: A 6-user entanglement-based quantum communication network architecture enabled by a q-ROADM. A
+type-0 SPDC broadband polarisation entangled photon source is connected to a q-ROADM via 0.8 km campus fibre
+between SIL and NSQI, supporting scalable, dynamic entanglement distribution. The 6 user modules are also deployed
+at NSQI connecting to the q-ROADM via the loop-back of another 0.8 km campus link for user A, B,C,F,G, and
+Bristol metropolitan fibre looping back from Watershed (user D). At each user, there is a polarisation analysis module,
+two SNSPDs, a time tagger and a computer to exchange the classical information with other users.
+
+35]. Active optical switches have enabled flexible alloca-
+tion of entanglement resources [31–33], while wavelength-
+selective switches (WSSs) have been used for adap-
+tive bandwidth management in entanglement distribu-
+tion [28, 29]. The WDM-based approaches using an on-
+chip entanglement source were demonstrated in [30, 35],
+connecting users in laboratory fibre or field-deployed fibre
+with different configurations. In [27, 36, 37], the authors
+demonstrated flexible entanglement distribution networks
+with dual or multiple pump wavelengths, achieving net-
+work programmability by tuning the pump wavelengths
+for Spontaneous Parametric Down Conversion (SPDC)-
+based sources and the spontaneous four-wave mixing
+source. Although above demonstrations represent impor-
+tant steps towards flexible quantum networking, existing
+approaches have not yet provided a metropolitan-scale,
+multi-user entanglement distribution network that simul-
+taneously supports dynamic topology control, long-term
+operation, multiple network configurations and protocol-
+level demonstrations over deployed fibre.
+
+In this paper, we present a metropolitan-scale quan-
+tum communication network that supports dynamic
+polarisation-entanglement distribution to up to six users
+over the University of Bristol campus and metropolitan fi-
+bre links in Bristol. The network is enabled by a quantum
+reconfigurable optical add-drop multiplexer (q-ROADM),
+which combines wavelength multiplexing, optical switch-
+ing and polarisation control to realise programmable al-
+location of correlated wavelength-channel pairs from a
+broadband entangled-photon source. This allows the same
+physical infrastructure to establish different quantum-
+
+network topologies, including full-mesh, partial-mesh and
+sliced sub-network configurations, according to user de-
+mand, link condition and protocol requirement. We first
+demonstrate a six-user fully-connected network support-
+ing QKD, showcasing its ≈7-day stability over deployed
+fibre with secret key rate (SKR) ranging between 4.8 bps
+and 190 bps. We then compare full-mesh operation with
+dynamically switched partial-mesh configurations, show-
+ing how different entanglement-allocation strategies affect
+the accumulated secret keys under different source and
+pump-power conditions. Furthermore, we demonstrate
+quantum network slicing, where the infrastructure is re-
+configured into independent sub-networks with optional
+interconnection links for service separation/connection.
+Finally, we show how the dynamic entanglement distri-
+bution network can support and optimise the implemen-
+tation of the Secure Inaugural Authentication-Transfer
+(SIAT) protocol combined with flooding-based multi-path
+key concatenation [38], saving up to 2587 s for executing
+the SIAT protocol. These results show that q-ROADM-
+enabled entanglement distribution provides a practical
+route towards multi-user and multi-protocol quantum
+networking over deployed optical fibre infrastructure.
+
+2 Experimental Setup
+
+The schematic of the experiment is illustrated in Fig. 1,
+consisting mainly of three parts:
+1) a broadband
+polarisation-entangled photon source, 2) q-ROADM to
+enable flexible and on-demand entanglement distribution,
+
+2
+
+q-ROADMAliceBobChloeDavidFayeGrantNSQISILWatershed0.8km SMFPBSPBSPBSHWPHWPHWPDM775nm LaserFMMgO:ppLNC BandTunable Laser Polarisation-EntangledPhoton SourceBobHWPBSPBSTime TaggerSNSPDUser ModuleUser inputTable 1: Fibre distance and channel loss from source to
+each user.
+
+User Distance (km) Loss (dB)
+
+Alice
+Bob
+Chloe
+David
+Faye
+Grant
+
+1.6
+1.6
+1.6
+5.6
+1.6
+1.6
+
+8.9–10.0
+8.1–11.1
+10.6–13.0
+14.1–15.1
+10.6–11.9
+11.0–11.9
+
+and 3) users equipped with measurement modules to per-
+form entanglement correlation. The entangled photon
+source is located within the Centre for Nanoscience &
+Quantum Information (NSQI) building, connecting to the
+q-ROADM at Smart Internet Lab (SIL) in Merchants Ven-
+turers Building via 0.8 km campus fibre. The q-ROADM
+supports arbitrary shapes of entanglement distribution,
+which can establish quantum links between any combina-
+tion of users. In this work, users were deployed at NSQI
+connecting to the q-ROADM either via direct loopback
+0.8 km campus links or via an extra 4.8 km loopback
+metropolitan fibre via Watershed between the q-ROADM
+and user David.
+
+As shown in Fig. 1, a continuous wave laser operating
+at 775.06 nm (shown as green) emits light passing through
+a polarisation beam splitter (PBS) and a half-wave plate
+(HWP), pumping the Sagnac loop with diagonally po-
+larised light through a dichroic mirror (DM) and a dual-
+band PBS, where 50% light propagates clockwise, defined
+as of vertically (V ) polarisation, and 50% of the light
+propagates counterclockwise, defined as horizontally (H )
+polarisation. A HWP inside the Sagnac loop is rotated
+at 45◦ to convert V light to H light and vice versa. The
+light propagating along both directions is focused into
+the centre of a type-0 Magnesium-Oxide-Doped Period-
+ical Poled Lithium Niobate (MgO:PPLN) crystal. The
+photons generated in either direction interfere with the
+vacuum state of the other in the PBS, therefore generating
+|Φ+⟩ = 1√
+(|HH⟩+|V V ⟩) state. Following the energy con-
+2
+servation law, the wavelengths of non-degenerate photon
+pairs are symmetric to 1550.12 nm. DM reflects entangled
+photons by isolating them from the 775.06 nm pump light,
+which are further coupled into the fibre network. Due to
+birefringence, the polarisation of the photons changes and
+fluctuates when transmitting over the fibre. Therefore,
+we have to stabilise the polarisation to ensure all the users
+measure with the agreed polarisation basis. We call this
+process fibre polarisation neutralisation, which is further
+detailed in section S1 of the Supplement.
+
+The architecture of the q-ROADM is illustrated in
+Fig. 2a, where a demultiplexer (DEMUX) divides the
+spectrum of the broadband entangled photon source into
+30 slices according to ITU-T Rec. G.694.1 100 GHz
+DWDM standard. The central wavelength λ0 of the
+DEMUX is ITU-T channel 34 with the wavelength of
+1550.12 nm, corresponding to the down-converted spec-
+
+Figure 2: (a) q-ROADM architecture for dynamic entan-
+glement distribution to multiple users. (B) Wavelength
+assignment for the six-user full-mesh configuration, where
+each table entry denotes the channel λi assigned to the
+corresponding link.
+
+tral centre of the source. We denote the rest wavelengths
+as λ±i or ±i, where i is an integer in the range of [−15, 15].
+The wavelengths from the non-degenerate SPDC process
+are equally spaced and can be abstracted in the form
+of wavelength pairs [λi, λ−i], where photons in λi are
+polarisation entangled with those in λ−i. Each 100 GHz
+channel is connected to a fibre polarisation controller
+(FPC) to stabilise the polarisation, as discussed in sec-
+tion S1 of Supplement. The FPCs are then connected to
+a 192 × 192 optical fibre switch (OFS, Polatis from HU-
+BER+SUHNER), in which any cross-connection can be
+programmed. The wavelength-selective switch (WSS) and
+multiplexer (MUX) combine different wavelength channels
+into a single fibre link connected to the individual user.
+In the experiment, we use two 1 × 16 MUXs connecting to
+Alice (A) and Bob (B), respectively, and two 4 × 16 WSSs
+(Finisar WaveShaper 16000S), one connected to Chloe
+(C) and David (D) and the other one supporting Faye (F)
+and Grant (G). By jointly programming OFS and WSS,
+the q-ROADM can distribute different entanglement pairs
+to different users simultaneously. Fig. 2b shows a wave-
+length assignment scheme for a 6-user full mesh quantum
+communication network configuration. The assignment
+scheme utilises all the 15 pairs of entangled wavelengths to
+support 15 quantum links. More details of the q-ROADM
+reconfigurability is described in section S2 of Supplement.
+Each user, shown on the right of Fig. 1, consists of
+a polarisation analysis module (PAM) and two super-
+conducting nanowire single-photon detectors (SNSPDs).
+The fibre input is collimated in free space and sent to
+a beam splitter (BS), which passively selects the mea-
+surement basis with photons travelling into either a short
+or long optical path. The short path performs an HV-
+
+3
+
+AliceBobChloeDavidFayeGrant1-167-8-92-6-2-10-11-123-710-3-13-14481113-4-1559121415-5ABCDFG(b) Wavelength assignment for fully connected networkFayeMUXMUXDEMUXλ2λ-1λ-2λ-15λ15FPCq-ROADMλ1OFSAliceBobChloeDavidGrantBS(a) Q-ROADMArchitecture|𝜙+〉WSSWSSmodules, the central peaks correspond to events where
+both users measure in the same polarisation basis. The
+two side peaks arise from events where one photon takes
+the short path, and the other takes the long path or vice
+versa.
+
+Figure 4: SKR of all 15 links in the six-user full-mesh
+quantum network. (a) SKR over ≈7 days; (b) zoomed-in
+SKR over ≈20 hours.
+
+Figure 5: Comparison between full-mesh and time-shared
+partial-mesh configurations under different normalised
+source pump powers.
+(a) Six-user full-mesh topology.
+(b,c) Two complementary partial-mesh topologies. (d)
+Total accumulated secret keys over 40 minutes for the
+full-mesh configuration, compared with two 20-minute
+partial-mesh configurations under the favourable network
+operating condition.
+
+Given a fixed coincidence window, the total number
+of coincidences is obtained by summing all detector-pair
+combinations:
+
+Ctotal = CDA1−DB1 +CDA2−DB1 +CDA1−DB2 +CDA2−DB2.
+(1)
+For the Bell state considered here, the events CDA1−DB1
+and CDA2−DB2 are assigned as correct bits, while
+CDA2−DB1 and CDA1−DB2 contribute to the error counts.
+
+4
+
+Figure 3: Temporal correlation histogram between Alice
+and Bob when the network is configured to support only
+the A–B link, with 10-minute integration time and bin-
+width of 10 ps.
+
+basis measurement using the PBS, while the long path
+includes an HWP set to 22.5◦ to enable a DA-basis mea-
+surement using the same PBS and detector pair. The
+two PAM outputs are coupled into fibre and connected
+to two SNSPDs. For six users, the system therefore uses
+12 SNSPD channels connected to a Swabian Time Tagger
+Ultra. The measured coupling efficiencies of the PAMs
+range from 52.8% to 76.1%, with the imbalance between
+the short and long paths controlled within 4%. The fibre
+distance and loss from the source to each user via the
+q-ROADM are summarised in Table 1. The loss varies
+due to different fibres, their lengths, and q-ROADM with
+different wavelength assignment for different connections,
+as detailed in Fig. 2 (b).
+
+3 Results
+
+In this work, we use the SKR as the main metric to evalu-
+ate the performance of the dynamic entanglement network
+supporting the BBM92 protocol [39]. This allows us to
+capture both the capacity of each link and its quality,
+including the impact of loss, accidental coincidences and
+detector timing jitter. Experimentally, we investigate two
+operating conditions: a favourable case with an entangle-
+ment source heralding efficiency (HE) of approximately
+15% and user-side SNSPD jitter below 100 ps, and a more
+challenging case with approximately 3% HE and detector
+jitter of 300–350 ps. With the q-ROADM configured to
+distribute the appropriate wavelength pairs, each user
+exchanges time-tagging information with its communica-
+tion partner to execute the BBM92 protocol. Temporal
+correlations are then obtained by combining the local
+time tags with those received from the remote user. An
+example 10-minute temporal cross-correlation histogram,
+g(2), for the Alice–Bob link under the favourable operat-
+ing condition is shown in Fig. 3, with a bin width of 10 ps.
+The four curves correspond to the coincidence histograms
+CDA1−DB1, CDA2−DB1, CDA1−DB2 and CDA2−DB2, where
+CDAi−DBj denotes the coincidence counts between de-
+tector i of Alice and detector j of Bob, with i, j ∈ 1, 2.
+Due to the short and long path architecture of the user
+
+T1T2T3(a)(b)(d)ABCDFG(c)ABCDFG(a)ABCDFG(b)CFigure 6: Accumulated secret keys for individual quantum links under full-mesh and time-shared partial-mesh
+configurations. (a) Link-level comparison under the favourable operating condition. (b) Link-level comparison under
+the challenging operating condition with approximately 3% source heralding efficiency and 300–350 ps detector jitter.
+
+The QBER of the Alice–Bob link is therefore calculated
+as
+
+QA−B =
+
+CDA2−DB1 + CDA1−DB2
+Ctotal
+
+.
+
+(2)
+
+The sifted key length, Nsifted, is obtained from the co-
+incidences within the selected basis by assigning binary
+digits to the correlated detector outcomes CDA1−DB1 and
+CDA2−DB2. After distillation, including error correction
+and privacy amplification, the final secret key length is
+lower bounded in the asymptotic limit by:
+
+Nkey ≥ Nsifted [1 − fECH2(QA−B) − H2(QA−B)] ,
+
+(3)
+
+where fEC is the error-correction efficiency and H2(p) is
+the binary entropy function,
+
+H2(p) = −p log2(p) − (1 − p) log2(1 − p).
+
+(4)
+
+Here, we assume that the phase error rate is equal to the
+measured bit error rate. It is worth noting that although
+Alice and Bob are used as the example in Eqs. (2) and (3),
+the same analysis is applied to all other links or user pairs
+in the network.
+
+3.1 Stable entanglement distribution for
+a fully connected six-user quantum
+network
+
+To evaluate the stability of the proposed q-ROADM ar-
+chitecture, the network was configured as a six-user full-
+mesh setting using the wavelength-pair assignment shown
+in Fig. 2b. The experiment was performed under the
+favourable operating condition described earlier. The
+measured asymptotic secret key rates of all 15 quantum
+links are shown in Fig. 4. Each data point represents
+the average SKR over a 10-minute integration time. As
+shown in Fig. 4a, stable entanglement distribution was
+maintained over 157.3 hours. The best-performing link
+was A–B, with an average SKR of 153.2 bps, due to its
+lower end-to-end loss. In contrast, the D–G link with
+
+5
+
+the highest loss achieved an average SKR of 9.8 bps. At
+T 1 = 18.43 h, the fibre polarisation of all users was re-
+neutralised after the SKR of several links began to degrade.
+The interruptions at T 2 = 58.03 h and T 3 = 82.03 h were
+caused by regular cycling of the SNSPD system.
+
+A zoomed-in view of the continuous SKR data between
+61.37 h and 81.87 h is shown in Fig. 4b. Along the
+full measurement period, the quantum network was also
+reconfigured for other experimental scenarios between T 1
+and T 2, and again after T 3. A power outage lasting more
+than 24 hours occurred a few hours after T 3. The results
+confirm that the q-ROADM-based quantum network can
+maintain stable multi-user entanglement distribution over
+deployed fibre for more than 140 hours after polarisation
+re-neutralisation, even after network reconfiguration and
+power interruption.
+
+3.2 Full-mesh and partial-mesh entangle-
+
+ment distribution
+
+A QKD network can accumulate secret keys between user
+pairs and consume them later. Therefore, not all links
+necessarily need to remain active continuously, provided
+that sufficient keys have already been generated and safely
+stored. Here, we investigate dynamic entanglement allo-
+cation, and compare the six-user full-mesh configuration
+in Fig. 5a with two complementary partial-mesh configu-
+rations shown in Fig. 5b,c. The two partial meshes do not
+contain overlapping quantum links and, when combined,
+provide the same connectivity as the full-mesh network.
+For comparison, the full-mesh configuration is operated
+for 40 minutes, while each partial-mesh configuration is
+operated for 20 minutes, giving the same total measure-
+ment time. The total accumulated secret keys under the
+favourable network condition with various source pump
+power are shown in Fig. 5d. Across the investigated pump-
+power range, the full-mesh configuration generates more
+total keys than the two time-shared partial-mesh configu-
+rations. Increasing the pump power also increases both
+the coincidence rate and the accidental rate, which raises
+
+ABACADAFAGBCBDBFBGCDCFCGDFDGFGABACADAFAGBCBDBFBGCDCFCGDFDGFGABACADAFAGBCBDBFBGCDCFCGDFDGFG0.220.360.4702×1054×105Accumulatd keys (bits) Partial Mesh 1 Full Mesh Partial Mesh 2ABACADAFAGBCBDBFBGCDCFCGDFDGFGABACADAFAGBCBDBFBGCDCFCGDFDGFGABACADAFAGBCBDBFBGCDCFCGDFDGFG0.630.81.002×1054×1056×105Source normalised pump powerABACADAFAGBCBDBFBGCDCFCGDFDGFG0.05.0×1041.0×1051.5×105Accumulated keys (bits)Connection link Partial Mesh 1 Full Mesh Partial Mesh 2(a)(b)the QBER simultaneously. Depending on the network
+condition, this can increase or reduce the final SKR. As a
+result, the total key generation in the full-mesh configura-
+tion decreases at the highest pump power compared with
+0.8 normalised power. For the partial mesh scheme, the
+optimum power is higher than that of the investigated
+schemes, with fewer accidentals due to fewer assigned
+channels compared to the full mesh scheme.
+
+The link-level accumulated keys are shown in Fig. 6a
+for the favourable condition (the source HE is 15%, and
+SNSPD jitter < 100 ps). Most links in the full-mesh
+configuration generate more keys than in the time-shared
+partial-mesh configurations. However, several links show
+reduced key generation at the highest pump power, con-
+sistent with the increase in QBER caused by accidentals.
+In contrast, the partial-mesh configurations continue to
+benefit from increasing pump power over the investigated
+range. Under the challenging network condition with ap-
+proximately 3% source heralding efficiency and detector
+jitter of 300–350 ps, the coincidence peaks are broad-
+ened, and the ratio of true coincidences to accidental
+decreases. In this regime, the time-shared partial-mesh
+configurations can outperform the full-mesh configuration
+for many links, as shown in Fig. 6b, because reducing the
+number of simultaneous wavelength channels lowers the
+accidentals and improves the extractable key rate. These
+results show that the optimum entanglement-allocation
+strategy depends strongly on source brightness, herald-
+ing efficiency, detector timing jitter and link loss. The
+q-ROADM, therefore, can provide a useful mechanism for
+adapting the network topology to the operating condition
+and quantum service requirement.
+
+3.3 Quantum network slicing
+
+The flexible entanglement distribution enabled by the
+q-ROADM allows the same physical quantum network to
+be partitioned into multiple logical sub-networks. This
+capability is analogous to network slicing in classical net-
+works, where a shared infrastructure can be divided into
+logically separated services with different users, connectiv-
+ity requirements. In the context of quantum networking,
+such slicing is particularly useful because entanglement
+resources are limited and must be allocated according to
+user demand, link quality and protocol requirement. A
+dynamically reconfigurable quantum network can there-
+fore support multiple independent quantum services while
+avoiding the need to duplicate the underlying physical
+infrastructure.
+
+Here, we demonstrate quantum network slicing by par-
+titioning the six-user entanglement network into two in-
+dependent three-user sub-networks. Three slicing configu-
+rations are shown in Fig. 7a,c,e, denoted as Case 1 (C1),
+Case 2 (C2) and Case 3 (C3), respectively. In each case,
+the red links form Network 1 and the blue links form
+Network 2. The wavelength pairs are assigned by the
+q-ROADM such that the two sub-networks can operate
+
+independently, with no quantum links between them. In
+addition to isolated sub-networks, the q-ROADM can
+selectively establish an interconnection link between two
+sliced sub-networks. The corresponding configurations
+with an additional A–B interconnection link are shown in
+Fig. 7b,d,f, where the interconnection link is highlighted
+in yellow. Such an interconnection can support commu-
+nication between otherwise independent sub-networks,
+enabling temporary service federation or controlled in-
+formation exchange. The link can be added or removed
+by reconfiguring the q-ROADM, without physically mod-
+ifying the network. The SKR and QBER of each link
+are shown in Fig. 7g, where the bar height represents the
+SKR and the label above each bar gives the corresponding
+QBER. The results show that adding the A–B intercon-
+nection link has no significant impact on the performance
+of the quantum links within the two sliced sub-networks.
+The variations in SKR and QBER are mainly attributed
+to performance fluctuations over different measurement
+periods, similar to the long-term monitoring results in
+Fig. 4.
+
+3.4 q-ROADM-enabled SIAT and flood-
+
+ing protocol
+
+A quantum network should distribute entanglement re-
+sources to meet the quantum network protocols’ needs.
+Here, we demonstrate how the q-ROADM-enabled dy-
+namic entanglement network can support the Secure Inau-
+gural Authentication-Transfer (SIAT) protocol combined
+with flooding-based multi-path key establishment [38].
+The SIAT protocol is used for authentication transfer
+when a new user joins an existing quantum network. Be-
+fore the new user can establish quantum communication
+with other users, its identity must be authenticated. In
+a fully connected network with N existing users, this
+can require up-to N authenticated connections. There-
+fore, scalable authentication-transfer mechanisms using
+entanglement links are required. As shown in Fig. 8a, we
+consider an existing five-user fully connected entangle-
+ment network consisting of B, C, D, F and G. A new user,
+Alice, is added to the network through the q-ROADM
+via an additional MUX connected to the OFS. The q-
+ROADM then dynamically configures only the quantum
+links required at each authentication step.
+
+In SIAT, the new user initially shares an authentication
+key with at least one trusted user in the network. This
+trusted user can then transfer authentication to another
+user. For example, in Strategy 1, A first shares authenti-
+cation keys with B, who acts as the trusted intermediary
+for authenticating A with C. Once A–C link has gen-
+erated sufficient keys through their direct entanglement
+link, trust in Bob is no longer needed for future A–C
+authentication. Subsequent rounds can be authenticated
+using information generated by the previous round of
+the direct A–C link. This procedure is repeated until
+A is authenticated with all target users. When multiple
+
+6
+
+Figure 7: Quantum network slicing in the six-user entanglement network. (a,c,e) Three slicing cases, C1–C3, where
+the physical network is partitioned into two independent three-user sub-networks. (b,d,f) Corresponding configurations
+with an additional A–B interconnection link between the two sub-networks. Red and blue denote Network 1 and
+Network 2, respectively, while yellow denotes the interconnection link. (g) SKR and QBER performance for each
+sliced-network configuration. Bar heights show SKR, and labels indicate QBER in percentage. The results show that
+the interconnection link can be introduced without significantly degrading the performance of the sliced sub-networks.
+
+with the remaining users in the order C, D, F and G.
+In Strategy 2, Alice initially pre-shares authentication
+keys with Grant and is authenticated in the reverse order,
+F, D, C and B. The required authentication key length
+is calculated using Wegman–Carter authentication [40],
+and the timing analysis uses the measured SKRs of the
+dynamically configured quantum links.
+
+The SIAT execution time depends on the SKR of the
+relevant quantum links, which is affected by link loss, de-
+tector efficiency, timing jitter, source heralding efficiency
+and accidental coincidences. We therefore evaluate the
+two strategies under two representative operating condi-
+tions: a favourable condition and a challenging condition
+as specified at the beginning of the section 3. The results
+are shown in Fig. 9. Under the favourable condition, Alice
+is authenticated with the full five-user network in 1356 s
+using Strategy 1 and 1298 s using Strategy 2. The two
+strategies therefore perform similarly when the quantum
+links have relatively high SKR. Under the challenging
+condition, the authentication order has a much stronger
+impact: Strategy 2 completes in 4371 s, while Strategy 1
+needs 6958 s. This difference arises because the flooding-
+based transfer step is limited by the weakest selected path,
+and this bottleneck becomes more pronounced when the
+source heralding efficiency is low and the detector tim-
+ing jitter is high. In addition, different authentication
+orders require different intermediate links and network
+configurations. These links can exhibit different QBER
+and SKR, making the overall SIAT time more sensitive to
+the authentication order under challenging network con-
+ditions. These results show that by configuring only the
+links required for each SIAT step, the q-ROADM acts as a
+protocol-aware entanglement distribution layer, enabling
+authentication-transfer protocols to be implemented and
+
+Figure 8: SIAT and flooding protocol for authenticating
+a new user, Alice, into an existing five-user entanglement
+network.
+(a) Initial five-user fully connected network.
+(b) Strategy 1: A pre-shares authentication keys with B
+and is then authenticated with users C, D, F and G. (c)
+Strategy 2: A pre-shares authentication keys with G and
+is then authenticated with users F, D, C and B. Solid black
+lines denote existing quantum links, solid coloured lines
+denote the initial pre-shared-key link, dotted coloured
+lines denote links authenticated using SIAT and flooding
+and the number by the user is the authenticating order.
+
+already-authenticated paths are available, flooding can be
+used to transfer authentication through non-overlapping
+paths. In the security-enhancing mode considered here,
+keys generated along different paths are XORed, reducing
+reliance on any single trusted intermediate node.
+
+We compare two authentication strategies, shown in
+Fig. 8b and Fig. 8c. In Strategy 1, Alice initially pre-
+shares authentication keys with Bob and is authenticated
+
+7
+
+CAFDBGCAFDBGCAFDBGCAFDBGCAFDBGCAFDBG(a)(b)(c)(d)(e)(f)(g)BCDFG(a)ABCDFG(c)4213AExisting quantum linksNew link with pre-shared keysNewly authenticated linksusing SIAT + floodingABCDFG(b)1342New user AliceFigure 9: Time required to authenticate new user Alice into the five-user network using SIAT and flooding. Each bar
+is divided into Step 1, corresponding to flooding-based authentication transfer, and Step 2, corresponding to direct
+entanglement-based key generation for subsequent authentication. (a) Strategy 1 under the favourable condition with
+low detector jitter and approximately 15% source heralding efficiency. (b) Strategy 2 under the favourable condition.
+(c) Strategy 1 under the challenging condition with 300–350 ps detector jitter and approximately 3% source heralding
+efficiency. (d) Strategy 2 under the challenging condition.
+
+optimised according to the measured link conditions. A
+detailed SIAT timing analysis is provided in section S3 of
+the supplement.
+
+tical route towards scalable, reconfigurable and service-
+oriented quantum networks capable of supporting multiple
+users and multiple quantum networking protocols over
+shared optical fibre infrastructure.
+
+4 Conclusion
+
+We have demonstrated a dynamic entanglement-based
+quantum communication network supporting multi-user
+and multi-protocol operation over deployed campus and
+metropolitan fibre. The network is enabled by a q-
+ROADM that combines DWDM channelisation, optical
+switching, wavelength multiplexing and polarisation con-
+trol to distribute correlated wavelength-channel pairs from
+a broadband polarisation-entangled photon source. Using
+this architecture, we realised programmable entanglement
+distribution among six users, including full-mesh, partial-
+mesh and sliced sub-network configurations. The six-user
+full-mesh network supported all 15 pairwise quantum
+links and maintained stable secret-key-rate performance
+over more than 150 hours, confirming the feasibility of
+long-term dynamic entanglement distribution over de-
+ployed fibre infrastructure. Beyond static key-generation
+demonstrations, we showed that the q-ROADM provides
+a protocol-aware entanglement distribution layer. By re-
+configuring the same physical infrastructure, the network
+can: adapt between full-mesh and time-shared partial-
+mesh operation according to demand, entanglement source
+and detector conditions; support quantum network slic-
+ing with optional/additional interconnection links; and
+enable SIAT combined with flooding-based multi-path
+authentication for onboarding a new user. These results
+highlight that the optimum entanglement-allocation strat-
+egy depends on link loss, source heralding efficiency, de-
+tector jitter and service requirement. The demonstrated
+q-ROADM-enabled architecture therefore provides a prac-
+
+5 Funding Acknowledgement
+
+We acknowledge the funding from the UK’s Engineering
+and Physical Sciences Research Council projects - Quan-
+tum Communications Hub (EP/T001011/1), Integrated
+Quantum Networks Hub (EP/Z533208/1), Towards The
+Quantum Internet (EP/X039439/1) and Science and Tech-
+nology Facilities Council DyMEND project (UKRI593).
+
+References
+
+[1] S. Wehner, D. Elkouss, and R. Hanson, “Quantum
+internet: A vision for the road ahead,” Science, vol.
+362, no. 6412, p. eaam9288, 2018.
+
+[2] H. J. Kimble, “The quantum internet,” Nature, vol.
+
+453, pp. 1023–1030, 2008.
+
+[3] K. Azuma, S. E. Economou, D. Elkouss, P. Hilaire,
+L. Jiang, H.-K. Lo, and I. Tzitrin, “Quantum re-
+peaters: From quantum networks to the quantum
+internet,” Reviews of Modern Physics, vol. 95, no. 4,
+p. 045006, 2023.
+
+[4] G. Ribordy, J. Brendel, J.-D. Gautier, N. Gisin,
+and H. Zbinden, “Long-distance entanglement-based
+quantum key distribution,” Physical Review A,
+vol. 63, no. 1, p. 012309, 2000.
+
+[5] J. Yin, Y.-H. Li, S.-K. Liao, M. Yang, Y. Cao,
+L. Zhang, J.-G. Ren, W.-Q. Cai, W.-Y. Liu, S.-L. Li
+
+8
+
+A-GA-FA-DA-CA-B0100020003000Newly Authenticated link Step 2 Step 1Strategy 1, high detector jitter, 3% HEStrategy 2, high detector jitter, 3% HEStrategy 1, low detector jitter, 15% HEA-BA-CA-DA-FA-G0100020003000Newly Autehnticated link Step 2 Step 1Strategy 2, low detector jitter, 15% HE(a)(c)(b)(d)Pre-sharedkey linkPre-sharedkey linkPre-sharedkey linkPre-sharedkey linkAuthentication orderAuthentication orderAuthentication orderAuthentication orderA-GA-FA-DA-CA-B0100200300400500Authentication Time (s)Newly Autehnticated link Step 2 Step 1Authentication Time (s)A-BA-CA-DA-FA-G0100200300400500Newly Authenticated link Step 2 Step 1et al., “Entanglement-based secure quantum cryptog-
+raphy over 1,120 kilometres,” Nature, vol. 582, no.
+7813, pp. 501–505, 2020.
+
+[6] A. S. Cacciapuoti, M. Caleffi, F. Tafuri, F. S. Catal-
+iotti, S. Gherardini, and G. Bianchi, “Quantum inter-
+net: Networking challenges in distributed quantum
+computing,” IEEE Network, vol. 34, no. 1, pp. 137–
+143, 2020.
+
+[7] D. Bouwmeester, J.-W. Pan, K. Mattle, M. Eibl,
+H. Weinfurter, and A. Zeilinger, “Experimental quan-
+tum teleportation,” Nature, vol. 390, no. 6660, pp.
+575–579, 1997.
+
+[8] S. Pirandola, J. Eisert, C. Weedbrook, A. Furusawa,
+and S. L. Braunstein, “Advances in quantum telepor-
+tation,” Nature photonics, vol. 9, no. 10, pp. 641–652,
+2015.
+
+[9] J. M. Thomas, F. I. Yeh, J. H. Chen, J. J. Mam-
+bretti, S. J. Kohlert, G. S. Kanter, and P. Kumar,
+“Quantum teleportation coexisting with classical com-
+munications in optical fiber,” Optica, vol. 11, no. 12,
+pp. 1700–1707, 2024.
+
+[10] R. Valivarthi, S. I. Davis, C. Peña, S. Xie, N. Lauk,
+L. Narváez, J. P. Allmaras, A. D. Beyer, Y. Gim,
+M. Hussein et al., “Teleportation systems toward a
+quantum internet,” PRX Quantum, vol. 1, no. 2, p.
+020317, 2020.
+
+[11] R. Valivarthi, M. l. G. Puigibert, Q. Zhou, G. H.
+Aguilar, V. B. Verma, F. Marsili, M. D. Shaw, S. W.
+Nam, D. Oblak, and W. Tittel, “Quantum telepor-
+tation across a metropolitan fibre network,” Nature
+Photonics, vol. 10, no. 10, pp. 676–680, 2016.
+
+[12] J. I. Cirac, A. Ekert, S. F. Huelga, and C. Macchi-
+avello, “Distributed quantum computation over noisy
+channels,” Physical Review A, vol. 59, no. 6, p. 4249,
+1999.
+
+[13] D. Main, P. Drmota, D. P. Nadlinger, E. M. Ainley,
+A. Agrawal, B. C. Nichol, R. Srinivas, G. Araneda,
+and D. M. Lucas, “Distributed quantum computing
+across an optical network link,” Nature, vol. 638, no.
+8050, pp. 383–388, 2025.
+
+[14] A. S. Cacciapuoti, M. Caleffi, F. Tafuri, F. S. Catal-
+iotti, S. Gherardini, and G. Bianchi, “Quantum inter-
+net: Networking challenges in distributed quantum
+computing,” IEEE Network, vol. 34, no. 1, pp. 137–
+143, 2019.
+
+[15] S. Ahmed, M. K. Saeed, and A. Khokhar, “Osi stack
+redesign for quantum networks: Requirements, tech-
+nologies, challenges, and future directions,” arXiv
+preprint arXiv:2506.12195, 2025.
+
+[16] E. Fitzke, L. Bialowons, T. Dolejsky, M. Tippmann,
+O. Nikiforov, F. Wissel, M. Gunkel, and T. Walther,
+“Scalable network for simultaneous pairwise quantum
+key distribution via entanglement-based time-bin
+coding,” PRX Quantum, vol. 3, p. 020341, 2022.
+
+[17] Y. Cao, Y. Zhao, J. Wang, X. Zhang, S. X. Ng, and
+L. Hanzo, “The evolution of quantum key distribu-
+tion networks: On the road to the qinternet,” IEEE
+Communications Surveys & Tutorials, vol. 24, no. 2,
+pp. 839–894, 2022.
+
+[18] V. Martin et al., “Madqci: a heterogeneous and
+scalable sdn-qkd network deployed in production
+facilities,” npj Quantum Information, vol. 10, p. 80,
+2024.
+
+[19] B. Qi, W. Zhu, L. Qian, and H.-K. Lo, “Feasibility
+of quantum key distribution through a dense wave-
+length division multiplexing network,” New Journal
+of Physics, vol. 12, no. 10, p. 103042, 2010.
+
+[20] B. Fröhlich, J. F. Dynes, M. Lucamarini, A. W.
+Sharpe, Z. Yuan, and A. J. Shields, “A quantum
+access network,” Nature, vol. 501, no. 7465, pp. 69–
+72, 2013.
+
+[21] S. Wengerowsky, S. K. Joshi, F. Steinlechner,
+H. Hübel, and R. Ursin, “An entanglement-based
+wavelength-multiplexed quantum communication net-
+work,” Nature, vol. 564, no. 7735, pp. 225–228, 2018.
+
+[22] S. K. Joshi, D. Aktas, S. Wengerowsky, M. Lončarić,
+S. P. Neumann, B. Liu, T. Scheidl, G. C. Lorenzo,
+Ž. Samec, L. Kling et al., “A trusted node–free eight-
+user metropolitan quantum communication network,”
+Science advances, vol. 6, no. 36, p. eaba0959, 2020.
+
+[23] D. Aktas et al., Laser & Photonics Reviews, vol. 10,
+
+no. 3, pp. 451–457, 2016.
+
+[24] X. Liu, J. Liu, R. Xue, H. Wang, H. Li, X. Feng,
+F. Liu, K. Cui, Z. Wang, L. You et al., “40-user fully
+connected entanglement-based quantum key distri-
+bution network without trusted node,” PhotoniX,
+vol. 3, no. 1, pp. 1–15, 2022.
+
+[25] Z. Qi, Y. Li, Y. Huang, J. Feng, Y. Zheng, and
+X. Chen, “A 15-user quantum secure direct commu-
+nication network,” Light: Science & Applications,
+vol. 10, no. 1, pp. 1–8, 2021.
+
+[26] A. Ciurana, V. Martin,
+
+J. Martinez-Mateo,
+B. Schrenk, M. Peev, and A. Poppe, “Entanglement
+distribution in optical networks,” IEEE Journal of
+Selected Topics in Quantum Electronics, vol. 21, no. 3,
+pp. 37–48, 2014.
+
+[27] Y.-R. Fan, Y. Luo, K. Guo, J.-P. Wu, H. Zeng, G.-
+W. Deng, Y. Wang, H.-Z. Song, Z. Wang, L.-X. You
+et al., “Quantum entanglement network enabled by
+
+9
+
+[37] Y. Huang, Y. Yang, H. Li, J. Wang, J. Qiu, Z. Qi,
+Y. Zhang, Y. Li, Y. Zheng, and X. Chen, “Quantum
+fusion of independent networks based on multi-user
+entanglement swapping,” Nature Photonics, vol. 20,
+no. 1, pp. 87–95, 2026.
+
+[38] N. R. Solomons, A. I. Fletcher, D. Aktas, N. Venkat-
+achalam, S. Wengerowsky, M. Lončarić, S. P. Neu-
+mann, B. Liu, Ž. Samec, M. Stipčević et al., “Scalable
+authentication and optimal flooding in a quantum
+network,” PRX Quantum, vol. 3, no. 2, p. 020311,
+2022.
+
+[39] C. H. Bennett, G. Brassard, and N. D. Mermin,
+“Quantum cryptography without bell’s theorem,”
+Physical review letters, vol. 68, no. 5, p. 557, 1992.
+
+[40] M. N. Wegman and J. L. Carter, “New hash functions
+and their use in authentication and set equality,”
+Journal of computer and system sciences, vol. 22,
+no. 3, pp. 265–279, 1981.
+
+a state-multiplexing quantum light source,” Light:
+Science & Applications, vol. 14, no. 1, p. 189, 2025.
+
+[28] N. B. Lingaraju, H.-H. Lu, S. Seshadri, D. E. Leaird,
+A. M. Weiner, and J. M. Lukens, “Adaptive band-
+width management for entanglement distribution in
+quantum networks,” Optica, vol. 8, no. 3, pp. 329–
+332, 2021.
+
+[29] E. Y. Zhu, C. Corbari, A. Gladyshev, P. G. Kazansky,
+H.-K. Lo, and L. Qian, “Toward a reconfigurable
+quantum network enabled by a broadband entangled
+source,” JOSA B, vol. 36, no. 3, pp. B1–B6, 2019.
+
+[30] F. Appas, F. Baboux, M. I. Amanti, A. Lemaítre,
+F. Boitier, E. Diamanti, and S. Ducci, “Flexible
+entanglement-distribution network with an algaas
+chip for secure communications,” npj Quantum In-
+formation, vol. 7, no. 1, pp. 1–10, 2021.
+
+[31] F. Laudenbach, B. Schrenk, M. Achleitner, N. Vokić,
+D. Milovančev, and H. Hübel, “Flexible cloud/user-
+centric entanglement and photon pair distribution
+with synthesizable optical router,” IEEE Journal
+of Selected Topics in Quantum Electronics, vol. 26,
+no. 3, pp. 1–9, 2020.
+
+[32] X.-Y. Chang, D.-L. Deng, X.-X. Yuan, P.-Y. Hou,
+Y.-Y. Huang, and L.-M. Duan, “Experimental real-
+ization of an entanglement access network and secure
+multi-party computation,” Scientific reports, vol. 6,
+no. 1, p. 29453, 2016.
+
+[33] I. Herbauts, B. Blauensteiner, A. Poppe, T. Jen-
+newein, and H. Huebel, “Demonstration of active
+routing of entanglement in a multi-user network,”
+Optics express, vol. 21, no. 23, pp. 29 013–29 024,
+2013.
+
+[34] M. J. Clark, O. Alia, S. Bahrani, G. T. Jasion,
+H. Sakr, P. Petropoulos, F. Poletti, G. T. Kanel-
+los, J. Rarity, R. Nejabati, S. K. Joshi, R. Wang, and
+D. Simeonidou, “Coexistence of entanglement-based
+quantum channels with DWDM classical channels
+over hollow core fibre in a four node quantum commu-
+nication network,” npj Quantum Information, vol. 11,
+p. 181, 2025.
+
+[35] Z.-H. Jiang, Y. Chen, W. Yan, C. Lu, W. Wen, Y.-
+Y. An, L. Chen, Y. Liu, H.-Y. Liu, Z. Xie et al.,
+“Entanglement distribution over metropolitan fiber
+using an on-chip broadband polarization-entangled
+photon source,” Physical Review Applied, vol. 24,
+no. 4, p. 044098, 2025.
+
+[36] J. Liu, D. Liu, Z. Jin, Z. Lin, H. Li, L. You, X. Feng,
+F. Liu, K. Cui, W. Zhang et al., “Reconfigurable en-
+tanglement distribution network based on pump man-
+agement of a spontaneous four-wave mixing source,”
+Science Advances, vol. 10, no. 50, p. eado9822, 2024.
+
+10
+
+Supplementary Material
+
+S2 q-ROADM Architecture and Wave-
+
+S1 Quantum Network Polarisation Neu-
+
+tralisation
+
+Polarisation neutralisation is required for each quantum
+communication link because fibre birefringence induces
+wavelength-dependent and time-varying polarisation rota-
+tions. Without compensation, the measurement bases at
+the users would no longer correspond to the agreed H/V
+and D/A bases used for entanglement correlation and
+BBM92 key generation. In this work, we neutralise the
+fibre links by ensuring that predefined reference polarisa-
+tion states launched from the source are recovered at the
+user modules after transmission through the q-ROADM
+and the deployed fibre paths.
+
+The neutralisation architecture is illustrated in Fig. S1.
+A C-band tunable laser, shown as the red laser, is attenu-
+ated to the single-photon level and used as a wavelength-
+selectable polarisation reference. The laser output is cou-
+pled into free space and passed through a high-extinction-
+ratio polarisation beam splitter (PBS), using a Wollaston
+prism (WPY10, Thorlabs). One output of the PBS is
+defined as the horizontally (H) polarised reference state.
+A half-wave plate (HWP), mounted on a motorised rota-
+tion stage, is placed after the PBS. With the HWP fast
+axis aligned to the horizontal polarisation, the output
+remains H-polarised; rotating the HWP by 22.5◦ converts
+the reference to the diagonal (D) polarisation state.
+
+A motorised flip mirror (FM) allows the source to switch
+between two operation modes.
+In the quantum com-
+munication mode, the entangled photon pairs from the
+polarisation-entangled photon source are coupled into the
+network. In the neutralisation mode, the predefined H- or
+D-polarised weak coherent reference light is injected from
+free-space into the same fibre path and routed through
+the q-ROADM to the selected user. At each user module,
+two shutters control the measurement path. During the
+neutralisation process, for H-polarised reference light, only
+the short path is opened so that the H/V basis is mea-
+sured. For D-polarised reference light, only the long path
+is opened so that the D/A basis is measured. The fibre po-
+larisation controller (FPC) inside the q-ROADM is then
+adjusted such that the count rate at the expected detector
+is maximised while the count rate at the orthogonal-basis
+detector is minimised.
+
+This procedure is repeated for each assigned wavelength
+channel used by the entanglement distribution scheme.
+After all required wavelengths and user paths have been
+neutralised, the flip mirror is switched back to block
+the reference laser and allow the entangled photon pairs
+in the quantum network. In this way, the q-ROADM
+can distribute different entangled wavelength pairs while
+maintaining a common polarisation reference across all
+users and links.
+
+length Assignment
+
+The q-ROADM was designed to balance insertion loss,
+entanglement-distribution flexibility, and scalability to-
+wards a larger number of users. The broadband SPDC
+source has a full-width at half-maximum (FWHM) band-
+width of approximately 70 nm across the telecom S, C
+and L bands, centred at 1550.12 nm, corresponding to
+193.4 THz. As shown in Fig. S2, the central part of
+this spectrum is sliced into 30 non-overlapping 100 GHz
+DWDM channels using a passive demultiplexer (DEMUX)
+following the ITU-T grid. Due to energy conservation
+in the SPDC process, photons generated in channel λi
+are correlated with photons in channel λ−i. These chan-
+nels are therefore used as wavelength-pair resources for
+distributing polarisation entanglement. Each DEMUX
+output is first connected to a fibre polarisation controller
+(FPC) and then to a 192 × 192 optical fibre switch (OFS),
+enabling programmable routing of individual wavelength
+channels.
+
+Different output multiplexing approaches were used to
+connect the q-ROADM to the six users. Passive multiplex-
+ers (MUXs) have lower insertion loss than programmable
+wavelength-selective switches (WSSs), but the supported
+wavelengths are fixed by the MUX passbands and re-
+quire dedicated OFS ports.
+In this experiment, Alice
+and Bob were each connected through a 1 × 16 MUX,
+providing access to different selected sets of DWDM chan-
+nels while avoiding excessive use of OFS ports. This
+design represents a trade-off between low-loss operation
+and wavelength-assignment flexibility.
+
+Although WSSs have higher insertion loss, approxi-
+mately 5 dB compared with 1.3–2.7 dB for the MUXs,
+they provide wavelength-agnostic and programmable mul-
+tiplexing. This reduces the number of OFS ports required
+for flexible channel assignment. Two 4 × 16 WSSs (Fin-
+isar WaveShaper 16000S) were used: one associated with
+Chloe and David, and the other with Faye and Grant.
+For each WSS, 16 ingress ports were connected to the
+OFS, while two egress ports were used as client ports
+connected to the users. The WSSs were configured to
+multiplex the selected wavelength channels from the OFS
+to the designated users.
+
+In addition to the DEMUX, MUXs and WSSs, extra
+FPCs and beam splitters (BSs) were connected directly
+to the OFS to provide additional flexibility. By routing
+a wavelength channel λi from the OFS to a BS, photons
+in that channel are probabilistically distributed to two
+output ports, and the channel can therefore be shared
+between two users. This allows a single-wavelength chan-
+nel to serve multiple user links, increasing the network’s
+effective connectivity.
+
+An example partial-mesh wavelength-assignment
+scheme using a beam splitter is shown in Fig. S3b. In this
+configuration, wavelength channel λ−8 is routed from the
+DEMUX output to the BS input. The two BS outputs
+are then connected to Alice and Bob through separate
+
+11
+
+Figure S1: Fibre polarisation neutralisation scheme for wavelength-multiplexed entanglement distribution. A tunable
+C-band laser provides predefined H- and D-polarised weak coherent reference states, which are injected into the same
+network path as the entangled photons. The FPCs inside the q-ROADM are adjusted so that the reference state is
+recovered at the selected user module, ensuring that all users measure in the agreed H/V and D/A bases.
+
+Figure S2: Entanglement source characterisation showing the photon detection rate as a function of optical frequency.
+The central frequency is 193.4 THz, corresponding to 1550.12 nm, and the coloured bars indicate the 100 GHz DWDM
+channels used by the q-ROADM.
+
+paths:
+
+DEMUX−8 → BSin → BSout,1 → MUXAlice
+
+(S1)
+
+and
+
+DEMUX−8 → BSin → BSout,2 → FPC → MUXBob
+
+(S2)
+The FPC after the DEMUX output neutralises the fibre
+path to Alice, while the additional FPC in the second
+BS output path neutralises the fibre path to Bob. The
+subscript 0.5 used in the wavelength-assignment table
+denotes the 50:50 splitting ratio of the 3 dB BS.
+
+This beam-splitter-assisted configuration can increase
+the number of supported user connections and provides
+an additional mechanism for scaling the network connec-
+tivity. In the present experiment, the number of users
+
+was limited to six by the available user modules and
+SNSPD channels, so configurations beyond six users were
+not investigated. Overall, the q-ROADM architecture
+provides a flexible and scalable platform for on-demand
+entanglement distribution, where wavelength channels can
+be routed, multiplexed, split and polarisation-neutralised
+according to the required network topology.
+
+S3 SIAT Protocol Time Analysis
+
+This section provides the time analysis for the SIAT proto-
+col considered in the main text. We consider the scenario
+where a new user, Alice, is added to an existing five-user
+fully connected entanglement-based quantum network
+containing Bob, Chloe, David, Faye and Grant. The
+
+12
+
+Figure S3: q-ROADM architecture and partial-mesh wavelength assignment. (a) q-ROADM setup including DEMUX,
+FPCs, OFS, MUXs, WSSs and beam splitters. (b) Example partial-mesh resource assignment where wavelength
+channel λ−8 is distributed through a 3 dB beam splitter.
+
+Figure S4: Total SIAT authentication time for adding Alice to the five-user network as a function of the fraction of
+generated keys reserved for the next authentication round, η. Each data point is obtained by summing the Step 1 and
+Step 2 durations over all newly authenticated Alice–user links in the corresponding authentication strategy. Results are
+shown for S1 and S2 under favourable and challenging operating conditions, and for authentication insecurity values
+εc of 10−9 and 10−15. The calculation uses link-dependent classical-to-secret-key ratios derived from the measured
+post-processing data. Lower η leaves more generated key material available for other applications, but increases the
+direct Step 2 key-generation time.
+
+objective is to authenticate Alice with all existing users
+so that direct quantum communication links can subse-
+quently be established without relying on the initially
+trusted intermediary users. Two authentication strategies
+are analysed. In Strategy 1, denoted as S1, Alice initially
+shares authentication keys with Bob and is subsequently
+
+authenticated with Chloe, David, Faye and Grant. In
+Strategy 2, denoted as S2, Alice initially shares authenti-
+cation keys with Grant and is subsequently authenticated
+with Faye, David, Chloe and Bob.
+
+The SIAT protocol can be described using three phases.
+In Phase 1, a trusted agency or trusted intermediate user
+
+13
+
+AliceBobChloeDavidFayeGrant1-3-138-22-845-4-8-5ABCDFG(B) Resource assignment table forpartial meshWSSMUXMUXWSSDEMUXλ2λ-1λ-2λ-15λ15FPCq-ROADMλ1OFSBS(A) 2000300040005000Total authentication time (s)(a) Favourable, c=109Strategy 1Strategy 22000400060008000(b) Favourable, c=1015Strategy 1Strategy 20.10.20.51.0Key portion reserved for next round, 5000100001500020000Total authentication time (s)(c) Challenging, c=109Strategy 1Strategy 20.10.20.51.0Key portion reserved for next round, 100001500020000250003000035000(d) Challenging, c=1015Strategy 1Strategy 2distributes authentication keys to two parties that wish to
+establish a quantum communication link. In the present
+network, this initial trusted user is Bob for S1 and Grant
+for S2. In Phase 2, the transferred authentication keys are
+used to authenticate the first direct quantum communica-
+tion session between Alice and the newly authenticated
+existing user. Here, “newly authenticated” refers to Al-
+ice’s perspective: the user is already part of the five-user
+network, but has not yet established an authenticated
+direct link with Alice. In Phase 3, trust in the original
+intermediary is no longer required. Instead, Alice and the
+newly authenticated user use a portion, or all, of the keys
+generated in the previous direct quantum communication
+round to authenticate future rounds. Phase 3 is then
+repeated periodically, or according to application-specific
+security criteria, until the authenticated connection is no
+longer required.
+
+For compact notation, let P1, P2 and P (m)
+
+denote
+Phase 1, Phase 2 and the m-th repetition of Phase 3,
+respectively. The SIAT process for each newly authenti-
+cated Alice–X pair is written as
+
+3
+
+P1 → P2 → P (1)
+
+3 → P (2)
+
+3 → · · · → P (m)
+
+3
+
+(S3)
+
+The time between phases depends on the authentication se-
+curity requirement, the fraction of generated key material
+reserved for future authentication, and the key-generation
+rate of the corresponding entanglement links.
+
+For the time analysis, the transitions between phases
+are decomposed into two key-accumulation steps. Step 1
+corresponds to the time required to accumulate sufficient
+authentication key material through the trusted interme-
+diary or through flooding-based authentication-transfer
+paths, enabling the transition from Phase 1 to Phase 2.
+Step 2 corresponds to the time required for Alice and
+the newly authenticated user to generate sufficient fresh
+secret keys over their direct entanglement link, enabling
+the transition from Phase 2 to Phase 3. These two times
+are denoted as Tstp1 and Tstp2, respectively:
+
+TP1→P2 = Tstp1,
+
+TP2→P (1)
+
+3
+
+= Tstp2
+
+(S4)
+
+Each further Phase 3 refresh requires another direct key-
+generation period,
+
+TP (m)
+
+3 →P (m+1)
+
+3
+
+= T (m+1)
+stp2
+
+,
+
+m = 1, 2, . . .
+
+(S5)
+
+We follow the authentication-key estimation used in
+Refs. [38, 40], where the number of secret bits required for
+Wegman–Carter authentication depends on the amount
+of authenticated classical communication exchanged dur-
+ing a QKD round. Let a be the final secret-key length
+generated in one QKD round, and let εc be the desired
+authentication insecurity. The amount of authenticated
+classical communication is written as
+
+d = ga,
+
+(S6)
+
+where g is the classical-to-secret-key ratio, i.e., the num-
+ber of authenticated classical bits exchanged per final
+
+14
+
+secret-key bit. In Ref. [38], this ratio was estimated from
+the number of photon detection events and the classical
+information required for time tagging, basis announce-
+ment, error correction and status checks. In our analysis,
+the ratio is obtained from the measured post-processing
+data of each Alice–X connection. For a link ℓ, the ratio
+is defined as
+
+gℓ =
+
+Dℓ
+Kℓ
+
+=
+
+Dℓ
+Rℓτ
+
+(S7)
+
+Here, Dℓ is the total number of authenticated classical
+bits exchanged during the measurement for link ℓ, Kℓ is
+the number of generated secret bits, Rℓ is the measured
+SKR of link ℓ, and τ is the integration time.
+
+DTT
+A−C
+RA−C
+
+= 9280384
+
+As an example, consider S1 when Alice is authenti-
+cated with Chloe. The measured single-count rates are
+60,771 counts/s for Alice and 84,235 counts/s for Chloe.
+At this stage, Alice receives two channels, correspond-
+ing to the initial link with Bob and the new link with
+Chloe, while Chloe receives five channels. Considering
+only the time-tagging contribution, and assuming each
+time tag is encoded using a 64-bit number, the classical
+communication rate for exchanging time-tagging informa-
+tion is DTT
+A−C = (60771 + 84235) × 64 = 9280384 bits/s
+The direct Alice–Chloe link has a measured SKR of
+77.32 bits/s. The corresponding time-tagging contri-
+bution to the classical-to-secret-key ratio is therefore
+gTT
+77.32 = 120025.45 In the SIAT tim-
+A−C =
+ing calculation, the ratio gA−X denotes the full classical-
+to-secret-key ratio used for the Alice–X link, including
+time-tagging information and other authenticated classical
+communication required by the post-processing procedure.
+When error correction and other authenticated classical
+communication are included, the same procedure gives
+the full link-dependent ratio gA−C. However, the extra
+information needed for post-processing is not compara-
+ble to the information needed for time tagging exchange.
+Therefore, in this paper, we assume gA−X ≈ gTT
+A−X for all
+the quantum links. This ratio gA−X is link-dependent,
+capturing differences in link loss, QBER, detector count
+rate, and secret key generation, and therefore provides a
+more accurate estimate of the authentication cost than
+using a fixed overestimated value for all user pairs.
+
+The authentication requirement is determined by the
+amount of key that must be reserved for authenticating
+the next quantum communication round. We denote
+this reserved authentication key length by aauth.
+If a
+fraction η of the final secret key generated in the current
+round is reserved for future authentication, then the total
+final key length that must be generated in the current
+round is aauth/η. Therefore, the corresponding amount
+of authenticated classical communication is:
+
+d = gA−X
+
+aauth
+η
+
+=
+
+gA−X
+η
+
+aauth
+
+(S8)
+
+where gA−X is the classical-to-secret-key ratio for the
+Alice–X link when the full generated key length is con-
+sidered.
+
+The authentication key length required for the next
+
+round is then calculated as:
+
+Lauth(aauth, εc, gA−X , η)
+
+= 4
+
+(cid:20)
+log2
+
+(cid:19)
+
+(cid:18) 2
+εc
+
++ log2 log2
+
+(cid:18) gA−X aauth
+η
+
+(cid:19)(cid:21)
+
+(S9)
+
+× log2
+
+(cid:18) gA−X aauth
+η
+
+(cid:19)
+
+.
+
+The reserved authentication key must be at least equal
+to the authentication key required for the next round.
+Therefore, aauth is obtained from the self-consistency con-
+dition:
+
+aauth = Lauth(aauth, εc, gA−X , η)
+
+(S10)
+
+Given the insecurity parameter εc, the link-dependent
+classical-to-key ratio gA−X , and combining Eq.S9 and
+Eq.S10, we can calculate the required total key length
+and authentication key lengths required for implementing
+SIAT protocol.
+
+In this work, we evaluate two representative authenti-
+cation insecurity values, εc = 10−9 and εc = 10−15, and
+different fractions, η, of keys generated per round used as
+the authentication keys in the next round. A smaller value
+of εc corresponds to a stricter authentication requirement.
+A smaller value of η means that a smaller fraction of
+the generated key is reserved for future authentication,
+leaving more key material available for other quantum
+applications or protocols.
+
+The same Phase 3 authentication requirement deter-
+mines the key material that must be accumulated in both
+Step 1 and Step 2 for a given Alice–X authentication
+process. Step 1 accumulates the reserved authentication
+key through the trusted intermediary or flooding-based
+authentication-transfer paths. Therefore, the Step 1 du-
+ration is
+
+T A−X
+stp1 =
+
+aauth
+RA−X
+stp1
+
+(S11)
+
+where RA−X
+is the effective secret key rate available
+stp1
+through the Step 1 authentication-transfer process. For
+flooding-based SIAT in the security-enhancing mode,
+authentication keys transferred through multiple non-
+overlapping paths are XORed. In this case, each selected
+path must accumulate enough key material before the
+XORed authentication key can be formed. Therefore, the
+effective Step 1 rate is limited by the slowest selected
+path:
+
+RA−X
+
+stp1 = min
+
+p∈PA−X
+
+Rp
+
+(S12)
+
+Here, PA−X is the set of selected flooding paths used
+to authenticate the Alice–X connection, and Rp is the
+end-to-end secret key rate of path p. For a multi-hop
+path, the end-to-end rate is limited by the weakest link
+along that path:
+
+Rp = min
+ℓ∈p
+
+Rℓ
+
+(S13)
+
+After the Step 1 authentication transfer, Step 2 estab-
+lishes the direct Alice–X entanglement link and generates
+
+15
+
+fresh keys for future authentication. Since only a fraction
+η of the generated key is reserved for the next authenti-
+cation round, the total final key length required in Step 2
+is aauth/η. The Step 2 duration is therefore
+
+T A−X
+stp2 =
+
+aauth/η
+RA−X
+
+=
+
+aauth
+ηRA−X
+
+(S14)
+
+where RA−X is the direct SKR of the Alice–X link. In
+the main-text analysis, we take η = 1, meaning that all
+generated keys in the direct round are reserved for authen-
+ticating the next round. Smaller values of η correspond
+to reserving only a portion of the generated keys for fu-
+ture authentication, leaving the remaining key material
+available for other quantum applications or protocols.
+
+The total time required to authenticate Alice with all
+existing users is obtained by summing the Step 1 and
+Step 2 durations for each newly authenticated Alice–X
+pair. For strategy 1 (S1), where Alice is authenticated in
+the order C, D, F, G, the total authentication time is
+
+TS1 =
+
+X
+
+(cid:0)T A−X
+
+stp1 + T A−X
+stp2
+
+(cid:1)
+
+(S15)
+
+X∈{C,D,F,G}
+
+For strategy 2 (S2), where Alice is authenticated in the
+order F, D, C, B, the total authentication time is
+
+TS2 =
+
+X
+
+(cid:0)T A−X
+
+stp1 + T A−X
+stp2
+
+(cid:1)
+
+(S16)
+
+X∈{F,D,C,B}
+
+The two strategies use the same physical q-ROADM net-
+work, but differ in the order in which Alice establishes
+authenticated links with the existing users. Since each
+Step 1 process may use different trusted-node or flooding
+paths, and each Step 2 process depends on a different
+SKR of the direct Alice–X link, the total authentication
+time depends on the authentication order and on the
+quantum network performance, including system loss, de-
+tector timing jitter, source heralding efficiency and fibre
+length.
+
+After Alice has been authenticated with a given user
+X, the Phase 3 refresh can be repeated for that Alice–X
+connection. If the direct link condition remains approx-
+imately stable, the time required to initialise SIAT and
+complete m refresh rounds for this pair is
+
+T (m)
+A−X ≈ T A−X
+
+stp1 + mT A−X
+stp2
+
+(S17)
+
+More generally, if the link rate varies between refresh
+rounds, the total time is
+
+T (m)
+A−X = T A−X
+
+stp1 +
+
+m
+X
+
+k=1
+
+T A−X,k
+stp2
+
+(S18)
+
+The time analysis reported in the main text is cal-
+culated using the measured asymptotic SKRs and the
+link-dependent classical-to-secret-key ratios of the dynam-
+ically configured entanglement links. The favourable case
+uses approximately 15% source heralding efficiency and
+
+Figure S5: Link-level SIAT timing for η = 1, where all generated keys are reserved for the next authentication
+round. Each bar shows the time required for one newly authenticated Alice–X link, decomposed into Step 1 and
+Step 2. Results are shown for favourable and challenging operating conditions and for authentication insecurity values
+εc = 10−9 and εc = 10−15.
+
+As shown in Fig. S4, the total SIAT authentication
+time increases for stricter authentication security and
+for smaller key-reservation fractions. The use of link-
+dependent ratios leads to different timing penalties for
+different Alice–X links, because each link has a different
+combination of SKR and classical-communication over-
+head. The link-level timing in Fig. S5 shows that the
+quickest total authentication time (η = 1) can be domi-
+nated by a small number of weak quantum links, especially
+under challenging network conditions, while the higher se-
+curity requirement will require a longer waiting time. This
+supports the use of the q-ROADM as a protocol-aware
+entanglement distribution layer, where the network topol-
+ogy and authentication order can be adapted according
+to the actual link conditions.
+
+low detector jitter below 100 ps. The challenging case
+uses approximately 3% source heralding efficiency and de-
+tector jitter of 300–350 ps. During Step 1, the q-ROADM
+establishes the trusted-node or flooding paths required
+for authentication transfer. During Step 2, the network
+is reconfigured to establish the direct entanglement link
+between Alice and the newly authenticated user. In the
+main-text timing comparison, we take m = 1, meaning
+that at least one direct Step 2 round is completed so
+that future authentication no longer requires multi-path
+trusted-node transfer.
+
+This dynamic operation is essential for efficient proto-
+col execution. Under favourable conditions, where most
+links have relatively high SKR, the two authentication
+strategies give similar total authentication times. Under
+challenging conditions, however, low heralding efficiency,
+higher timing jitter and higher accidental-coincidence
+rates reduce the SKR of some links significantly. The
+slowest flooding path can then dominate Tstp1, and the
+direct Alice–X SKR can dominate Tstp2. As a result, the
+authentication order becomes important, and one strat-
+egy can complete significantly faster than another. This
+explains the strategy-dependent SIAT timing reported
+in the main text and demonstrates how the q-ROADM
+can support protocol-aware entanglement distribution by
+adapting the network topology to the required SIAT step.
+
+16
+
+S1 A-CS1 A-DS1 A-FS1 A-GS2 A-FS2 A-DS2 A-CS2 A-B0100200300400Authentication time (s)(a) Favourable, c=109, =1Step 1Step 2S1 A-CS1 A-DS1 A-FS1 A-GS2 A-FS2 A-DS2 A-CS2 A-B0200400600(b) Favourable, c=1015, =1Step 1Step 2S1 A-CS1 A-DS1 A-FS1 A-GS2 A-FS2 A-DS2 A-CS2 A-B0100020003000Authentication time (s)(c) Challenging, c=109, =1Step 1Step 2S1 A-CS1 A-DS1 A-FS1 A-GS2 A-FS2 A-DS2 A-CS2 A-B010002000300040005000(d) Challenging, c=1015, =1Step 1Step 2

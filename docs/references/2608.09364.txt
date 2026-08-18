@@ -1,0 +1,3265 @@
+1
+
+Quantum-Classical Coexistence
+Network Tomography
+Xuchuang Wang∗, Joseph C. Chapman†, Aneesh Ramaswamy†, Matheus Guedes de Andrade∗,
+Yu-Zhen Janice Chen∗, Joseph M. Lukens†‡, Gayane Vardoyan∗, Don Towsley∗
+∗College of Information and Computer Sciences, University of Massachusetts Amherst, Amherst, MA, USA
+†Quantum Information Science Section, Oak Ridge National Laboratory, Oak Ridge, TN, USA
+‡Elmore Family School of Electrical and Computer Engineering and
+Purdue Quantum Science and Engineering Institute, Purdue University, West Lafayette, IN, USA
+Emails: xuchuangw@gmail.com, {mguedesdeand, yuzhenchen, gvardoyan, towsley}@cs.umass.edu,
+{chapmanjc, ramaswamya}@ornl.gov, jlukens@purdue.edu
+
+Abstract—Quantum-classical coexistence networks
+
+(QCNs)
+share optical fiber between quantum and classical signals via
+wavelength-division multiplexing, offering a practical path to
+deploying quantum communication over existing telecom in-
+frastructure. However, co- and counter-propagating classical
+traffic introduce distinct depolarization noise on the quantum
+channel, complicating channel characterization. We develop a
+tomography framework that infers per-link channel parame-
+ters of a QCN from end-to-end measurements alone. We first
+model each coexisting fiber by decomposing the quantum signal
+evolution into photon loss, successful transmission, and three
+direction-dependent depolarization components. Building on this
+model, we derive closed-form link-level estimators for all channel
+parameters, and then extend the approach to star-topology
+networks through a system of multiplicative equations across
+end-node pairs, along with a simple classical-signal-direction-
+switching protocol that resolves the remaining unknowns. Us-
+ing these methods, we analyze single-link experimental testbed
+data and confirm accurate recovery of per-link depolarization
+probabilities, with estimated process fidelities closely tracking
+the Bayesian-process-tomography baseline across multiple fiber
+lengths and wavelengths; the small residual gaps reflect the
+depolarization-only model approximation. As no multi-link coex-
+istence testbed yet exists, we validate the star-network estimators
+on emulated multi-link paths composed of copies of measured
+single-link channels. Furthermore, we extend our framework in
+two directions: (i) we propose a quantum-channel model that
+factorizes the coexisting fiber into a depolarizing-with-loss signal
+channel and a Raman-noise-injection channel acting on separate
+optical modes—a completely-positive,
+trace-preserving tensor
+product—and show that the link observables reduce exactly to
+our basic model; and (ii) we generalize the star-network approach
+to arbitrary topologies via a peeling algorithm (trees) and a
+least-squares estimator (meshes), which Monte-Carlo simulations
+confirm recover per-link parameters on tree and cyclic-mesh
+networks under a correctly-specified model.
+
+Index Terms—Quantum-classical coexistence, network tomog-
+raphy, quantum communications, channel estimation, Raman
+scattering.
+
+I. INTRODUCTION
+
+Quantum networks [1] are essential infrastructure for emerg-
+ing quantum technologies, including quantum key distribu-
+tion (QKD) [2], distributed quantum computing [3], [4], and
+
+quantum sensing [5]. However, deploying dedicated optical
+fibers exclusively for quantum communication is prohibitively
+expensive and impractical at scale. A promising alternative is
+the quantum-classical coexistence network (QCN), in which
+quantum and classical signals share the same optical fiber
+(called a coexisting fiber)—typically separated via wavelength-
+division multiplexing (WDM) [6]. By leveraging existing
+fiber deployments, QCNs offer a cost-effective path toward
+large-scale quantum networking. At the same time, classical
+signals generate noise—primarily through spontaneous Raman
+scattering—that degrades the fidelity of the co-existing quan-
+tum states, making the characterization of these impairments
+a prerequisite for the reliable design and operation of practical
+QCNs.
+
+Network tomography [7] provides a principled approach
+to this characterization problem: it infers internal link-level
+parameters from end-to-end measurements alone, without re-
+quiring direct access to every individual
+link. In classical
+networks, tomography techniques have been widely studied
+for estimating link delays, loss rates, and available bandwidth
+from path-level observations. For QCNs, network tomography
+is particularly compelling because, as the network scales,
+independently characterizing each fiber link becomes infea-
+sible, yet accurate knowledge of per-link parameters—such as
+photon loss and depolarization induced by classical traffic—is
+critical for tasks such as entanglement routing [8], [9], error
+budgeting [10], and resource allocation [11]. Developing to-
+mography methods tailored to the physics of quantum-classical
+coexistence channels can therefore enable efficient, scalable
+characterization of large QCNs using only measurements at
+network edge nodes.
+
+Achieving this goal, however, poses several key chal-
+lenges. First, no established mathematical model exists for
+the coexisting fiber channel that captures the quantum signal
+degradation caused by classical traffic; such a model is a
+necessary foundation before any tomography inference can
+be formulated. Second, a tractable network-level model must
+also be developed to relate end-to-end observations to internal
+
+This manuscript has been co-authored by UT-Battelle, LLC, under contract DE-AC05-00OR22725 with the US Department of Energy (DOE). The US government retains and the
+publisher, by accepting the article for publication, acknowledges that the US government retains a nonexclusive, paid-up, irrevocable, worldwide license to publish or reproduce
+the published form of this manuscript, or allow others to do so, for US government purposes. DOE will provide public access to these results of federally sponsored research in
+accordance with the DOE Public Access Plan (http://energy.gov/downloads/doe-public-access-plan).
+
+arXiv:2608.09364v1  [cs.IT]  10 Aug 20262
+
+link parameters across multiple nodes and links. Third, the
+coexistence setting introduces a richer parameter space than
+dedicated quantum or classical networks alone: each link
+must be characterized not only by its intrinsic transmission
+loss but also by direction-dependent depolarization parameters
+arising from co- and counter-propagating classical signals,
+substantially increasing the number of unknowns and making
+the tomographic inverse problem more challenging.
+
+A. Contributions
+
+The main contributions of this work are as follows.
+
+• Coexisting-fiber channel model. We formulate the first
+channel model for a coexisting fiber, decomposing the quan-
+tum signal evolution into photon loss, successful transmission,
+and direction-dependent depolarization with three parame-
+ters for the no-classical-signal, co-propagation, and counter-
+propagation scenarios—capturing the noise structure unique
+to QCNs (§II).
+• Closed-form link tomography. We derive a quantum link
+tomography (QLT) method that estimates all parameters of a
+single coexisting fiber—the success ratio, the photon-loss ratio,
+and the three depolarization ratios—in closed form from end-
+to-end measurements, and we characterize its bias and variance
+(§IV).
+• Quantum-channel (CPTP) formulation. We recast
+the
+coexisting fiber as a CPTP channel on two optical modes:
+the tensor product of a depolarizing-with-loss signal channel
+on the signal mode and a Raman-noise-injection channel on
+the broadband mode into which the classical signal scatters.
+The excess photons that coexistence delivers are then carried
+by a two-mode photon-number observable rather than by the
+trace of the state, and the link observables reduce exactly to
+the basic model (§III).
+• Star-network tomography with provable identifiability.
+We extend QLT to star-topology QCNs, recovering per-link
+success ratios from a system of multiplicative equations across
+end-node pairs and resolving the remaining per-link depo-
+larization parameters via a classical-signal-direction-switching
+protocol. We prove that a single such flip removes the residual
+gauge degeneracy (§V).
+topologies. We prove a path-observable com-
+• General
+position rule (Proposition 4) showing that
+the coexistence
+observables compose multiplicatively along a path even though
+Raman injection makes the received ratio a per-photon yield
+rather than a survival probability. Building on it, we give a
+tree-peeling estimator that adapts the progressive-etching peel-
+ing of [12], developed there for bit-/phase-flip channels with
+SPAM errors. For general graphs, we give a log-linear least-
+squares solver together with an incidence-rank identifiability
+condition (§V-A).
+• Validation by experiment, emulation, and simulation. We
+validate QLT on coexisting-fiber experimental testbed data,
+confirming model correctness and estimator accuracy against
+measured depolarization probabilities and process fidelities
+(matching the Bayesian-process-tomography baseline) across
+multiple fiber lengths and wavelengths (§VI). As no multi-
+link coexistence testbed yet exists, we emulate star networks
+
+by recombining the measured link data into multi-link paths
+(§VI-C), and validate the general-topology estimators with
+fully synthetic Monte-Carlo simulations, together verifying
+estimator correctness, identifiability, and sample-complexity
+scaling (§VI-D).
+
+B. Related Work
+
+Quantum-classical coexistence networks. Townsend [6]
+first demonstrated the feasibility of transmitting quantum
+information—specifically for QKD—over a classical fiber
+network by applying WDM to separate quantum and classical
+channels. Subsequent work has focused on improving the
+capacity and reach of QCNs; an early systematic study of
+this regime is Patel et al. [13], who quantified the direction-
+dependent Raman noise that limits high-bit-rate QKD-plus-
+data coexistence. For example, Wang et al. [14] demonstrated
+long-distance co-propagation of QKD alongside terabit-rate
+classical data streams over distances up to 80 km, and Chap-
+man et al. [15] distributed two-mode squeezed light via a
+coexistence network, a key resource for distributed continuous-
+variable quantum systems. Beyond WDM, alternative sepa-
+ration techniques have been proposed, including the electro-
+optic serrodyne approach of R¨ubeling et al. [16] and the time-
+interleaved co-propagation method of Wang et al. [17]; recon-
+figurable deployments have also been demonstrated, e.g. the
+dynamically switched coexistence network field trial of Wang
+et al. [18]. More recently, Thomas et al. [19] demonstrated
+quantum state teleportation in a coexistence fiber network car-
+rying real internet traffic, and Antesberger et al. [20] proposed
+hollow-core fibers (HCFs) to further suppress classical-channel
+noise by confining most of the light in air rather than glass,
+thereby significantly reducing Raman scattering.
+
+Network tomography. Network tomography has a long
+history in classical networks. Coates et al. [21] provided a
+comprehensive survey of internet tomography, covering both
+delay and loss inference from end-to-end measurements. For
+loss tomography, C´aceres et al. [22] developed maximum
+likelihood estimators from multicast probes, while for delay
+tomography, Lo Presti et al. [23] and Tsang et al. [24]
+proposed inference methods for internal delay distributions.
+A systematic treatment of identifiability, measurement design,
+and network state inference was given by He et al. [7]. More
+recently, network tomography has been extended to quantum
+networks: De Andrade et al. [25] introduced quantum net-
+work tomography (QNT) using multi-party state distribution,
+De Andrade et al. [26] further studied the characterization
+of quantum flip-star networks, and De Andrade et al. [27]
+provided a broader overview of QNT as a principled frame-
+work for inferring quantum channel parameters from end-
+to-end measurements. Building on these foundations, Wang
+et al. [28] studied optimal online probe allocation for both
+classical and quantum network tomography, formulating the
+task as an online experimental design problem. However,
+these QNT works modeled each link by a single scalar noise
+parameter under a fixed, static probing configuration—for
+instance the quantum flip-star of De Andrade et al. [26], where
+every link was an independent bit-flip channel with one flip
+
+probability. The coexistence setting we study is structurally
+different in three ways. First, each coexisting fiber carries
+three coupled unknowns—the success ratio s and the co-
+and counter-propagation depolarization ratios d(1), d(2)—that
+compose multiplicatively across a path rather than as a single
+additive flip probability. Second, this richer per-link structure
+leaves a residual gauge degeneracy that no static end-to-end
+probing can resolve (Lemma 3 in §V). Third, we resolve it
+with an active reconfiguration—reversing the classical-signal
+direction on a single link, which has no analogue in the passive
+flip-star—rather than by adding more passive probes. To the
+best of our knowledge, network tomography for quantum-
+classical coexistence networks, with this direction-dependent
+depolarization structure, has not been studied.
+
+II. COEXISTING FIBER MODEL
+
+This section formulates the coexisting fiber channel model
+illustrated in Figure 1. We consider a single optical fiber
+link shared by a quantum channel and a classical channel
+via WDM. The quantum signal occupies one wavelength
+while the classical signal occupies another; at the receiver,
+a WDM demultiplexer and narrowband filter separate the
+two. Despite this spectral separation, noise from the classical
+channel—primarily spontaneous Raman scattering—leaks into
+the quantum channel and degrades the transmitted quantum
+state. Below, we describe each component of the model and
+then define the observable quantities and parameters to be
+estimated.
+
+A. Physical Background
+
+When a high-power classical signal propagates through
+an optical fiber, it generates broadband spontaneous Raman
+scattering (SpRS) noise that extends over a wide spectral
+range, overlapping with the quantum channel [29], [30]. The
+SpRS noise photons are indistinguishable from the quantum
+signal photons at the detector, effectively injecting randomly
+polarized photons into the quantum channel and decohering
+the quantum state. Most of the scattered light nevertheless
+occupies broadband optical modes other than the signal mode,
+whose ladder operators commute with those of the signal mode
+to good approximation; §III uses this to model the Raman
+photons as an ancilla system, with their indistinguishability
+from signal photons carried by the detector’s measurement
+operator rather than by the state space [31]. Crucially, the level
+of Raman noise depends on the relative propagation direction
+of the classical signal with respect to the quantum signal:
+• Co-propagation (⇒): The classical signal travels in the
+same direction as the quantum signal. The Raman noise
+accumulates along the fiber and is partially attenuated before
+reaching the receiver, resulting in a moderate noise-photon
+injection rate.
+• Counter-propagation (⇐): The classical signal travels in
+the opposite direction. The Raman noise generated near the
+(quantum) receiver end experiences less attenuation, typically
+producing a higher noise-photon injection rate at longer fiber
+lengths than co-propagation [13].
+
+3
+
+• No classical signal (×): In the absence of classical traffic,
+only intrinsic fiber and system imperfections convert some
+photons to depolarized ones, yielding the lowest noise base-
+line.
+
+In addition to noise-photon injection, the fiber also attenu-
+ates the quantum signal through standard mechanisms—fiber
+absorption, scattering, and imperfect coupling at the WDM
+multiplexer, filter, and detector—which collectively represent
+photon loss.
+
+B. Channel Model
+
+Based on the physical effects described above, we model
+each coexisting fiber as a channel with three outcomes for
+each input photon, as shown in Figure 1:
+1) Photon loss (ratio q): The photon is absorbed or scattered
+and never reaches the receiver. This accounts for fiber attenu-
+ation, coupling losses, and imperfect filtering.
+2) Successful transmission (ratio s): The photon arrives at
+the receiver with its polarization state intact, i.e., the quantum
+information is preserved.
+3) Depolarization (ratio d(x)): Among the input photons,
+a fraction d(0) is depolarized by mechanisms that act on
+the transmitted photon itself and survive the deterministic
+drift correction of §VI-A—residual fast polarization-mode
+dispersion, imperfect state preparation and measurement (basis
+misalignment and finite extinction), and the residual frame
+error left after drift correction;
+input-independent detector
+dark and accidental counts instead act like a small, classical-
+signal-independent injection and are negligible relative to the
+signal here. When a classical signal coexists, Raman scattering
+injects additional depolarized photons, contributing an extra
+fraction d(1) − d(0) under co-propagation and d(2) − d(0)
+under counter-propagation, both of which are indistinguish-
+able from quantum-signal photons at the receiver. The total
+depolarization ratio d(x) therefore depends on the classical-
+signal configuration x, with d(0) for no classical signal, d(1)
+for co-propagation, and d(2) for counter-propagation.
+
+The success ratio s and photon loss ratio q are intrinsic to
+the fiber and do not depend on the classical traffic, whereas
+the depolarization ratio d(x) varies across the three scenarios,
+with d(0) ⩽ d(1) and d(0) ⩽ d(2) in general. Since the
+three outcomes are mutually exclusive and exhaustive, in the
+no-classical-signal scenario (x = 0) the channel parameters
+satisfy the normalization condition
+
+q + s + d(0) = 1.
+
+(1)
+
+the additional Raman-
+Under co- or counter-propagation,
+induced photons inflate the received-photon count beyond
+the input population, so this normalization no longer holds;
+instead,
+
+q + s + d(x) ⩾ 1,
+
+x = 1, 2.
+
+(2)
+
+This population accounting is given a quantum-channel form
+in §III, where the coexisting fiber is written as a product—
+specifically a tensor product—of two CPTP maps acting on
+separate optical modes, rather than as a sum of maps on a
+
+4
+
+Quan.
+
+×
+⇒
+⇐
+
+fiber attenuation, multiplexing, filter, detector
+
+depolarization
+
+photon loss q
+
+success s
+
+co-prop.
+
+d(0)
+d(1)
+d(2)
+
+counter-prop.
+
+Raman
+Noise
+
+Class.
+⇒
+
+loss
+
+modulation/encoding
+
+success
+
+Fig. 1: Model of quantum-classical coexistence fiber. The upper block represents the quantum channel with three possible
+outcomes: photon loss (ratio q), successful transmission (ratio s), and depolarization (ratio d(x)). The three rows (separated with
+dashed lines) in the upper block correspond to no classical signal (×, depolarization d(0)), co-propagation (⇒, depolarization
+d(1)), and counter-propagation (⇐, depolarization d(2)), respectively. The lower block represents the classical channel.
+
+q + s + d(0)
+
+Receive
+
+s + d(x)
+
+Measure
+
+s + d(x)
+2
+
+Input T
+
+Receive
+
+Received R
+
+Measure
+
+Outcome M
+
+Fig. 2: Channel parameters (top row) and photon numbers
+(bottom row) in the coexisting fiber model. Here x = 0, 1, 2 for
+no classical signal, co-propagation, and counter-propagation
+depolarization, respectively.
+
+single mode. There the surplus of (2) is carried by a two-mode
+photon-number observable, so that the state itself remains
+normalized.
+
+C. Observable Quantities
+
+In practice, we do not directly observe the channel param-
+eters (q, s, d(x)); instead we measure aggregate photon counts
+over many transmissions. Let T ∈ N+ denote the total number
+of input photons (each prepared in a fixed state, e.g., |0⟩),
+R ∈ N+ the number of received photons, and M ∈ N+
+the number of received photons whose measurement outcome
+matches the input state (e.g., outcome |0⟩ under the basis
+{|0⟩ , |1⟩}). Further details on the experimental setup appear
+in §VI-A.
+
+As illustrated in Figure 2, the measurement process proceeds
+
+in two stages:
+• Reception. Of the T input photons, (s + d(0))T reach
+the receiver via the channel
+itself; under co- or counter-
+propagation, an additional (d(x) − d(0))T Raman-injected
+depolarized photons are also detected, so the total number of
+received photons is R = (s+d(x))T . Among these R received
+photons, a fraction s/(s + d(x)) are signal photons with their
+polarization intact, while the remaining fraction d(x)/(s+d(x))
+are depolarized photons with uniformly random polarization.
+• Measurement. Each received photon is measured in the
+predetermined polarization basis. A successfully transmitted
+photon always yields the matched outcome (i.e., the same
+polarization as sent), while a depolarized photon yields the
+matched outcome with probability 1/2 (since its polarization
+
+is uniformly random). We denote by M the number of photons
+that yield the matched outcome.
+From these two stages, the expected values of the observables
+relate to the channel parameters via
+
+E
+
+(cid:21)
+
+(cid:20) R
+T
+
+= s + d(x) =: r(x), E
+
+(cid:21)
+
+(cid:20) M
+T
+
+= s +
+
+d(x)
+2
+
+.
+
+(3)
+
+We call r(x) := s + d(x) = E[R/T ] the received ratio: the
+expected number of received photons per input photon. It
+is therefore a per-photon yield rather than a probability, is
+consistent with q + s + d(x) ⩾ 1 in (2), and can exceed the
+loss-limited baseline 1 − q once Raman photons are injected
+(x = 1, 2); for x = 0 it equals 1 − q. (The lowercase r
+echoes the received count R.) As we show later, received ratios
+compose multiplicatively across concatenated links (Section V
+and its general-topology extension in §V-A), which is the basis
+of the network estimators. These equations form the basis for
+the tomography estimators developed in §IV.
+
+D. Estimation Objective
+
+Data. The experiments of Chapman et al. [32] collect
+(T, R, M ) triples for three coexistence scenarios: no classical
+signal (T (0), R(0), M (0)), co-propagation (T (1), R(1), M (1)),
+and counter-propagation (T (2), R(2), M (2)).
+
+Depolarization channel and probability. If we focus on
+the quantum state of the received photons (post-selection),
+each coexisting fiber can be modeled as one of three depolar-
+izing channels, indexed by x. It is often convenient to express
+the depolarization in terms of the depolarization probability
+p(x) ∈ [0, 1], defined as the conditional probability that a
+received photon is a depolarized noise photon rather than a
+successfully transmitted signal photon:
+
+p(x) :=
+
+d(x)
+s + d(x)
+
+=
+
+d(x)
+r(x)
+
+,
+
+x = 0, 1, 2.
+
+(4)
+
+A larger p(x) indicates a noisier channel with greater quantum-
+state degradation; equivalently, a fraction s/r(x) = 1 − p(x) of
+the received photons carry intact polarization.
+
+Objective. Our goal is to estimate the channel parameters
+s, q, d(0), d(1), d(2) (with q = 1 − s − d(0), and consequently
+
+the depolarization probabilities p(0), p(1), p(2)) of a coexisting
+fiber from the observed photon counts across the three scenar-
+ios.
+
+III. QUANTUM-CHANNEL MODEL FOR THE COEXISTING
+FIBER
+
+In this section we recast
+
+the coexisting-fiber model of
+Section II as a quantum channel. The fiber acts on a two-
+mode space: the signal mode, together with the broadband
+mode into which the classical signal scatters Raman photons.
+On that space we model it as the tensor product E = E1 ⊗ E2
+of a depolarizing-with-loss signal channel and a Raman-noise-
+injection channel, and we show that the link observables R/T
+and M/T reduce exactly to the basic-model parameters of §II.
+The two-mode split is itself an approximation, made precise
+below. It does not discard the indistinguishability of the Raman
+and signal photons, which the detector’s measurement operator
+retains.
+
+A. Channel Model Formulation
+
+a) Mode structure: Spontaneous Raman scattering does
+not act exclusively on the signal mode. The classical pump
+scatters photons into a broad continuum of optical modes,
+and the receiver’s filter admits those that overlap the signal
+band [29], [31]. We collect the admitted photons into a single
+ancilla mode S2, held distinct from the signal mode S1. Treat-
+ing S2 as a system separate from S1 requires the two modes to
+be independent degrees of freedom: formally, that the creation
+and annihilation (ladder) operators of one commute with those
+of the other, which holds exactly when the two mode profiles
+are orthogonal [31]. Here this is an approximation, since the
+scattering continuum is not exactly orthogonal to the signal
+mode. Their residual overlap η sets its accuracy: the ladder
+operators commute up to η, and equivalently one may take
+the modes orthogonal by construction and neglect the O(η)
+fraction of Raman photons scattered into the signal mode
+itself. The receiver’s mode selectivity keeps this small, since
+the signal occupies one narrow spatiotemporal mode inside
+a much broader filter passband, so η ≪ 1. We accordingly
+work on the two-mode space S1 ⊗ S2, where S1 carries
+the transmitted signal and the ancilla S2 carries the Raman
+photons admitted by the filter.
+
+b) Where indistinguishability enters: Separating the
+modes is not a claim that the two photon species can be
+told apart. Raman photons inside the filter passband remain
+operationally indistinguishable from signal photons: nothing
+in the experiment resolves which of S1, S2 a detected photon
+indistinguishability in
+came from. We therefore carry that
+the measurement operator rather than in the state space. We
+model the detector by the mode-symmetric two-mode photon-
+number observable ˆN of (9) below. It carries no mode label
+and so cannot distinguish the two contributions; S1 and S2
+are internal bookkeeping that the measurement erases. Placing
+indistinguishability at the detector is what makes the tensor-
+product form (8) available: because the detector sums over the
+two modes, the channel may factorize across modes it never
+has to identify.
+
+5
+
+Each mode is truncated to at most one photon: we write
+H = span{|Ω⟩ , |0⟩ , |1⟩}, where the vacuum |Ω⟩ records the
+absence of a photon and {|0⟩ , |1⟩} spans the polarization
+qubit. Writing I = |0⟩ ⟨0| + |1⟩ ⟨1| for the qubit identity, I/2
+is the maximally mixed (fully depolarized) qubit. We adopt
+the standard weak-injection assumption and drop higher-order
+photon-number states: spontaneous Raman scattering into the
+filtered mode overlapping the signal is weak enough that multi-
+photon terms contribute negligibly [13], [30]. At the photon-
+count level at which R and M are defined in §II, the two
+link observables below then depend on E2 only through the
+probability that it injects a photon into S2.
+
+c) Signal channel: The channel E1 acts on the input
+photon ρin in S1: it transmits the photon intact with probability
+s, depolarizes it with the intrinsic probability d(0), and loses
+it with probability 1 − s − d(0),
+E1(ρ) = s ρ + d(0) I
+2
+
++ (1 − s − d(0)) |Ω⟩ ⟨Ω| .
+
+(5)
+
+With s, d(0) ⩾ 0 and the normalization q + s + d(0) = 1 of (1),
+the weights sum to one, so E1 is trace-preserving and hence a
+genuine CPTP channel on S1.
+
+d) Raman-noise-injection channel: The channel E2 acts
+on the ancilla S2 and captures the crosstalk of the coexisting
+classical signal. It is the depolarizing channel of strength
+d(x) − d(0),
+
+E2(ρ) = (d(x) − d(0))
+
+I
+2
+
++ (cid:0)1 − (d(x) − d(0))(cid:1)ρ.
+
+(6)
+
+Being a convex combination of the completely depolarizing
+map ρ (cid:55)→ Tr[ρ]I/2 and the identity, E2 is CPTP whenever
+0 ⩽ d(x) − d(0) ⩽ 1. Unlike a replacement map, it acts on its
+argument, so it remains well defined on an arbitrary ancilla
+state. Here the ancilla is prepared in vacuum, ρvac = |Ω⟩ ⟨Ω|,
+and
+
+E2(ρvac) = (d(x) − d(0))
+
+I
+2
+
++ (cid:0)1 − (d(x) − d(0))(cid:1) |Ω⟩ ⟨Ω| : (7)
+
+a randomly polarized photon is injected with probability
+d(x) − d(0), and otherwise the mode stays empty. The map
+takes vacuum to a one-photon state because the classical
+pump supplying the scattered photon is treated as an external
+classical drive rather than as part of the quantum system;
+photon number therefore need not be conserved on S1 ⊗ S2
+alone.
+
+e) The coexisting fiber: Both processes occur on the
+same fiber and are registered by the same detector. Because
+that detector, rather than the state space, carries their indistin-
+guishability, the two may be assigned to separate factors, and
+the link channel is their tensor product rather than a sum,
+
+E = E1 ⊗ E2,
+
+E(ρin ⊗ ρvac) = E1(ρin) ⊗ E2(ρvac).
+
+(8)
+
+A tensor product of CPTP maps is CPTP, so E is a quantum
+channel and Tr[E(ρin ⊗ ρvac)] = 1. The state therefore stays
+normalized, as the measurement postulate requires, and the
+excess photons that coexistence delivers are carried instead by
+the photon-number observable, as we show next.
+
+6
+
+B. Reduction to the Basic Model
+
+The basic model of §II estimates s and d(x) from the
+observables R/T and M/T in (3). We now recover those
+observables directly from the channel E. As set out above,
+the detector cannot tell which mode a photon arrived in, so it
+counts the two-mode photon-number observable
+
+ˆN = Π ⊗ IH + IH ⊗ Π,
+
+Π = |0⟩ ⟨0| + |1⟩ ⟨1| = I,
+
+(9)
+where Π projects onto the one-photon subspace of a mode
+and is orthogonal to the vacuum, and IH is the identity on the
+full single-mode space H. The two differ on the vacuum: IH
+retains it, whereas Π = I annihilates it, which is what keeps
+an undetected photon from being counted in (10). Because E
+factorizes, so does the expectation, and the expected number
+of received photons per input photon is
+
+E
+
+(cid:21)
+
+(cid:20) R
+T
+
+= Tr12
+
+= Tr1
+
+(cid:2) ˆN E(ρin ⊗ ρvac)(cid:3)
+(cid:2)ΠE1(ρin)(cid:3) Tr2
++ Tr1
+
+(cid:2)E1(ρin)(cid:3) Tr2
+
+(cid:2)E2(ρvac)(cid:3)
+
+(cid:2)ΠE2(ρvac)(cid:3)
+
+= (cid:0)s + d(0)(cid:1) · 1 + 1 · (cid:0)d(x) − d(0)(cid:1) = s + d(x),
+
+(10)
+
+where the two middle factors are unity because E1 and E2
+are trace-preserving. Replacing Π by the matched-outcome
+projector |ψin⟩ ⟨ψin| in both slots (retaining, in either mode,
+only the photons whose measured polarization matches the
+prepared state) gives
+(cid:21)
+= ⟨ψin| E1(ρin) |ψin⟩ + ⟨ψin| E2(ρvac) |ψin⟩
+
+E
+
+(cid:20) M
+T
+
+(cid:16)
+
+=
+
+s +
+
+(cid:17)
+
+d(0)
+2
+
++
+
+d(x) − d(0)
+2
+
+= s +
+
+d(x)
+2
+
+,
+
+(11)
+
+since a depolarized photon (I/2) matches with probability
+1/2 and the vacuum never clicks. These are exactly the link
+observables of (3), with the received ratio r(x) = s + d(x) =
+E[R/T ]. The received ratio is thus the expectation of ˆN ,
+whose spectrum is {0, 1, 2}, and not a probability. It may
+therefore exceed the loss-limited baseline 1−q, consistent with
+q + s + d(x) ⩾ 1 in (2), while the state itself stays normalized,
+Tr[E(ρin ⊗ ρvac)] = 1. The link estimators of §IV therefore
+estimate the physical parameters of this channel directly.
+
+Beyond reproducing the basic-model observables, the chan-
+nel form makes the per-link figure of merit explicit. Since
+ˆN has spectrum {0, 1, 2}, a reception event need not be a
+single photon. The signal mode delivers one with probability
+1 − q = s + d(0) and, independently, E2 injects one with
+probability d(x) − d(0), so both fire together with probability
+(1 − q)(d(x) − d(0)). The polarization state of the surviving
+photon is then
+
+exhausted the outcome space. Setting the higher order term
+aside, E conditioned on a received photon acts as a single-qubit
+depolarizing channel with depolarization probability p(x) =
+d(x)/(s + d(x)) of §II, whose process (entanglement) fidelity
+with the identity is F (x) = 1 − 3
+4 p(x). This is the quantity we
+compare against Bayesian process tomography in §VI (Fig. 6).
+The depolarizing fixed point I/2 also makes the received
+ratios r(x) compose multiplicatively across concatenated links
+in §V–§V-A.
+
+C. Physical Interpretation of d(x)
+
+The Raman excess d(x) − d(0) that weights the injection
+channel E2 in (6) grows with the classical-signal power P and
+the fiber length L, and depends on the relative propagation
+direction x. Writing d(x) = d(0) + d(x)
+Raman(P, L), a first-
+order accumulation model gives, up to a direction-dependent
+prefactor,
+
+d(1)
+Raman ∝ P
+
+d(2)
+Raman ∝ P
+
+(cid:90) L
+
+0
+(cid:90) L
+
+0
+
+e−γQ(L−z)e−γC z dz,
+
+e−γQze−γC z dz,
+
+(13)
+
+(14)
+
+for co-propagation (x = 1) and counter-propagation (x =
+2), with γQ, γC the quantum- and classical-band attenuation
+coefficients [13], [29], [30]. These integrals reproduce the
+qualitative power- and length-scaling of the injected noise.
+Attenuation alone, however, does not account for the magni-
+tude of the co/counter asymmetry. That asymmetry is instead
+dominated by the direction-dependent spontaneous-Raman
+scattering and capture coefficients. We therefore treat d(1) and
+d(2) as empirical per-link, per-direction parameters, estimated
+directly by the tomography of §IV rather than predicted from
+first principles.
+
+IV. COEXISTING QUANTUM LINK TOMOGRAPHY
+
+In this section, we present the quantum link tomography
+(QLT) method for estimating the parameters of a single
+coexisting fiber channel (Figure 3a). Specifically, we estimate
+the success ratio s and the depolarization ratios d(0), d(1), d(2)
+corresponding to the three coexistence scenarios (no classical
+signal, co-propagation, and counter-propagation).
+
+From the channel model in (3), the observable ratios satisfy
+
+the system
+
+
+
+
+,
+
+x = 0, 1, 2,
+
+s + d(x) =
+
+R(x)
+T (x)
+M (x)
+T (x)
+Subtracting the two equations within each scenario and rear-
+ranging yields closed-form estimators for all parameters:
+
+x = 0, 1, 2.
+
+d(x)
+2
+
+(15)
+
+s +
+
+
+
+=
+
+,
+
+s ρin + d(x) I/2 +
+
+coincidences (N ⩾2)
+(cid:123)
+(cid:125)(cid:124)
+(cid:122)
+O(cid:0)(1 − q)(d(x) − d(0))(cid:1)
+
+s + d(x)
+where the braced remainder is of the order of that discarded
+coincidence weight (i.e., receive two or more photons), left
+over because the three single-click weights are used as if they
+
+,
+
+(12)
+
+
+
+
+ˆd(x) =
+
+2(R(x) − M (x))
+T (x)
+
+
+ˆs
+
+=
+
+1
+3
+
+(cid:80)2
+
+x=0
+
+2M (x) − R(x)
+T (x)
+
+,
+
+x = 0, 1, 2,
+
+(16)
+
+,
+
+where each ˆd(x) follows directly from the difference between
+the received count R(x) and the matched-outcome count M (x),
+
+Quantum (⇐)
+
+Classical
+
+Quantum (⇒)
+
+(a) Single link tomography
+2
+
+7
+
+A. Statistical Properties
+
+The estimators in (16) are not merely algebraic inversions:
+they are unbiased method-of-moments estimators with closed-
+form variances. Under the binomial statistics implied by §II—
+for each scenario x,
+the intact (signal) photons and the
+depolarized photons (intrinsic plus Raman-injected) form two
+independent binomial populations over the T inputs, Rs ∼
+Binom(T, s) and Rd ∼ Binom(T, d(x)), with R = Rs + Rd
+and M = Rs + Binom(Rd, 1
+2 ) (so R may exceed T under
+Raman injection)—moment matching gives E[ ˆd(x)] = d(x) and
+E[ˆs] = s for any fixed T , with
+
+Var( ˆd(x)) =
+
+d(x)(2 − d(x))
+T (x)
+
+,
+
+Var(ˆs(x)) =
+
+s(1 − s) + d(x)
+T (x)
+
+,
+
+(17)
+where ˆs(x) is the single-scenario success estimate defined
+above; averaging the three independent equal-T scenarios
+yields Var(ˆs) = [3s(1 − s) + (cid:80)
+x d(x)]/(9T ). All estimators
+T -consistent, and the depolarization probability
+are therefore
+ˆp(x) = ˆd(x)/(ˆs + ˆd(x)) inherits an O(1/
+T ) standard error
+by the delta method. These closed forms match Monte-Carlo
+simulation and provide the ±standard-error bands against
+which the QLT-versus-BPT agreement of §VI should be read.
+
+√
+
+√
+
+V. COEXISTING QUANTUM NETWORK TOMOGRAPHY
+
+We now turn to the network tomography setting [7], in
+which a quantum network has multiple nodes and links and we
+aim to estimate the parameters of each link from end-to-end
+probes. In this section, we focus on the network tomography
+method for a star network; an extension to general multi-node,
+multi-link topologies is presented in §V-A below and validated
+by simulation in §VI-D.
+
+k
+
+We take the star network in Figure 3b as a running example.
+The network has three links connecting a central hub node
+to three end nodes; each link k has its own parameters sk
+and d(x)
+for k ∈ {1, 2, 3} and x ∈ {0, 1, 2}. Because every
+network probe is sent while the classical traffic is present,
+each hop is always under coexistence, so only x ∈ {1, 2}
+(co- or counter-propagation) appears in the network estimators
+below; the no-classical-signal case x = 0 enters only in single-
+link tomography (§IV). We assume a steady classical signal
+flow (blue thick arrows) from the bottom-left end node to
+the central node, where it bifurcates toward the other two
+end nodes. To estimate per-link parameters, we perform end-
+to-end quantum measurements between each ordered pair of
+end nodes (illustrated by the surrounding thinner arrows in
+Figure 3b) and then solve a system of equations relating these
+measurements to the link parameters. We describe the method
+formally below.
+
+Consider a probe sent from end node k, through a coexisting
+fiber, to the central hub node, which then forwards the received
+quantum signal through another coexisting fiber to a different
+end node ℓ (with k, ℓ ∈ {1, 2, 3} and k ̸= ℓ). Let Tk,ℓ denote
+the total number of input photons, Rk,ℓ the number received at
+node ℓ, and Mk,ℓ the number that yield matched measurement
+outcomes. Since the quantum signal traverses two hops—first
+link k (from node k to the hub) and then link ℓ (from the hub to
+node ℓ)—the coexistence scenario (co- or counter-propagation)
+
+1
+
+3
+
+(b) Star network tomography
+
+Fig. 3: Link and network tomography illustrations. Blue thick
+arrows represent classical signals, and other thinner arrows
+represent quantum signals. In Figure 3a, the quantum and clas-
+sical signals share a single fiber link via WDM. In Figure 3b,
+a star-topology network carries two or more classical signals
+on different wavelengths (from the bottom left node) into the
+center node, where wavelength switching routes each classical
+signal to a separate output fiber.
+
+and ˆs combines the three per-scenario success estimates to
+reduce measurement noise. Explicitly, each scenario supplies
+its own unbiased estimate ˆs(x) := (2M (x) − R(x))/T (x) of the
+same s, and ˆs = (cid:80)2
+x=0 wxˆs(x) with (cid:80)
+x wx = 1; (16) uses the
+equal weights wx = 1/3. The three scenarios are independent
+runs, so by (17) below the minimum-variance choice would
+be wx ∝ T (x)/[s(1 − s) + d(x)], which reduces to 1/3 exactly
+when that ratio is constant in x; we keep equal weights because
+the optimal ones depend on the parameters being estimated.
+The photon-loss ratio then follows from the normalization
+in (1), ˆq = 1− ˆs− ˆd(0), completing the closed-form estimate of
+all link parameters (ˆs, ˆq, ˆd(0), ˆd(1), ˆd(2)). From these estimates,
+the depolarization probabilities are ˆp(x) = ˆd(x)/(ˆs + ˆd(x)) for
+x = 0, 1, 2.
+
+Remark 1. The estimators in (16) assume that data from
+all three scenarios—including the no-classical-signal baseline
+(T (0), R(0), M (0))—are available. If only the two coexistence
+scenarios are measured, the same form applies with ˆd(x) =
+2(R(x) − M (x))/T (x) for x = 1, 2 and ˆs = 1
+x=1(2M (x) −
+2
+R(x))/T (x). In this two-scenario case the loss ratio ˆq is not
+identifiable, as it requires the x = 0 baseline ˆd(0).
+
+(cid:80)2
+
+8
+
+on each link depends on the direction of its classical signal
+relative to the quantum signal. To make this dependence
+explicit, we define an indicator x(e, i) ∈ {1, 2}, where e is
+the link index and i is the quantum-signal direction: i = 1
+for end-to-hub and i = 2 for hub-to-end; x(e, i) = 1 denotes
+co-propagation and x(e, i) = 2 denotes counter-propagation.
+For example, x(k, 1) = 1 means that on link k the end-to-
+hub quantum signal is co-propagating with the classical signal,
+while x(k, 2) = 2 means that on the same link the hub-to-end
+quantum signal is counter-propagating. With this notation, the
+first hop uses x(k, 1) and the second hop uses x(ℓ, 2).
+
+Following the procedure in Figure 2, and writing r(x)
+
+:=
+sk + d(x)
+for the received ratio of link k under scenario x
+k
+(the per-link instance of (3)), the parameters of the two links
+involved (those incident to nodes k and ℓ) satisfy, for k, ℓ ∈
+{1, 2, 3} and k ̸= ℓ,
+
+k
+
+e = se + d(x)
+
+to the coexistence setting is the direction-dependent received
+ratio r(x)
+and the resulting depolarization-gauge
+degeneracy in (18), which has no classical loss-tomography
+counterpart and motivates the single-link classical-flip strategy
+below.
+
+e
+
+e
+
+Physically,
+
+that degeneracy is the following. Each link
+contributes two unknowns to (18)—the ratio a probe sees
+travelling end-to-hub, r(x(e,1))
+, and the one it sees travelling
+hub-to-end, r(x(e,2))
+—and every probe traverses exactly one
+e
+link in each direction. Scaling all three end-to-hub ratios by
+λ > 0 and all three hub-to-end ratios by 1/λ therefore leaves
+all six products unchanged, so static probing determines the
+products r(1)
+but not the ratios r(1)
+that separate
+co- from counter-propagation. Reversing the classical signal
+on one link is the Z2 operation on x(e, i) that breaks this
+symmetry; Lemma 3 makes it precise.
+
+e /r(2)
+
+e r(2)
+e
+
+e
+
+
+
+
+
+
+r(x(k,1))
+k
+
+r(x(ℓ,2))
+ℓ
+
+=
+
+(cid:32)
+sℓ+
+
+sk
+
+(cid:33)
+d(x(ℓ,2))
+ℓ
+2
+
++d(x(k,1))
+k
+
+sℓ+d(x(ℓ,2))
+ℓ
+2
+
+=
+
+Rk,ℓ
+Tk,ℓ
+
+Mk,ℓ
+Tk,ℓ
+
+(18)
+
+(19)
+
+Although (18) also produces six equations (one per ordered
+pair), only five are independent, so this group alone does not
+determine all six unknowns {d(x)
+: k ∈ {1, 2, 3}, x ∈ {1, 2}}.
+k
+We make this precise, together with its resolution, after stating
+the assumption that the flip relies on.
+
+The first equation, (18), accounts for all photons reaching node
+ℓ (those successfully transmitted plus those injected by Raman
+noise on either link): it is the product of the two per-link
+received ratios, the two-link instance of a multiplicative law
+that we generalize to arbitrary paths in Proposition 4. The
+second equation accounts for the photons that yield matched
+measurement outcomes: the term sk(sℓ + d(x(ℓ,2))
+/2) corre-
+sponds to photons successfully transmitted on link k and then
+either successfully transmitted on link ℓ (sksℓ, all matched)
+or depolarized on link ℓ (skd(x(ℓ,2))
+/2, only half matched);
+ℓ
+the term d(x(k,1))
+(sℓ + d(x(ℓ,2))
+)/2 corresponds to depolarized
+ℓ
+photons emerging from link k that then traverse link ℓ—all of
+which are depolarized, so only half yield matched outcomes.
+Rearranging, we obtain, for k, ℓ ∈ {1, 2, 3} and k ̸= ℓ,
+
+k
+
+ℓ
+
+sksℓ =
+
+2Mk,ℓ − Rk,ℓ
+Tk,ℓ
+
+.
+
+(20)
+
+The six instances of (20) (one per ordered pair k ̸= ℓ) involve
+only the success ratios {sk}; we can therefore solve for them
+independently as
+
+(cid:115)
+
+ˆsk :=
+
+Qk,ℓQk,m
+Qℓ,m
+
+,
+
+(21)
+
+distinct k, ℓ, m ∈
+for
+(2Mk,ℓ−Rk,ℓ)+(2Mℓ,k−Rℓ,k)
+2Tk,ℓ
+
+:=
+symmetrizes over the two probe
+directions between nodes k and ℓ (assuming Tk,ℓ = Tℓ,k for
+simplicity).
+
+{1, 2, 3}, where Qk,ℓ
+
+through both hops. By (20),
+
+The quantity 2Mk,ℓ − Rk,ℓ isolates the photons that survive
+polarization-intact
+the intact
+population, sksℓ, composes multiplicatively—exactly as per-
+link pass-probabilities do in classical multicast loss tomog-
+raphy [22]. The success-ratio estimator (21) is therefore the
+quantum analogue of the classical tree loss estimator, with se
+playing the role of a link pass-probability, which lets us inherit
+its identifiability and sample-complexity results. What is new
+
+Assumption 2 (Flip invariance). Reversing the classical-
+signal direction on a link changes which propagation mode
+(co- vs. counter-) a given quantum probe encounters, but
+leaves the two per-link depolarization ratios d(1)
+un-
+changed in value. Equivalently, the flip interchanges x(e, 1) ↔
+x(e, 2) without introducing new unknowns, so the reversed-
+direction batch reuses the same six unknowns {d(x)
+
+e , d(2)
+e
+
+k }.
+
+e
+
+e = r(x)
+
+Lemma 3 (Gauge degeneracy and gauge fixing). Taking
+logarithms of the six instances of (18) gives a linear system
+Au = b in the six log-received-ratios ue,x = log r(x)
+,
+with A the 6 × 6 probe-by-unknown incidence matrix and
+bk,ℓ = log(Rk,ℓ/Tk,ℓ). Then rank A = 5 and ker A =
+span{v}, where v assigns +1 to each link’s end-to-hub
+received ratio and −1 to its hub-to-end one. Consequently
+u—and hence d(x)
+e − se, with {se} already fixed
+by (21)—is determined only up to the gauge orbit u + tv.
+Under Assumption 2, reversing the classical-signal direction
+on a single link supplies one further probe equation, i.e. a row
+F with F v ̸= 0; appending it fixes the gauge, giving a stacked
+system of full column rank 6 with a unique solution. Flipping
+any single link suffices. Note that F is a measured row, not
+an arbitrary constraint, so it selects the physical point of the
+orbit rather than a conventional one.
+2 , r(1)
+1 , r(1)
+Proof. In the ordering (r(1)
+3 ), the in-
+cidence matrix of the six ordered pairs in (22) has rank 5
+with null space spanned by v = (+1, −1, −1, +1, −1, +1)
+(each row sums two entries of v with opposite signs, so
+Av = 0). Stacking any single flipped-link batch adds a row
+not orthogonal to v, removing the null direction and giving
+rank 6; the unique solution then follows by back-substitution,
+e.g. r(1)
+(R1,2/T1,2)(R′
+the flipped-link measurement.
+
+1,3/T1,3)/(R3,2/T3,2) with R′
+
+1 , r(2)
+
+3 , r(2)
+
+2 , r(2)
+
+1 =
+
+(cid:113)
+
+1,3
+
+To fix the gauge we therefore flip the direction of the classi-
+cal signal on one link—say link 3—so that the mapping on that
+
+link is swapped between the two probe directions (i.e., x(3, 1)
+and x(3, 2) are interchanged). This yields a second batch of
+measurements, from which we obtain a complementary set
+of equations (23). Putting the original and alternative groups
+together gives
+
+
+
+
+
+
+
+
+
+
+3
+
+3
+
+2
+
+2
+
+1
+
+1
+
+1 r(1)
+r(1)
+r(1)
+1 r(1)
+r(2)
+2 r(2)
+2 r(1)
+r(2)
+r(2)
+3 r(2)
+3 r(1)
+r(2)
+1 r(1)
+r(1)
+r(1)
+1 r(2)
+r(2)
+2 r(2)
+2 r(2)
+r(2)
+r(1)
+3 r(2)
+3 r(1)
+r(1)
+
+2
+
+1
+
+3
+
+3
+
+1
+
+2
+
+= R1,2
+T1,2
+= R1,3
+T1,3
+= R2,1
+T2,1
+= R2,3
+T2,3
+= R3,1
+T3,1
+= R3,2
+T3,2
+= R1,2
+T1,2
+= R1,3
+T1,3
+= R2,1
+T2,1
+= R2,3
+T2,3
+= R3,1
+T3,1
+= R3,2
+T3,2
+
+,
+
+.
+
+(22)
+
+(23)
+
+Combining (21), (22), and (23) yields estimators for all per-
+
+link parameters of the star network.
+
+We note that flipping the classical-signal direction on a
+single link is the asymmetry that breaks this degeneracy. Cru-
+cially, this flip is power-preserving under mild and commonly
+satisfied conditions: the Raman-induced depolarization that
+a probe accumulates scales with the time-averaged classical
+power rather than with the data payload, since the injected
+noise photons integrate over a detection window vastly longer
+than a classical symbol period [13], [30]. Whenever the classi-
+cal launch power is held at a fixed target—for instance a strong
+carrier on which the modulation is a small perturbation, a
+constant-envelope (phase- or polarization-) modulation format,
+or an amplifier output clamped by automatic power control—
+reversing the propagation direction on a link leaves d(1)
+and d(2) unchanged in magnitude and merely interchanges
+which one a given probe sees. The single-link flip therefore
+reuses exactly the same per-link unknowns. Such a reversal
+is practical in several deployments—bidirectional links with
+matched transceivers, a dedicated fixed-power pilot tone, or
+software-defined/ROADM networks where the control plane
+reroutes an individual channel per link—and in a star it
+is a local operation between the hub and one end node,
+performed during a scheduled maintenance window rather than
+a network-wide reconfiguration.
+
+Assumption 2 can moreover be relaxed. Suppose the re-
+versed batch perturbs the flipped link’s depolarization to
+d(x)
+3 → d(x)
+3 (1 + εx) through a launch-power or transceiver
+mismatch. Because the success-ratio estimator (21) uses only
+2M − R = T (cid:81)
+k sk, it is independent of d(x) and hence
+unbiased to all orders in ε; the mismatch enters only the
+depolarization recovery, where the flipped entries of (23) carry
+a relative bias of order εx p(x)
+that vanishes as εx → 0.
+3
+Here p(x)
+is link 3’s depolarization probability
+
+3 = d(x)
+
+3 /r(x)
+
+3
+
+of §II, not a received ratio: the perturbation moves r(x)
+3 + εxd(x)
+r(x)
+
+3 , a relative change of εxp(x)
+3 .
+
+3
+
+A. Extension to General Topologies
+
+9
+
+to
+
+e
+
+= se + d(xe)
+
+While the preceding development in this section focused
+on the star network, the multiplicative nature of the success
+ratio se and the received ratio r(xe)
+(defined
+in Section II) allows for an extension to general topologies.
+In a general network, an end-to-end quantum probe traverses
+a path P consisting of a sequence of coexisting fiber links.
+Based on the model in Section II, the following proposition
+expresses the end-to-end observables of such a path in terms of
+the per-link parameters, generalizing the two-link star-network
+relations (18)–(20).
+
+e
+
+Proposition 4. Consider an end-to-end quantum probe that
+traverses a path P of coexisting fiber links, where each link
+e ∈ P has success ratio se and depolarization ratio d(xe)
+, with
+xe ∈ {1, 2} denoting the coexistence scenario (co- or counter-
+propagation) encountered on link e. Let TP , RP , and MP
+denote the numbers of input, received, and matched-outcome
+photons of the probe, respectively. Then the expected end-to-
+end observables satisfy
+
+e
+
+RP
+TP
+
+2MP − RP
+TP
+
+=
+
+=
+
+(cid:89)
+
+e∈P
+(cid:89)
+
+e∈P
+
+(se + d(xe)
+
+e
+
+) =:
+
+r(xe)
+e
+
+,
+
+(24)
+
+(cid:89)
+
+e∈P
+
+se.
+
+(25)
+
+(xej )
+ej
+
+Proof. We generalize the two-link composition (18)–(20) to an
+n-link path by tracking how the received-photon population
+splits according to polarization. Order the path as P =
+(e1, . . . , en), with the probe entering e1 first and exiting en
+last, and abbreviate sj := sej , dj := d
+, and rj := sj + dj
+for the success, depolarization, and received ratios of the j-
+th link. Split the population surviving the first j links into
+two disjoint groups. Let Ij be the expected number that are
+polarization-intact, i.e. successfully transmitted by every one
+of those j links, so the encoded state is preserved. Let Dj
+be the expected number that are depolarized, with uniformly
+random polarization—either signal photons depolarized along
+the way or Raman photons injected by the classical signal.
+Every input photon starts intact, so I0 = TP and D0 = 0.
+Because an intact photon always yields the matched outcome
+whereas a depolarized one does so with probability 1
+2 (cf. the
+single-link rule (3)), the received and matched counts after j
+links are
+
+R(j) = Ij +Dj, M (j) = Ij + 1
+
+2 Dj =⇒ 2M (j) −R(j) = Ij.
+(26)
+That is, 2M − R counts exactly the photons that survive intact
+through all j links.
+
+Adding an additional link ej results in population changes
+analogous to those of the single-link channel of §II. An intact
+photon stays intact only when it is successfully transmitted
+(ratio sj); otherwise it is depolarized (intrinsic fraction d(0)
+) or
+joined by a freshly injected Raman photon (fraction dj −d(0)
+),
+and the two together contribute dj Ij−1 depolarized photons.
+
+j
+
+j
+
+10
+
+An already-depolarized photon, by contrast, can never recover
+its polarization: it survives depolarized with probability sj +
+d(0)
+, and the Raman photons scattered from the classical signal
+j
+make up the remainder. The depolarized stream is therefore
+scaled by exactly rj = sj + dj, a population factor rather
+than the survival probability of a single photon. This gives the
+linear recursion
+
+Ij = sj Ij−1,
+
+Dj = dj Ij−1 + rj Dj−1.
+
+(27)
+
+For n = 2 this reproduces the two-link relations exactly: M2 =
+I2 + 1
+2 D2 recovers (19), while R2 = I2 +D2 = (s1 +d1)(s2 +
+d2) TP recovers (18).
+
+The intact branch of (27) is decoupled and telescopes im-
+mediately to In = (cid:0) (cid:81)n
+e∈P se. Substituting
+this into the identity (26) at the end of the path (j = n) yields
+
+(cid:1)I0 = TP
+
+j=1 sj
+
+(cid:81)
+
+2MP − RP
+TP
+
+=
+
+In
+TP
+
+=
+
+(cid:89)
+
+e∈P
+
+se,
+
+which is (25); the two-link estimator (20) is the special case
+n = 2. Likewise, summing the two parts of (27) gives R(j) =
+(cid:1) = rjR(j−1), so the received count
+(cid:0)Ij−1 +Dj−1
+Ij +Dj = rj
+is multiplicative as well,
+
+RP = R(n) =
+
+(cid:16) n
+(cid:89)
+
+(cid:17)
+
+rj
+
+j=1
+
+TP = TP
+
+(cid:0)se + d(xe)
+
+e
+
+(cid:1),
+
+(cid:89)
+
+e∈P
+
+which is (24).
+
+j
+
+Remark 5 (Injection convention). With νj := dj − d(0)
+the
+Raman excess, the recursion (27) adds νjR(j−1) at link j:
+injected photons are proportional to the population arriving
+there. This matches the per-link calibration, in which νj is an
+excess per received photon, and is what the emulation of §VI-C
+generates. Spontaneous Raman is pumped by the classical
+signal alone, however, so a deployed path would attenuate
+link j’s injection only downstream, giving RP /TP = (cid:81)
+j tj +
+(cid:80)
+. The two agree when
+one link dominates the injection or the per-hop transmittances
+approach unity. We keep the multiplicative form, under which
+the estimators below are derived and validated.
+
+k>j tk with tj := sj + d(0)
+
+j νj
+
+(cid:81)
+
+j
+
+a) Relation to prior work and novelty: The recursive
+peeling/promotion machinery we use below for trees, and
+the path-decomposition idea for meshes, are the progressive-
+etching procedure of our prior work [12], developed there for
+bit-/phase-flip channels with SPAM errors; we do not claim
+that recursion as new. The contribution of this section is what
+makes that machinery applicable to coexistence channels:
+(i) Proposition 4, which shows that the coexistence observables
+RP /TP and (2MP − RP )/TP compose multiplicatively along
+a path even though Raman injection makes the received ratio
+r(xe)
+a per-photon yield rather than a survival probability
+e
+(§III)—a property absent from the additive flip-channel ob-
+servables of [12]; and (ii) the direction-dependent unknowns
+d(1)
+e , d(2)
+e , resolved by the single-link classical-flip protocol of
+§V, which have no analogue there.
+
+1) Peeling Algorithm for Tree Topologies:
+
+e , d(2)
+
+a) Notation: The network is an undirected graph in
+which each link e = {u, v} is one coexisting fiber with
+parameters se and d(1)
+e . Here it is a tree T = (V, E):
+connected and acyclic, so |E| = |V | − 1 and any two nodes
+are joined by a unique path, whose link set we write P (i, j).
+A leaf has degree one, a leaf link is incident to a leaf, and
+monitors (set M, initially the leaves) are the nodes where
+probes are prepared and measured. We use the calligraphic
+T for the tree to avoid a collision with the launched-photon
+count T of §II.
+
+By a probe ratio we mean one of the two end-to-end path
+observables of Proposition 4, formed from the counts of probes
+exchanged between monitors i and j and, as in §V, averaged
+over the two probe directions:
+
+Qi,j := 1
+2
+
+(cid:0)Q→
+
+i,j + Q→
+j,i
+
+(cid:1) (25)=
+
+(cid:89)
+
+se,
+
+(28)
+
+Gi,j := (cid:112)Λi,j Λj,i
+
+(24)=
+
+e∈P (i,j)
+
+(cid:89)
+
+ge,
+
+e∈P (i,j)
+
+(29)
+
+(cid:113)
+
+where Q→
+
+i,j := (2Mi,j − Ri,j)/Ti,j and Λi,j := Ri,j/Ti,j are
+
+e r(2)
+r(1)
+
+the one-directional forms and ge :=
+e . We call Qi,j
+the success probe ratio and Gi,j the received probe ratio; these
+are the only two path quantities the estimators below consume.
+Averaging is optional for Q, whose factors se do not depend
+on the propagation mode, but necessary for the received side:
+reversing the probe direction reverses the mode on every link,
+e r(2)
+so Λi,jΛj,i contributes r(1)
+per link and Gi,j alone is
+e
+multiplicative in a direction-independent quantity. Note that
+ge is the gauge-invariant combination of Lemma 3.
+
+Building on the path observables of Proposition 4,
+the
+peeling estimator reuses the leaf-link-then-promote schedule
+of the progressive-etching procedure [12],
+instantiated on
+the multiplicative success- and received-ratio observables of
+coexisting links. For tree-structured networks, we can employ
+a “peeling” algorithm to identify all per-link parameters using
+probes between leaf nodes. A link e incident to a leaf node v
+can be isolated by considering paths to two other leaf nodes j
+and k located in different subtrees relative to v’s parent. Let
+Qv,j, Qv,k, and Qj,k be the end-to-end success ratios for the
+respective paths. Then, the success ratio of the leaf link e is
+given by
+
+(cid:115)
+
+ˆse =
+
+Qv,jQv,k
+Qj,k
+
+,
+
+(30)
+
+which is identical in form to the star-network estimator in (21).
+Once ˆse is determined, its effect can be “peeled off” from other
+paths containing e, allowing for the recursive estimation of in-
+ternal link parameters. The identical construction on the sym-
+metrized received probe ratios returns ˆge = (cid:112)Gv,jGv,k/Gj,k.
+(The unsymmetrized Λi,j cannot be used here:
+the mode
+indices on the shared sub-paths of v → j and j → k are
+then opposite and fail to cancel.) This recursive procedure—
+identify a current leaf link, peel it off, and promote its far
+endpoint to a monitor so that interior links in turn become
+leaf links—is summarized in Algorithm 1 and illustrated on
+a five-link tree in Fig. 4. Two preconditions make each step
+well defined. First, the chosen leaf link must be branching: its
+
+interior endpoint u must have two further monitors in distinct
+components of T \ {u}, so that the paths v → j and v → k
+traverse e and diverge at u while j → k avoids e; this is
+exactly the condition under which (cid:112)Qv,jQv,k/Qj,k = se.
+Any tree with at least three leaves contains such a link, and
+peeling preserves the property—removing e and promoting
+u keeps the residual graph a tree with the promoted node
+available as a required monitor—so the loop terminates after
+|E| peels. (A pure degree-two chain, in which no interior
+node branches, is the lone exception and falls back to the
+log-linear least-squares formulation described below.) Second,
+every Q entering the square root must be strictly positive,
+which holds once the sample size is large enough that the
+empirical Q = (2M − R)/T stays positive.
+
+e
+
+2 log(cid:0)r(1)
+
+(cid:1), so that log r(1,2)
+
+b) Separating the two propagation modes: Symmetriza-
+tion is deliberately lossy: it discards the direction asymmetry
+Λi,j/Λj,i, which is exactly what distinguishes r(1)
+from r(2)
+e .
+e
+e /r(2)
+Writing δe := 1
+= log ge ±δe,
+e
+each probe contributes a signed row in the δe whose signs are
+fixed by the modes it meets; one traffic configuration therefore
+leaves only the kernel of the resulting matrix A1 undetermined
+(one dimensional for the three-link star, matching Lemma 3).
+A second round reversing the classical signal on a known
+subset S ⊆ E contributes further rows AS, and the d(x)
+are
+identifiable if and only if the stacked matrix [A1; AS] has full
+column rank |E|—which the single-link flip of §V achieves
+on the star. Being signed and supported only on S, this system
+admits no leaf-link cancellation, so we solve it by least squares
+rather than by peeling.
+
+e
+
+2) General Graphs and Path Selection: For general mesh
+topologies, the estimation problem can be transformed into a
+system of linear equations by taking the logarithm of the path
+observables in Proposition 4 (Eqs. (24) and (25)). For instance,
+for the success ratios, we have
+
+(cid:88)
+
+e∈P
+
+log se = log
+
+(cid:18) 2MP − RP
+TP
+
+(cid:19)
+
+.
+
+(31)
+
+This is precisely the log-additive linear system of classical loss
+tomography [22], here applied to the intact-photon success ra-
+tios se rather than to classical packet pass-probabilities. Given
+a sufficient set of independent paths {P }, this system can be
+solved using standard linear regression or maximum likelihood
+techniques. To resolve the direction-dependent depolarization
+parameters d(1)
+e , one can perform multiple mea-
+e
+surement rounds with different classical signal configurations,
+ensuring that each link is probed in both co- and counter-
+propagation modes.
+
+and d(2)
+
+The condition for this system to be solvable is exactly the
+
+classical route-identifiability condition [7].
+
+Proposition 6 (Identifiability). Fix a probe set P and let A ∈
+{0, 1}|P|×|E| be the path-by-link incidence matrix with AP,e =
+1 iff e ∈ P . The per-link log-success-ratios {log se}e∈E (resp.
+the log-received-ratios {log r(x)
+e }) are uniquely identifiable
+from the expected end-to-end observables (25) (resp. (24)) if
+and only if A has full column rank, rank(A) = |E|.
+
+Proof. Taking logarithms of (25) gives the linear system
+Ax = b with xe = log se and bP = log((2MP − RP )/TP ).
+
+11
+
+A linear map is injective iff its matrix has full column rank,
+so x is determined uniquely by b iff rank(A) = |E|; the same
+argument applies to {log r(x)
+
+e }.
+
+For trees,
+
+the leaf-to-leaf paths yield full column rank
+and Algorithm 1 is the constructive solver realizing it; for
+meshes, any probe set with rank(A) = |E| gives a unique
+least-squares estimate. Separating d(1)
+additionally
+e
+requires each link to appear in P under both propagation
+modes, generalizing the single-link flip of §V.
+
+from d(2)
+e
+
+a) Relation to the star gauge fixing: This multi-round
+protocol is the general-topology form of the single-link clas-
+sical flip of §V, and the rank condition of Proposition 6 plays
+the role that Lemma 3 plays for the star. Each probe touches,
+on every link it traverses, only the one propagation mode it
+happens to encounter; so when monitors sit at the network
+edge and no probe isolates a single link, a path can meet
+different links in opposite modes, which may leave A column-
+rank deficient—its kernel being the residual gauge. The two-
+link star is the canonical case. Reconfiguring the classical
+traffic adds no unknowns (Assumption 2) but adds rows, so the
+incidence-rank condition is really a statement about how many
+distinct traffic configurations must be exercised, not merely
+how many paths are probed.
+
+3) Sample Size and Accuracy: As suggested in related
+network tomography studies, the accuracy of these estima-
+tors depends on the number of probes TP . As the network
+depth increases, the end-to-end success ratio (cid:81) se decreases
+exponentially, requiring larger sample sizes to maintain low
+relative error. We confirm these properties with Monte-Carlo
+simulations in the Validation section (§VI-D), where the peel-
+ing and least-squares estimators recover all per-link parameters
+on tree and cyclic-mesh networks and the required sample size
+is shown to grow exponentially with path depth; there we also
+observe that symmetrized probes (averaging Qk,ℓ and Qℓ,k)
+significantly reduce the variance in noisy environments.
+√
+
+Since these estimators are
+
+T -consistent (§IV-A), a vari-
+ance reduction of factor κ is a sample-size reduction of the
+same factor. Averaging the two probe directions combines
+two unbiased estimates of equal variance and correlation
+c, giving κsym = 2/(1 + c) ∈ [1, 2] for c ∈ [0, 1]: at
+most a factor of two, attained only when the directions are
+independent, and less in practice since both traverse the same
+fiber. For calibration, classical loss tomography ties estimator
+variance directly to probe count [22], and Lawrence et al. [33]
+report, in a delay-tomography study, that least-squares moment
+estimators need roughly 1.3×–9× the probes of the MLE for
+equal variance (1.1×–1.3× under generalized least squares).
+The larger classical savings thus come from estimator choice
+and probe design [28], [34], [35] rather than from directional
+symmetrization, for which we know of no classical analogue.
+
+VI. VALIDATION
+
+This section reports the performance of our proposed esti-
+mators for link, star-network, and general-topology tomogra-
+phy. Throughout, we distinguish three validation modes: ex-
+periments denote lab-based testbed measurements; emulations
+denote studies that recombine the measured single-link data
+
+12
+
+A
+
+B
+
+C
+
+D
+
+C
+
+D
+
+C
+
+D
+
+E
+
+A
+
+E
+
+A
+
+F
+
+B
+
+F
+
+B
+
+E
+
+F
+
+(a) Identify leaf links
+
+(b) Peel and push monitors to C, D
+
+(c) Identify interior link C −D
+
+Fig. 4: Progressive peeling on a five-link tree (the same network used for the Monte-Carlo simulations in §VI-D), mirroring
+the etching illustration in [12, Fig. 6]. Blue squares are monitor (leaf) nodes and white circles are internal nodes; violet
+arrows indicate the peeling order from the periphery inward. (a) The four leaf links A−C, B −C, D−E, D−F (green) are
+identified from leaf-to-leaf probes via ˆse = (cid:112)Qv,jQv,k/Qj,k, with monitors at the leaves A, B, E, F . (b) Each identified link
+is “peeled” and its far endpoint promoted to a monitor, pushing the monitors inward to C and D and exposing the interior link
+C −D (orange) as a link between two monitors. (c) The interior link C −D is then identified by the same leaf-link estimator
+ˆse = (cid:112)Qv,jQv,k/Qj,k of (21), now applied with C and D as monitors (red).
+
+(a) Depolar. probability at 0.5 km
+
+(b) Depolar. probability at 5.0 km
+
+(c) Depolar. probability at 15 km
+
+Fig. 5: Depolarization probability vs. wavelength for different fiber lengths and propagation directions, where (Co) denotes
+co-propagation and (Ct) denotes counter-propagation. The feature near 1542 nm is a measurement artifact of the notch filter
+used to suppress the 1542.5 nm classical networking laser (imperfect filter isolation near the laser line) [32], not a property of
+the depolarization channel.
+
+into multi-link configurations; and simulations denote Monte-
+Carlo studies in which all data, including every per-link param-
+eter, are generated on a computer with no testbed provenance.
+For link tomography (§VI-B), we utilize experimental data
+collected by Chapman et al. [32] and focus on verifying the
+correctness of our channel model and the accuracy of our
+proposed estimators. For star network tomography (§VI-C),
+we emulate a multi-link star network from link-level data
+drawn from the same experimental dataset, under two distinct
+link-to-network compilations. Finally, we validate the general-
+topology estimators of §V-A on simulated tree and mesh
+networks (§VI-D).
+
+A. Dataset and Testbed Description
+
+We use subsets of the coexisting fiber dataset collected
+by Chapman et al. [32], which consists of polarization-
+encoded single-photon measurements over fibers of three
+different
+lengths: 0.5 km, 5.0 km, and 15 km. For each
+fiber length, the data span the three coexistence/depolarization
+scenarios x ∈ {0, 1, 2}—(0) no classical signal (pure quan-
+tum signal), (1) co-propagation, (2) counter-propagation—
+together with an auxiliary classical-only run (no quantum
+
+signal, pure classical signal) used only as a baseline in this
+section. We refer to scenario (0) and the classical-only run as
+the non-coexistence cases. The quantum-channel wavelength
+varies across 91 C-band wavelengths from 1528.38 nm to
+1564.68 nm (i.e., 196.150 THz to 191.600 THz), enabling
+the study of wavelength-dependent Raman noise effects. Eight
+wavelengths are selected for analysis.
+
+Input states and measurements. In each experimental run,
+single photons are prepared in one of six polarization states
+spanning three mutually unbiased bases (MUBs): horizon-
+tal/vertical (|H⟩ , |V ⟩), diagonal/anti-diagonal (|D⟩ , |A⟩), and
+right/left circular (|R⟩ , |L⟩). For each input state, the received
+photons are measured in each of the three bases, giving
+three sub-experiments per input state. In each sub-experiment,
+photons are prepared in the fixed input state, transmitted over
+the link, and measured in the fixed basis, with a detected count
+on the order of 105 (the ∼ 1.25 × 105 baseline reported by
+Chapman et al. [32]). In total, the experimental configuration
+yields 36 input-measurement combinations (6 input states ×
+6 measurement outcomes).
+
+Deriving the observables T , R, and M . From each
+experimental configuration we form the 6 × 6 count matrix of
+
+13
+
+(a) 1560 nm wavelength
+
+(b) 1550 nm wavelength
+
+(c) 1545 nm wavelength
+
+(d) 1542 nm wavelength (artifact)
+
+(e) 1540 nm wavelength
+
+(f) 1530 nm wavelength
+
+Fig. 6: Process fidelity vs. distance (km) and propagation direction (co- vs. counter-propagating) for six representative
+wavelengths (the 1535 and 1555 nm panels are omitted; their behavior is qualitatively identical) and different methods: (1)
+Non-Coex, the method of Chapman et al. [32, Figure 10]; (2) Rev Non-Coex, accounting for the depolarization observed
+under pure quantum transmission; (3) Coex QLT, the proposed coexistence quantum link tomography estimator using both co-
+and counter-propagation data (§IV); (4) Coex BPT, Bayesian process tomography from Chapman et al. [32, §II]. The residual
+fidelity gap between QLT and BPT reflects the off-depolarizing (coherent/non-unital) weight that the depolarizing model cannot
+represent.
+
+Algorithm 1 Peeling estimator for tree topologies
+
+Input: Tree T = (V, E); probe ratios Qi,j and Gi,j of (28)–
+
+(29) between monitor (leaf) nodes
+
+Output: Per-link estimates {ˆse, ˆge}e∈E; splitting ˆge into
+needs a second traffic configuration
+
+e , ˆr(2)
+ˆr(1)
+e
+
+initialize: M ← {leaf nodes of T }; D ← ∅
+
+1: while D ̸= E do
+2:
+
+e /∈ D
+
+pick a link e = {v, u} with v ∈ M, u /∈ M, and
+▷ a current leaf link
+choose monitors j, k ∈ M \ {v} whose paths to v first
+
+meet at u
+
+ˆse ← (cid:0)Qv,j Qv,k / Qj,k
+estimator, Eq. (21)
+ˆge ← (cid:0)Gv,j Gv,k / Gj,k
+
+(cid:1)1/2
+
+(cid:1)1/2
+
+analogue
+
+▷ leaf-link
+
+▷ received-ratio
+
+peel: for all m ∈ M \ {v} do Qu,m ← Qv,m/ˆse,
+▷ u inherits the residual
+
+Gu,m ← Gv,m/ˆge
+probe ratios
+
+D ← D ∪ {e}; M ← M ∪ {u} ▷ promote u to
+
+3:
+
+4:
+
+5:
+
+6:
+
+7:
+
+a monitor
+
+8: return {ˆse, ˆge}e∈E
+
+the six input states against the six measurement outcomes (the
+
+three MUBs). From this matrix we extract the three quantities
+required by our channel model (§II). The first is the total
+number of input photons T , i.e. the effective launched-photon
+count. We back-calibrate T from the detected counts using the
+measured fiber-plus-system insertion-loss budget, rather than
+measuring the source flux directly.
+
+input states and all
+
+The second is the total number of received (detected)
+photons R, summed across all
+three
+measurement bases. The third is the number of matched-
+outcome photons M , which we obtain from the same ag-
+gregated counts together with the estimated depolarization
+probability via M = R (1 − p/2). This relation is exactly
+the model identity E[M/T ] = s + d(x)/2 = r(x)(1 − p(x)/2).
+Aggregating over bases leaves the link relations intact.
+Because R and M share the same aggregation and the same T ,
+the number of bases summed cancels in the ratios R/T and
+M/T . The single-basis relations of (3) therefore carry over
+unchanged.
+
+We subtract detector dark counts and background before
+forming the observables. Such background is independent of
+the classical-traffic configuration, so it cancels in the success-
+ratio estimator ˆs = (2M − R)/T : a background of C counts
+adds C to R and C/2 to M , and 2(C/2) − C = 0. It biases
+each ˆd(x) only by a common +C/T , which leaves the Raman
+excess d(x) − d(0) unaffected.
+
+14
+
+We compute these quantities for the three depolarization
+scenarios x ∈ {0, 1, 2}, giving the triples (T (x), R(x), M (x)).
+An auxiliary classical-only run (no quantum signal) yields one
+further triple, which only the non-coexistence baselines below
+consult.
+
+Finally, we note that
+
+the two headline link quanti-
+ties reported below—the depolarization probability p(x) =
+d(x)/r(x) = 2(R − M )/R and the process fidelity, which is
+a function of p(x) alone—are exactly invariant to the absolute
+scale of T . The QLT-versus-BPT comparisons are thus robust
+to any miscalibration of the launched-photon count. Only the
+absolute success ratio s, together with the Table I parameters
+that depend on it, scales with T .
+
+Polarization drift correction. Due to fiber birefringence,
+the polarization reference frame drifts slowly, misaligning the
+measurement bases with the prepared states by an unknown
+SU (2) rotation Ut that is constant within a batch but varies
+across batches. Parameterizing Ut by three angles, we estimate
+it per batch by maximum likelihood estimation over the full
+36-entry input–measurement table and apply U −1
+to realign
+the bases. This is not circular: Ut is a purity-preserving frame
+rotation (Ut(I/2)U †
+t = I/2), so it cannot absorb the basis-
+independent depolarization p I/2; the unitary and depolariza-
+tion parameters are separately identifiable in the joint fit, and
+genuine coherent errors are corrected rather than mislabeled
+as success. After realignment, the residual channel is well
+approximated by the isotropic depolarizing channel of §II.
+
+t
+
+Baseline: Bayesian process tomography (BPT). As a
+baseline, we compare our link tomography estimators against
+the Bayesian process tomography (BPT) method of Chapman
+et al. [32], which reconstructs the full single-qubit quantum
+process matrix from the 36-entry input-measurement combina-
+tions via Bayesian inference. While BPT provides a complete
+channel characterization, it is computationally far heavier: it is
+a member of the broad family of quantum process tomography
+(QPT) methods [36], [37] that reconstruct an unconstrained
+single-qubit process matrix (a 4 × 4 complex matrix with
+d4 − d2 = 12 free real parameters under complete positivity
+and trace preservation) by drawing samples from a posterior
+via iterative Bayesian inference; structured variants such as
+compressed-sensing QPT [38] and gate-set tomography [39]
+reduce this cost under sparsity or calibration-robustness as-
+sumptions but still target the full process matrix. By contrast,
+our QLT estimator (16) exploits the depolarization structure
+to recover the four physical parameters (s, d(0), d(1), d(2)) in
+closed form, requiring only O(1) arithmetic on the aggregate
+counts—no iterative optimization or sampling—thus providing
+a complete structured channel characterization at far lower
+computational cost, at the price of the modeling assumptions
+BPT does not require.
+
+B. Link Tomography Analysis
+
+We
+
+evaluate
+
+the
+from §IV on
+above,
+
+tors
+described
+{1530, 1535, 1540, 1542, 1545, 1550, 1555, 1560} nm.
+
+link-level
+the
+
+tomography
+fiber
+
+estima-
+dataset
+quantum-signal wavelengths
+
+coexisting
+
+using
+
+a) Method comparison: We compare four methods, orga-
+nized into two groups: two non-coexistence baselines that esti-
+mate parameters from data collected in isolation (either purely
+quantum or purely classical
+traffic), and two coexistence
+methods that jointly exploit data from all three coexistence
+scenarios.
+
+The non-coexistence baselines exploit a simple separation:
+when only the quantum signal is present, the observed depolar-
+ization is attributable solely to the fiber and system itself (i.e.,
+d(0)); when only the classical signal is present, the observed
+depolarized photons are attributable solely to co- or counter-
+propagating classical traffic1 (i.e., d(x) − d(0) for x = 1, 2).
+This separation lets these baselines read off depolarization
+parameters directly from each isolated measurement, without
+solving the coupled system in (15). Concretely: (1) Non-
+Coex [32, Figure 10] estimates the classical-traffic-induced
+component d(x) − d(0) from the classical-only data and ig-
+nores the baseline depolarization d(0); (2) Rev Non-Coex
+is our revision that adds back the baseline term, yielding
+(d(x) − d(0)) + d(0) = d(x).
+
+The coexistence methods, in contrast, use measurements
+from all three coexistence scenarios (no classical signal, co-
+propagation, and counter-propagation) jointly: (3) Coex QLT,
+our coexistence quantum link tomography estimator (§IV),
+which solves (15) in closed form using both co- and counter-
+propagation data; and (4) Coex BPT, the Bayesian process
+tomography baseline of Chapman et al. [32].
+
+b) Depolarization probability estimation: Figure 5 shows
+the estimated depolarization probabilities p(x) = d(x)/r(x)
+as a function of quantum-channel wavelength for the three
+fiber lengths. Several observations are worth noting. First,
+counter-propagation consistently produces greater depolariza-
+tion than co-propagation, confirming the direction-dependent
+noise structure predicted by our model (§III-C, Eqs. (13)–
+(14)). Second, depolarization increases with fiber length, as
+expected from the accumulation of Raman scattering noise
+over longer propagation distances. Third, our QLT estimates
+closely match the BPT baseline across all wavelengths and
+fiber lengths, validating the isotropic-depolarization approxi-
+mation that remains after frame-drift correction. Finally, the
+anomalous feature near 1542 nm is a notch-filter artifact, not
+a property of the depolarization channel: Chapman et al. [32]
+attribute it to the notch filter used to remove the 1542.5 nm
+classical networking laser, whose imperfect isolation lets the
+laser tails leak through near 1542 nm. It is therefore unrelated
+to any misspecification of our channel model.
+
+c) Process fidelity estimation: We report
+
+the process
+fidelity as the Choi–Jamiołkowski state fidelity [40] between
+the depolarizing channel implied by each estimator and the ex-
+perimentally reconstructed channel. Writing ρP for the trace-
+normalized Choi state of a channel P, an estimate ˆp(x) yields
+the depolarizing-channel Choi ρdep(ˆp(x)), and we report the
+Uhlmann fidelity F = (cid:0) Tr (cid:112)√
+, maximized
+over a local input rotation to remove the residual frame drift,
+
+ρdep ρexp
+
+ρdep
+
+(cid:1)2
+
+√
+
+1To make the parameter interpretation consistent with the coexistence
+scenarios, the co- and counter-propagation cases here correspond to receiving
+the (would-be) quantum signal at the same end as the classical signal or at
+the opposite end, respectively.
+
+with ρexp the Choi state reconstructed by BPT from the same
+dataset. For an ideal depolarizing channel this reduces to the
+entanglement/process fidelity F = 1 − 3
+4 ˆp(x) (not the average
+gate fidelity 1 − 1
+2 ˆp(x)); all four curves of Fig. 6 use this
+identical definition and the same ρexp, so the comparison
+is on equal footing. Figure 6 shows the estimated process
+fidelity as a function of fiber distance for several wavelengths.
+The four methods disentangle three effects. Comparing Non-
+Coex with Rev Non-Coex isolates the accounting value of
+the intrinsic baseline d(0): Non-Coex omits it, producing an
+optimistically biased fidelity, and adding it back removes a
+systematic gap that is an information/accounting effect, not a
+modeling one. Concretely, Non-Coex reads the depolarization
+off the classical-only run and so estimates ˆd(x)
+NC = d(x) − d(0),
+whereas Rev Non-Coex restores the intrinsic term to give d(x).
+Since F = 1 − 3
+4 p(x) with p(x) = d(x)/(s + d(x)), omitting
+d(0) raises the reported fidelity by exactly
+
+∆F =
+
+3
+4
+
+·
+
+s d(0)
+
+(cid:0)s + d(x)(cid:1)(cid:0)s + d(x) − d(0)(cid:1) > 0,
+
+(32)
+
+largest at short reach, where d(x) is small and d(0) is a larger
+share of the total. Both methods assume the same channel and
+the same estimator algebra and differ only in which runs they
+consult, which is why we call the gap an accounting rather
+than a modeling effect. Comparing Rev Non-Coex with Coex
+QLT isolates the value of measuring under genuine coexistence
+rather than additively combining isolated quantum-only and
+classical-only measurements. Finally, comparing Coex QLT
+with Coex BPT—both consuming the full coexistence data—
+isolates the adequacy of the closed-form depolarization model:
+Coex QLT closely tracks the BPT reference, with only a
+small residual gap attributable to the non-depolarizing (coher-
+ent/asymmetric) component the two-parameter model omits.
+Together this establishes that the depolarization channel model
+is an accurate abstraction for process-fidelity prediction in
+QCNs, while the first two comparisons quantify the separate
+benefit of jointly exploiting all coexistence scenarios.
+
+C. Star Network Tomography Emulation
+
+Lacking a multi-link quantum testbed, we evaluate the star
+network tomography methods of §V by composing experimen-
+tally derived link-level descriptions—specifically, the per-link
+channel parameter estimates and the BPT-estimated channel
+maps—into emulated multi-link paths. We emulate a three-link
+star network using link-level estimates from the 192.550 THz
+(≈1555 nm) channel, with fiber lengths of 0.5 km, 5.0 km,
+and 15 km. The hub node connects all three links, and end-
+to-end statistics for each pair of end nodes are computed by
+composing two link-level channel descriptions. We consider
+two compilation strategies that differ in how the individual
+link channels are modeled (Figure 7).
+
+a) Compilation Type I (Idealized Depolarization):
+In
+the first compilation, each link is represented by the ideal-
+ized depolarization channel from §II. The channel parameters
+(s, d(0), d(1), d(2)) for each link are taken from the link to-
+mography estimates of §VI-B. Given these parameters, end-
+to-end measurement statistics are generated by composing two
+
+15
+
+Loss 1
+
+Raman 1
+
+Loss 2
+
+Raman 2
+
+Pass 1
+
+Pass 2
+
+Input
+
+Middle
+
+Output
+
+(a) Illustration of two consecutive links
+
+Loss q
+Raman d(x) − d(0)
+Pass s + d(0)
+
+Type I
+Link Est.
+Link Est.
+Link Est. Bayesian PT
+
+Type II
+Link Est.
+Link Est.
+
+(b) Two types of compilation
+
+Fig. 7: Star network tomography compilation strategies. Each
+end-to-end path traverses two links through the hub. Type I
+uses idealized depolarization channels; Type II uses BPT-
+estimated channel maps.
+
+depolarization channels according to (19): a photon traverses
+link k from the sender to the hub and then link ℓ from the hub
+to the receiver, experiencing the appropriate co- or counter-
+propagation depolarization on each segment depending on
+traffic direction. This compilation provides a
+the classical
+controlled setting where the channel model is exactly matched,
+isolating the estimation accuracy of the network tomography
+algorithms.
+
+b) Compilation Type II (BPT-Based Channel Maps): The
+second compilation uses the full quantum process matrices
+obtained from Bayesian process tomography (BPT) on the
+experimental data, rather than the idealized depolarization
+model. Specifically, for each link and each classical-traffic
+configuration, we use the BPT-estimated channel map P to
+generate end-to-end statistics. Given an input population T ,
+the expected number of received photons is
+R = T (cid:0)sk + d(x(k,1))
+
+(cid:1)(cid:0)sℓ + d(x(ℓ,2))
+
+(33)
+
+(cid:1),
+
+k
+
+ℓ
+
+with sk and d(x)
+taken from the link tomography estimates and
+k
+each factor evaluated at the propagation scenario actually seen
+on that hop (cf. (18)), and the number of matched outcomes
+M is obtained by drawing each of the R received photons’
+outcome from the composed BPT map: we sample |0⟩ with
+probability ⟨0| P2 ◦ P1(|0⟩⟨0|) |0⟩, where P1, P2 are the BPT-
+estimated qubit process maps for the two links. Note that
+the received count R follows the depolarization count model
+(loss and Raman injection are not represented by the 2 × 2
+process maps), while the per-photon matched fraction M/R
+follows the BPT maps; thus Type II stresses model mismatch
+in the polarization/process-fidelity channel—and hence in sk,
+and through dk = rk − sk in the depolarization estimates—
+while the received ratios rk = R/T are governed by the
+depolarization count model.
+
+c) Simulation statistics: The counts are drawn as follows.
+T is deterministic—the batch size, 105 or 1010. Given T ,
+
+16
+
+TABLE I: Channel parameters at 192.550 THz (≈1555 nm)
+for the three fiber lengths (dashed lines in Figs. 8–10).
+
+Channel
+
+Success ratio
+
+Depolarization
+
+length
+
+0.5 km
+5 km
+15 km
+
+s
+
+0.0017
+0.0015
+0.0009
+
+Co-prop. d(1)
+
+Counter-prop. d(2)
+
+0.0306
+0.1659
+0.3355
+
+0.0967
+0.3334
+0.5916
+
+ℓ
+
+k
+
+each hop applies the binomial cascade implied by §II: the first
+hop draws the intact and depolarized populations as two inde-
+pendent binomials, Binom(T, sk) and Binom(T, d(x(k,1))
+)—
+which is what lets R exceed T under Raman injection—and
+the second hop splits each of them again by sℓ and d(x(ℓ,2))
+.
+Then R is the sum of the four resulting populations and
+M = Rss + Binom(R − Rss, 1
+2 ), with Rss the doubly-intact
+population, giving E[R] = T rkrℓ and E[2M − R] = T sksℓ
+as required by (18) and (20). For T > 109 each binomial is
+replaced by N (np, np(1 − p)), rounded and floored at zero—
+the “normal-distribution approximation” of Fig. 9. Type II
+compilation changes only M : the count R is drawn exactly
+as above, since the 2 × 2 BPT maps carry no loss or injection
+information, while each received photon is propagated through
+the composed maps in Kraus form, ρout = P2(P1(|0⟩⟨0|)),
+and matched with probability ⟨0| ρout |0⟩. Since the imple-
+mentation cycles deterministically through the BPT posterior
+samples, M | R is Poisson-binomial rather than binomial, and
+the error bars reflect shot noise at the posterior-averaged map
+rather than posterior uncertainty.
+
+and d(2)
+3
+
+d) Network tomography results: Table I lists the link-
+level parameters used to configure the three-link star net-
+work. To recover all six per-link depolarization parameters,
+the emulation realizes the two-configuration protocol of §V:
+an original batch and a complementary batch in which the
+classical-signal direction on link 3 is flipped (interchanging
+d(1)
+between the two probe directions, cf. (22)–
+3
+(23)), and the combined system is solved in closed form.
+Without the flip only five of the six depolarization equations
+are independent (Lemma 3), so the six per-link depolarization
+parameters shown below could not be identified. We apply
+the star network estimators of §V to the emulated end-to-
+end measurements and examine convergence as a function
+of sample size. For reference,
+the parameter values from
+Table I are plotted as dashed lines in the figures below. In
+these figures, each trial corresponds to one emulation run
+with a fixed batch sample size (e.g., 105 or 1010 photon
+transmissions); the x-axis shows the cumulative number of
+consecutive trials used to refine the estimates. Error bars show
+±1 sample standard deviation across 10 independent macro-
+replicates, each aggregating 100 batches of T photons. As the
+number of trials grows, more measurement data is aggregated,
+and the link-level estimators converge more closely to the true
+parameters.
+
+Figure 8 shows results under Type I compilation with a
+batch sample size of 105: the success ratio s does not reliably
+converge (due to its low magnitude, ∼ 10−3), but the de-
+polarization parameters d(1) and d(2) do. Increasing the batch
+sample size to 1010 (Figure 9) substantially improves stability:
+
+the range of the success-ratio estimates narrows from [0, 0.1] to
+[0, 0.003]. Figure 10 shows Type II compilation results using
+BPT-based channel maps with a batch sample size of 105, il-
+lustrating the estimator’s behavior under more realistic channel
+conditions. Notably, under Type II compilation, a batch sample
+size of 105 already suffices for stable convergence. However,
+because the BPT-predicted matched fraction for the 5-km link
+differs from the depolarization model’s s + d(x)/2 (consistent
+with the imperfect process fidelity in Figure 6), the estimates
+for that link, while stably converging, exhibit a persistent bias
+relative to the ground truth set by the idealized depolarization
+model; this mismatch enters through 2M − R (hence sk) and
+propagates to the depolarization estimates via dk = rk − sk.
+This also explains which parameters carry the visible bias.
+Under Type II only M is perturbed, so ˆr(x)
+k —which consumes
+R/T alone—stays unbiased to leading order and the mismatch
+is carried by ˆsk; since ˆd(x)
+k = ˆr(x)
+k − ˆsk, the displacement
+Bias( ˆd(x)
+k ) = − Bias(ˆsk) is independent of x. The bias is thus
+a per-link effect: on the 5-km link ˆs2 ≈ 0.06 against a truth of
+0.0015, and both of its depolarization estimates are displaced
+downward by that same ≈ 0.06; the 15-km link carries the
+opposite sign, since there ˆs3 sits at the estimator’s positivity
+floor. Because the displacement is shared between the two
+modes, the relative bias is larger for the smaller parameter (≈
+36% for d(1)
+2 ), whereas counter-propagation
+carries the larger error bars since Var( ˆd(x)) grows with d(x)—
+bias and variance rank the two modes oppositely.
+
+2 vs. ≈ 18% for d(2)
+
+√
+
+√
+
+rkrℓ
+
+T sksℓ/
+
+e) Why sample size matters: The estimator (21) relies
+on the difference 2M − R, whose expectation is the product
+of two per-link success ratios, E[2Mk,ℓ − Rk,ℓ] = T sksℓ,
+of order 10−6 T in the coexistence regime. Because each
+received photon contributes a value in {−1, +1} to 2M − R
+(+1 if intact, ±1 with equal probability if depolarized), its
+variance is at most the received count, Var(2M − R) ⩽
+E[R] = T rkrℓ with r = s + d. A Gaussian approximation
+(cid:1), so
+then gives Pr[2M − R < 0] ≈ Φ(cid:0) −
+the square-root estimator is reliable only when this tail is
+small, i.e. when T ≳ rkrℓ/(sksℓ)2. For our star parameters
+this evaluates to ≈ 0.49 at T = 105 (the success ratio
+behaves like a coin flip, explaining its failure to converge in
+Fig. 8) and to ≈ 0 by T = 1010 (explaining the narrowing
+of the estimate range), with the longest, highest-loss link
+setting the binding threshold. This converts the qualitative
+observation into a falsifiable, figure-matching prediction and
+explains why coexistence network tomography needs sample
+sizes orders of magnitude larger than link-level estimation. A
+heuristic absolute value |2M − R| helps Type I compilation
+but worsens the more realistic Type II; the principled small-
+sample remedy is a non-negativity-constrained estimator on
+the binomial likelihood. In our implementation the moment
+ratio is clamped to the physical range and 2M − R is floored
+at machine epsilon to guard against these sub-zero excursions,
+which the quoted success-ratio axes reflect.
+
+To quantify this, we re-ran the Type I emulation with the
+two guards applied to identical generated data (5 seeds × 2000
+macro-replicates). At T = 105 about half the symmetrized
+2M − R values are non-positive, and after 100 batches the
+
+17
+
+(a) Per-link success ratios sk
+
+(b) Per-link co-prop. depolar. ratios d(1)
+k
+
+(c) Per-link counter-prop. depolar. ratios d(2)
+k
+
+Fig. 8: Estimated channel parameters under Type I compilation (sample size 105). Solid markers are the star-network estimates
+as a function of the cumulative number of trials; horizontal dashed lines mark the ground-truth link parameters of Table I; error
+bars show ±1 sample standard deviation across 10 independent macro-replicates, each aggregating 100 batches of T photons.
+
+(a) Per-link success ratios sk
+
+(b) Per-link co-prop. depolar. ratios d(1)
+k
+
+(c) Per-link counter-prop. depolar. ratios d(2)
+k
+
+Fig. 9: Estimated channel parameters under Type I compilation (sample size 1010, with normal-distribution approximation).
+Dashed lines and error bars are as in Fig. 8: dashed lines mark the Table I ground truth, and error bars show ±1 sample
+standard deviation across 10 macro-replicates. Note the narrower success-ratio axis relative to Fig. 8.
+
+(a) Per-link success ratios sk
+
+(b) Per-link co-prop. depolar. ratios d(1)
+k
+
+(c) Per-link counter-prop. depolar. ratios d(2)
+k
+
+Fig. 10: Estimated channel parameters under Type II compilation (sample size 105). Dashed lines and error bars are as in
+Fig. 8. Because the ground truth (dashed) is set by the idealized depolarization model while the data are generated from the
+BPT channel maps, the residual offset visible for the 5-km link is the model mismatch discussed in the text, not an estimator
+failure.
+
+18
+
+Fig. 11: Per-link success-ratio recovery on a five-link tree
+(A − C − B, C − D, D − E, D − F ;
+leaves A, B, E, F )
+using only leaf-to-leaf probes. Leaf links are estimated by
+ˆse = (cid:112)Qv,jQv,k/Qj,k and the internal link C−D is recovered
+by peeling. Estimates (sample size T = 5 × 106, 40 repeats)
+match ground truth for every link, including the internal one;
+error bars are smaller than the markers.
+
+floored estimator is ≈ 6.5× worse in RMSE(ˆs) and ≈ 3.6×
+worse in RMSE( ˆd) than the |2M − R| variant. At T = 1010
+over 100 batches nothing is floored and the two variants agree
+to three significant figures. The harm is not the clipped values
+collapsing toward zero, which costs at most the true s ∼ 10−3,
+but the reverse: a clipped value in the denominator of (21)
+makes the ratio saturate the physical-range clamp and drives
+ˆs to ≈ 0.16. (These figures are for Type I; the Type II variant
+additionally requires the BPT posterior samples.)
+
+To put the scale in perspective, resolving s to within its
+own magnitude requires ∼ 1010 input photons per end-pair; at
+an illustrative clocked source rate of 107–108 transmissions
+per second this is minutes of integration per end-pair, but
+because the requirement grows super-exponentially with depth
+(Fig. 13) the depth-5 case (2.5 × 1011 probes) already pushes
+acquisition to hours. Recovering the small coexistence success-
+ratio signal—rather than the comparatively easy depolarization
+parameters—is therefore the binding practical bottleneck.
+
+D. General-Topology Tomography Simulation
+
+We finally validate the general-topology constructions of
+§V-A—the tree-peeling estimator,
+the general-graph least-
+squares solver, and the sample-size scaling—with Monte-
+Carlo simulations. These simulations reuse the multi-link path-
+composition sampler of the star-network emulation (§VI-C),
+but with all per-link parameters assigned synthetically rather
+than taken from testbed measurements, so all data here are gen-
+erated entirely numerically. These Monte-Carlo simulations
+are deliberately self-consistent: the path sampler composes
+the same depolarization channels the estimators invert, so
+they verify estimator correctness, numerical identifiability, and
+sample-complexity scaling under a correctly-specified model.
+
+They are not a test of model fidelity, which is established
+only at the link level (Figs. 5, 6) and stressed under Type II
+compilation.
+
+a) Peeling on a tree: We construct a five-link tree with
+two internal nodes and four leaves and assign distinct per-link
+success ratios. Using only end-to-end probes between leaves,
+the symmetrized success ratios Q = (2M −R)/T identify each
+leaf link through ˆse = (cid:112)Qv,jQv,k/Qj,k (21), and the interior
+link C −D is then recovered by peeling its leaf contributions
+from a leaf-to-leaf path. Figure 11 shows that all five per-link
+parameters are recovered accurately at T = 5×106 probes per
+path, confirming the correctness of the peeling construction for
+tree topologies.
+
+e∈P log se = log (cid:0)(2MP − RP )/TP
+
+b) General graphs via least squares: For topologies with
+cycles the peeling recursion no longer applies, since no link is
+incident to a leaf. We instead solve the log-linearized system
+of §V-A: taking logarithms of (25) turns each probe into
+(cid:1),
+the linear constraint (cid:80)
+and stacking a sufficient set of paths yields Ax = b with
+xe = log se and A the path-by-link incidence matrix. We
+validate this on a seven-link 2 × 3 ladder (grid) mesh in which
+only the four corner nodes (each of degree two) are probe
+terminals and the two degree-three nodes act as relays. Twelve
+corner-to-corner paths make the incidence matrix full column
+rank (rank 7, cond(A⊤A) ≈ 14), so all seven links—including
+the one between the two relays—are identifiable. Solving in
+the least-squares sense recovers every per-link success ratio,
+with the link-averaged relative error decreasing as T −1/2
+(Figure 12). The same construction applied to the received
+ratios r(x)
+recovers the depolarization parameters once each
+link is probed in both propagation modes.
+
+e
+
+c) Sample size grows with depth: Because the end-to-
+end success signal (cid:81)
+e∈P se shrinks geometrically with path
+length, longer paths demand disproportionately more probes.
+We quantify this on chains of n identical links (se = 0.05,
+de = 0.20) and record the sample size required for the per-
+link estimator ˆs = (cid:0)(2M − R)/T (cid:1)1/n
+to reach 5% relative
+error. A delta-method analysis predicts Treq(n) = [sn(1 −
+sn) + ((s+d)n − sn)]/(n2s2nϵ2), whose per-hop multiplier
+is not constant but grows (38×, 62×, 89× for the simulated
+points), approaching (s+d)/s2 for long paths (= 100 at
+se = 0.05). Figure 13 confirms this law, reproducing the
+simulated probe counts to within tens of percent; the ≈ 59×
+figure is the geometric-mean slope at this illustrative se, and
+in the experimental coexistence regime s ∼ 10−3 (Table I)
+the per-hop factor is far larger. This substantiates the observa-
+tion (Section VII) that network-level estimation in coexisting
+quantum networks demands sample sizes several orders of
+magnitude larger than link-level estimation, and motivates the
+variance-reduction techniques (symmetrized probes, repeated
+batches) discussed in §V-A.
+
+VII. CONCLUSION
+This work presented a tomography framework for charac-
+terizing quantum-classical coexistence networks (QCNs) from
+end-to-end measurements. We introduced a channel model
+for the coexisting fiber that decomposes the quantum sig-
+nal evolution into photon loss, successful transmission, and
+
+19
+
+Fig. 12: General-graph least-squares recovery on a cyclic mesh (2 × 3 ladder/grid: top path 1−2−3, bottom path 4−5−6, rungs
+1−4, 2−5, 3−6; seven links, two 4-cycles, no leaves). All per-link success ratios are inferred from corner-to-corner probes
+only (terminals 1, 3, 4, 6; nodes 2, 5 are relays) by solving the log-linearized system Ax = b, xe = log se, in the least-squares
+sense over twelve paths (incidence matrix rank 7, full column rank). Left: recovered se versus ground truth at T = 107 per
+path. Right: link-averaged relative error decreasing as T −1/2.
+
+Fig. 13: Sample-size requirements grow super-exponentially with network depth. Left: relative error of the per-link estimator
+ˆs versus sample size T for identical-link chains of depth n = 2, . . . , 6 (se = 0.05). Right: the sample size needed to reach
+5% relative error versus depth (1.2 × 106, 4.5 × 107, 2.8 × 109, 2.5 × 1011 probes for n = 2, . . . , 5). The consecutive per-hop
+multipliers increase (38×, 62×, 89×), consistent with the closed form Treq(n) = [sn(1 − sn) + ((s+d)n − sn)]/(n2s2nϵ2),
+whose per-hop ratio tends to (s+d)/s2 (here = 100); the ≈ 59× quoted elsewhere is the geometric-mean slope of the semi-log
+fit at the illustrative se = 0.05.
+
+direction-dependent depolarization, capturing the distinct noise
+signatures of co- and counter-propagating classical traffic due
+to Raman scattering. From this model, we derived closed-form
+link-level estimators for all channel parameters, including the
+success ratio, photon loss ratio, and three depolarization ratios.
+We then extended the approach to star-topology networks by
+formulating a system of multiplicative equations across end-
+
+node pairs, and proposed a classical-signal-direction-switching
+strategy to resolve all per-link depolarization parameters.
+
+Analysis of real coexisting fiber testbed data validated the
+channel model at the link level—the link tomography esti-
+mates closely match Bayesian process tomography baselines
+across multiple fiber lengths and wavelengths—while the star-
+network estimators were verified for correctness and identifia-
+
+20
+
+bility on multi-link paths emulated by composing the same
+testbed data (with robustness to model mismatch assessed
+using BPT-reconstructed channel maps), and the general-
+topology estimators and the sample-complexity scaling were
+verified in fully synthetic Monte-Carlo simulations.
+
+Beyond the core framework, we developed two extensions:
+a quantum-channel model that factorizes the coexisting fiber
+into a CPTP tensor product of two maps on separate optical
+modes—a depolarizing-with-loss signal channel on the signal
+mode and a Raman-noise-injection channel on the broad-
+band mode carrying the scattered photons—whose two-mode
+photon-number observable accounts for the extra photons
+that coexistence delivers, and whose link observables reduce
+exactly to the basic model, and a generalization to arbitrary
+topologies via tree peeling and a general-graph least-squares
+estimator that we verified in Monte-Carlo simulation under a
+correctly-specified model.
+
+Our results also revealed that network-level estimation
+in QCNs demands sample sizes several orders of magni-
+tude larger than link-level estimation, because the signal of
+interest—the product of per-link success ratios—is extremely
+small in the coexistence regime. We derive a closed-form law
+for this cost, Treq(n) ∝ [sn(1−sn)+((s+d)n −sn)]/(n2s2n),
+whose per-hop multiplier grows with depth toward (s + d)/s2
+(Figure 13); the often-quoted ≈ 59× per added link is the
+geometric-mean slope at the illustrative value se = 0.05, and
+is far larger in the experimentally measured regime s ∼ 10−3.
+Deployment guidelines. Three of our findings translate di-
+rectly into operator decisions. (1) Prefer co-propagation rout-
+ing where topology allows: counter-propagating classical traf-
+fic inflates the depolarization probability by a factor of 1.8×–
+3.2× over co-propagation in our data (Table I; largest at short
+reach), so co-propagating the quantum and classical channels
+on a shared link yields measurably higher fidelity. (2) Keep
+monitored path depth shallow: because the end-to-end success
+signal is the product (cid:81)
+e∈P se, the probe budget to reach a
+fixed relative error grows super-exponentially with the number
+of hops (Figure 13), so where direct access is available one
+should characterize links individually and confine purely end-
+to-end tomography to paths of depth ≲ 2–3. (3) Avoid quantum
+wavelengths inside the classical crosstalk band: the anomalous
+depolarization feature near the 1542 nm classical-laser line
+(Figure 5) shows that guard-band placement of the quantum
+channel away from the classical carrier is essential.
+Future Directions. Several promising directions remain open.
+We establish exact identifiability of the per-link parameters—
+for the star via the gauge argument of Lemma 3 and for
+general network topologies via the incidence-rank condition of
+Proposition 6—and give a sample-complexity scaling law for
+the success-ratio estimator; sharp finite-sample (e.g. minimax)
+bounds and optimal probe-set design for general topologies
+remain open. Our current model also focuses on the depo-
+larization noise structure induced by Raman scattering; other
+noise sources—such as direct crosstalk between the classical
+and quantum signals, signal conversion at the transmitter and
+receiver, or nonlinear effects such as four-wave mixing—
+introduce additional noise components in certain scenarios
+and could be incorporated into a more comprehensive channel
+
+model. Moreover, the sample-size requirements for network-
+level estimation could potentially be reduced through more ef-
+ficient probe allocation strategies or regularized estimators that
+exploit prior knowledge of the parameter regime. Finally, the
+single highest-value next experiment is a direct physical two-
+link test—splicing two calibrated spools and measuring the
+end-to-end (R/T, M ) statistics against the composition law
+of (19)—which would close the gap between the composed-
+link emulation used here and a fully physical multi-link
+validation.
+
+DATA AND CODE AVAILABILITY
+
+The experimental dataset analyzed in this work was col-
+lected by Chapman et al. [32]; access is available from the
+authors of that work subject to the applicable institutional
+release procedures. The closed-form link and star-network esti-
+mators, the general-topology peeling and least-squares solvers,
+and the multi-link Monte-Carlo sampler used for the star-
+network emulation and general-topology simulations will be
+made available in a public repository (with an archival DOI)
+upon publication, subject to Oak Ridge National Laboratory
+and U.S. Department of Energy software-release approval;
+until then, the code is available from the corresponding author
+upon reasonable request.
+
+ACKNOWLEDGMENTS
+
+Generative AI disclosure: During the preparation of this
+work the author(s) used Gemini Pro to assist with language
+editing and paragraph rephrasing. After using this tool, the
+author(s) reviewed and edited the content as needed and take
+full responsibility for the content of the publication.
+
+This work was performed in part at Oak Ridge National
+Laboratory, operated by UT-Battelle for the U.S. Department
+of Energy under contract no. DE-AC05-00OR22725. Funding
+was provided by the U.S. Department of Energy, Office of
+Science, Office of Advanced Scientific Computing Research,
+through the Performance Integrated Quantum Scalable Internet
+program (ERKJ432).
+
+REFERENCES
+
+[1] K. Azuma, S. E. Economou, D. Elkouss, P. Hilaire, L. Jiang, H.-K.
+Lo, and I. Tzitrin, “Quantum repeaters: From quantum networks to the
+quantum internet,” Reviews of Modern Physics, vol. 95, no. 4, p. 045006,
+2023.
+
+[2] C. H. Bennett and G. Brassard, “Quantum cryptography: Public key
+distribution and coin tossing,” Theoretical computer science, vol. 560,
+pp. 7–11, 2014.
+
+[3] L. Jiang, J. M. Taylor, A. S. Sørensen, and M. D. Lukin, “Distributed
+quantum computation based on small quantum registers,” Physical
+Review A—Atomic, Molecular, and Optical Physics, vol. 76, no. 6, p.
+062323, 2007.
+
+[4] A. S. Cacciapuoti, M. Caleffi, F. Tafuri, F. S. Cataliotti, S. Gherardini,
+and G. Bianchi, “Quantum internet: Networking challenges in distributed
+quantum computing,” IEEE Network, vol. 34, no. 1, pp. 137–143, 2019.
+[5] X. Guo, C. R. Breum, J. Borregaard, S. Izumi, M. V. Larsen, T. Gehring,
+M. Christandl, J. S. Neergaard-Nielsen, and U. L. Andersen, “Distributed
+quantum sensing in a continuous-variable entangled network,” Nature
+Physics, vol. 16, no. 3, pp. 281–284, 2020.
+
+[6] P. D. Townsend, “Simultaneous quantum cryptographic key distribution
+and conventional data transmission over installed fibre using wavelength-
+division multiplexing,” Electronics Letters, vol. 33, no. 3, pp. 188–190,
+1997.
+
+21
+
+[29] I. Mandelbaum and M. Bolshtyansky, “Raman amplifier model in single-
+mode optical fiber,” IEEE Photonics Technology Letters, vol. 15, no. 12,
+pp. 1704–1706, 2003.
+
+[30] N. A. Peters, P. Toliver, T. E. Chapuran, R. J. Runser, S. R.
+McNown, C. G. Peterson, D. Rosenberg, N. Dallmann, R.
+J.
+Hughes, K. P. McCabe, J. E. Nordholt, and K. T. Tyagi, “Dense
+wavelength multiplexing of 1550 nm qkd with strong classical
+channels in reconfigurable networking environments,” New Journal of
+Physics, vol. 11, no. 4, p. 045012, apr 2009. [Online]. Available:
+https://doi.org/10.1088/1367-2630/11/4/045012
+
+[31] P. D. Drummond and J. F. Corney, “Quantum noise in optical fibers.
+i. stochastic equations,” Journal of the Optical Society of America B,
+vol. 18, no. 2, pp. 139–152, 2001.
+
+[32] J. C. Chapman, J. M. Lukens, M. Alshowkan, N. Rao, B. T. Kirby,
+and N. A. Peters, “Coexistent quantum channel characterization using
+spectrally resolved bayesian quantum process tomography,” Physical
+Review Applied, vol. 19, no. 4, p. 044026, 2023.
+
+[33] E. Lawrence, G. Michailidis, and V. N. Nair, “Statistical inverse prob-
+lems in active network tomography,” in Complex Datasets and Inverse
+Problems: Tomography, Networks and Beyond, ser. IMS Lecture Notes–
+Monograph Series.
+Institute of Mathematical Statistics, 2007, vol. 54,
+pp. 24–44.
+
+[34] T. He, C. Liu, A. Swami, D. Towsley, T. Salonidis, A. I. Bejan, and P. Yu,
+“Fisher information-based experiment design for network tomography,”
+in Proceedings of the 2015 ACM SIGMETRICS International Conference
+on Measurement and Modeling of Computer Systems, 2015, pp. 389–
+402.
+
+[35] B. Kveton, M. J. Amjad, C. Diot, D. Konomis, A. Soule, and X. Yang,
+“Optimal probing with statistical guarantees for network monitoring at
+scale,” Computer Communications, vol. 192, pp. 119–131, 2022.
+[36] I. L. Chuang and M. A. Nielsen, “Prescription for experimental deter-
+mination of the dynamics of a quantum black box,” Journal of Modern
+Optics, vol. 44, no. 11–12, pp. 2455–2467, 1997.
+
+[37] M. Mohseni, A. T. Rezakhani, and D. A. Lidar, “Quantum-process
+tomography: Resource analysis of different strategies,” Physical Review
+A, vol. 77, no. 3, p. 032322, 2008.
+
+[38] A. Shabani, R. L. Kosut, M. Mohseni, H. Rabitz, M. A. Broome, M. P.
+Almeida, A. Fedrizzi, and A. G. White, “Efficient measurement of
+quantum dynamics via compressive sensing,” Physical Review Letters,
+vol. 106, no. 10, p. 100401, 2011.
+
+[39] R. Blume-Kohout, J. K. Gamble, E. Nielsen, K. Rudinger, J. Mizrahi,
+K. Fortier, and P. Maunz, “Demonstration of qubit operations below
+a rigorous fault tolerance threshold with gate set tomography,” Nature
+Communications, vol. 8, p. 14485, 2017.
+
+[40] M. A. Nielsen and I. L. Chuang, Quantum Computation and Quantum
+Information, 10th ed. Cambridge, UK: Cambridge University Press,
+2010.
+
+[7] T. He, L. Ma, A. Swami, and D. Towsley, Network tomography: identi-
+fiability, measurement design, and network state inference. Cambridge
+University Press, 2021.
+
+[8] M. Pant, H. Krovi, D. Towsley, L. Tassiulas, L. Jiang, P. Basu, D. En-
+glund, and S. Guha, “Routing entanglement in the quantum internet,”
+npj Quantum Information, vol. 5, no. 1, p. 25, 2019.
+
+[9] X. Wang, M. Liu, X. Liu, Z. Li, M. Hajiesmaili, J. C. Lui, and
+D. Towsley, “Learning best paths in quantum networks,” in Proceedings
+of the IEEE Conference on Computer Communications, 2025.
+
+[10] K. Azuma, “Networking quantum networks with minimum cost aggre-
+
+gation,” npj Quantum Information, vol. 11, no. 1, p. 51, 2025.
+
+[11] G. Vardoyan and S. Wehner, “Quantum network utility maximization,”
+in 2023 IEEE International Conference on Quantum Computing and
+Engineering (QCE), vol. 1.
+
+IEEE, 2023, pp. 1238–1248.
+
+[12] X. Wang, M. G. De Andrade, G. Avis, Y.-Z. J. Chen, M. Hajiesmaili,
+and D. Towsley, “Quantum network tomography for general topology
+with spam errors,” arXiv preprint arXiv:2511.01074, 2025.
+
+[13] K. Patel, J. Dynes, I. Choi, A. Sharpe, A. Dixon, Z. Yuan, R. Penty,
+and A. Shields, “Coexistence of high-bit-rate quantum key distribution
+and data on optical fiber,” Physical Review X, vol. 2, no. 4, p. 041010,
+2012.
+
+[14] L.-J. Wang, K.-H. Zou, W. Sun, Y. Mao, Y.-X. Zhu, H.-L. Yin, Q. Chen,
+Y. Zhao, F. Zhang, T.-Y. Chen et al., “Long-distance copropagation of
+quantum key distribution and terabit classical optical data channels,”
+Physical Review A, vol. 95, no. 1, p. 012301, 2017.
+
+[15] J. C. Chapman, A. Miloshevsky, H.-H. Lu, N. Rao, M. Alshowkan,
+and N. A. Peters, “Two-mode squeezing over deployed fiber coexisting
+with conventional communications,” Optics Express, vol. 31, no. 16, pp.
+26 254–26 275, 2023.
+
+[16] P. R¨ubeling, J. Heine, R. Johanning, and M. Kues, “Quantum and
+transmission on a single-frequency channel via the
+coherent signal
+electro-optic serrodyne technique,” Science Advances, vol. 10, no. 30,
+p. eadn8907, 2024.
+
+[17] J. Wang, B. J. Rollick, Z. Jia, and B. A. Huberman, “Time-interleaved
+c-band co-propagation of quantum and classical channels,” Journal of
+Lightwave Technology, 2024.
+
+[18] R. Wang, R. Yang, M. Clark, R. D. Oliveira, S. Bahrani, M. Perani´c,
+M. Lonˇcari´c, M. Stipˇcevi´c, J. Rarity, S. K. Joshi et al., “Field trial of
+a dynamically switched quantum network supporting co-existence of
+entanglement, prepare-and-measure qkd and classical channels,” in IET
+Conference Proceedings CP839, vol. 2023, no. 34.
+IET, 2023, pp.
+1682–1685.
+
+[19] J. M. Thomas, F. I. Yeh, J. H. Chen, J. J. Mambretti, S. J. Kohlert, G. S.
+Kanter, and P. Kumar, “Quantum teleportation coexisting with classical
+communications in optical fiber,” Optica, vol. 11, no. 12, pp. 1700–1707,
+2024.
+
+[20] M. Antesberger, C. M. Richter, F. Poletti, R. Slav´ık, P. Petropoulos,
+H. H¨ubel, A. Trenti, P. Walther, and L. A. Rozema, “Distribution of
+telecom entangled photons through a 7.7 km antiresonant hollow-core
+fiber,” Optica Quantum, vol. 2, no. 3, pp. 173–180, 2024.
+
+[21] M. Coates, A. O. Hero III, R. Nowak, and B. Yu, “Internet tomography,”
+IEEE Signal Processing Magazine, vol. 19, no. 3, pp. 47–65, 2002.
+[22] R. C´aceres, N. G. Duffield, J. Horowitz, and D. Towsley, “Multicast-
+based inference of network-internal loss characteristics,” IEEE Transac-
+tions on Information Theory, vol. 45, no. 7, pp. 2462–2480, 1999.
+[23] F. Lo Presti, N. G. Duffield, J. Horowitz, and D. Towsley, “Multicast-
+based inference of network-internal delay distributions,” IEEE/ACM
+Transactions on Networking, vol. 10, no. 6, pp. 761–775, 2002.
+[24] Y. Tsang, M. Coates, and R. D. Nowak, “Network delay tomography,”
+IEEE Transactions on Signal Processing, vol. 51, no. 8, pp. 2125–2136,
+2003.
+
+[25] M. G. De Andrade, J. Diaz, J. Navas, S. Guha, I. Monta˜no, B. Smith,
+M. Raymer, and D. Towsley, “Quantum network tomography with multi-
+party state distribution,” in 2022 IEEE International Conference on
+Quantum Computing and Engineering (QCE).
+IEEE, 2022, pp. 400–
+409.
+
+[26] M. G. De Andrade, J. Navas, I. Monta˜no, and D. Towsley, “On the
+characterization of quantum flip stars with quantum network tomogra-
+phy,” in 2023 IEEE International Conference on Quantum Computing
+and Engineering (QCE), vol. 1.
+
+IEEE, 2023, pp. 1260–1270.
+
+[27] M. G. De Andrade, J. Navas, S. Guha, I. Monta˜no, M. Raymer, B. Smith,
+and D. Towsley, “Quantum network tomography,” IEEE Network, 2024.
+[28] X. Wang, Y.-Z. J. Chen, M. Guedes de Andrade, M. Hajiesmaili, J. C.
+Lui, T. He, and D. Towsley, “Online optimal probe allocation for
+quantum network tomography,” in International Conference on Quantum
+Communications, Networking, and Computing, 2026.
+
+

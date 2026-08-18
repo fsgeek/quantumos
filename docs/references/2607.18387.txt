@@ -1,0 +1,3437 @@
+Remote entanglement need not be the bottleneck
+for modular trapped-ion quantum computing
+
+Felix W. Knollmann,1,
+
+∗ David P. Nadlinger,2 John Blue,1 Sabrina M. Corsetti,1 Sam J. Bishop,1
+
+Adam R. Martinez,2 Jelena Notaros,1 Colin D. Bruzewicz,3 Robert McConnell,3 and Isaac L. Chuang1
+
+1Massachusetts Institute of Technology, Cambridge, Massachusetts 02139, USA
+2Department of Physics, University of Oxford, Clarendon Laboratory, Parks Road, Oxford OX1 3PU, UK
+3Lincoln Laboratory, Massachusetts Institute of Technology, Lexington, MA, USA
+(Dated: July 31, 2026)
+
+Modularity underpins classical computing; as quantum processors encounter limits on fabrication
+yield, reliability, and size, they will also need it acutely. The bottleneck to linking modules is
+producing shared entanglement at sufficient rate, density, and fidelity. Trapped ions hold the best
+demonstrated photonic links, yet they rely on bulky collection optics that cap how densely links
+can be packed, and remote entanglement operations trail local gates by two orders of magnitude
+in rate and fidelity. We synthesize several enabling results – single-photon heralding, coherent
+recoil correction, projective distillation, and trap-integrated photonics – into one comprehensive
+architecture that substantially narrows this gap. Single-photon heralding leads to linear scaling
+of success probability with detection efficiency, allowing compact integrated photonics to saturate
+the entanglement rate at a local-operation limit in dense, easy-to-parallelize channels. Addressing
+its inherent error mechanisms at their source, we project a Bell-pair fidelity of 99.9% at rates and
+densities compatible with fault-tolerant operations. Remote entanglement then need not remain the
+bottleneck for modular trapped-ion computing; the limit shifts to the local operations that must
+improve regardless.
+
+I.
+
+INTRODUCTION
+
+A state-of-the-art surface-electrode ion trap quantum
+processor holds a few hundred ions with individual con-
+trol [1], whereas architectures for factoring a 2048-bit
+RSA number call for 104 to 107 physical qubits [2–6].
+Closing this gap is challenging within a single trap: yield,
+heat dissipation, and wiring cap how large one processor
+can grow [7–11], while the slow physical operations of
+ion traps, such as shuttling, gates, and cooling, push al-
+gorithms toward parallelization that demands still more
+qubits [2, 4, 5]. A modular solution, which links many
+processors rather than building one large one, allows link
+quality rather than the module size to determine whether
+the machine scales.
+
+≥
+
+Useful quantum computation places certain demands
+on this link. Following recent fault-tolerant architecture
+studies as a working baseline, whether based on transver-
+sal gates on surface codes [6] or lattice surgery on quan-
+tum low-density parity-check (qLDPC) codes [3, 4, 12],
+each module must supply tens to hundreds of Bell pairs
+99.9% fidelity for every syndrome measurement cy-
+at
+cle. We assume that each module contains at least one
+surface-code patch or qLDPC code block. Depending on
+whether that cycle is the aggressive 1 ms those architec-
+tures assume or the near-term 55 ms of a demonstrated
+1 remote Bell
+operations layer [1], the target is 104–106 s−
+pairs per module for the former and 103–104 s−
+1 for the
+latter (Table I), delivered densely enough to efficiently
+interface with the approximately cm2-scale footprint of
+
+∗ fwk@mit.edu
+
+a single trap chip. Simultaneously meeting all three de-
+mands, on rate, density, and fidelity, is the open problem.
+No demonstrated approach meets these link demands
+simultaneously because the three are frustrated: improv-
+ing one tends to degrade the others. Trapped ions hold
+the records for heralded remote entanglement [13, 14],
+yet the best links reach only 97% fidelity [15, 16] at rates
+up to 250 s−
+1 [17], both roughly two orders of magni-
+tude short of requirements, while local entangling oper-
+ations already exceed 99.99% at rates of 104 s−
+1 [1, 18].
+Standard two-photon heralding scales quadratically with
+photon collection efficiency [19, 20], so proposals chase
+high collection efficiency with high-numerical-aperture
+(high-NA) lenses or optical cavities [21–25]; but larger
+collection optics are in direct tension with density re-
+quirements. Entanglement distillation raises fidelity only
+by consuming additional raw pairs, taxing both rate and
+density [26–28].
+
+In this Perspective, we combine separately matured re-
+sults in ways that create compounding benefits to relax
+this frustration rather than merely rebalancing it. The
+key is to herald entanglement on a single photon [29],
+which makes the rate scale linearly rather than quadrat-
+ically with detection efficiency. This scaling allows even
+low-efficiency optics to reach the point where local oper-
+ations, not photon collection, limit the distilled entangle-
+ment rate. Compact integrated optics can then replace
+bulky lenses and cavities [30], so that the size of the trap
+zone rather than the collection optic sets how densely
+channels can be tiled. And fidelity can be decoupled
+from rate and density by avoiding deep distillation and
+instead addressing each error at its source with coherent
+recoil correction, leakage detection, and a single round of
+projective distillation [31, 32].
+
+arXiv:2607.18387v2  [quant-ph]  30 Jul 2026Transversal O(d2)
+
+τsyndrome (ms)
+Bell rate (s−1) 7.29
+105 1.33
+This work (projected; Sec. V B)
+
+×
+
+1
+
+55
+
+104
+
+8.0
+
+×
+
+104 1.5
+
+103
+
+×
+
+×
+
+Surgery O(d)
+55
+1
+
+2
+
+Channels
+Area (cm2)
+
+850*
+7.1*
+
+16
+0.14
+
+94*
+0.79*
+
+2
+0.0168
+
+State of the art [17]
+
+Channels
+Area (cm2)
+
+2916
+
+54
+
+104
+
+1.4
+
+×
+
+102
+
+2.7
+
+×
+
+320
+
+1.57
+
+103
+
+×
+
+6
+29
+
+TABLE I. Per-module requirements for one intermodule two-
+qubit gate per code cycle on a large-scale error-corrected
+trapped-ion quantum processor (see App. E for details).
+*Conservative: the faster operations required by a 1 ms syn-
+drome measurement cycle would lower these values. The
+transversal scheme uses distance-27 surface code patches that
+require one τsyndrome measurement round with d2 = 729 Bell
+pairs [6]. The surgery scheme uses a d
+20 lifted prod-
+uct code [4] and code surgery [33] that requires d rounds of
+syndrome measurement with up to 4d = 80 Bell pairs each.
+This work assumes the distilled per-channel rate (858 s−1
+at 99.9% fidelity) and six-zone area (8.4
+10−3 cm2) of
+×
+Sec. V B and projects
+the entanglement rate density
+×
+of the state-of-the-art baseline using the fastest demonstrated
+rate (250 s−1 at 94% fidelity) and a collection-lens footprint
+(2.5 cm diameter) [17, 24].
+
+2000
+
+≤
+
+≈
+
+We argue that this synthesis charts a practical path to-
+ward modular, fault-tolerant trapped-ion quantum com-
+puting, and analyze a quantitative example. We intro-
+duce the single-photon entanglement scheme (Sec. II),
+show that the distilled rate saturates at its local-
+operation limit (Sec. III),
+identify the correction for
+each infidelity mechanism (Sec. IV), and compare pas-
+sive and optimized active photonic routing networks
+(Sec. V, App. C). For a full system assembled this way, we
+project a remote Bell-pair rate density of 105 s−
+2 at
+99.9% fidelity with parallel all-to-all module connectivity
+(Sec. V), using technologically realistic parameters.
+
+1cm−
+
+II. ENTANGLEMENT SCHEME
+
+Remote entanglement is generated between one phys-
+ical qubit in each of two modules. A weak excitation
+gives each qubit a small probability of emitting a photon;
+the photons are interfered at a central beamsplitter, so
+that detection of a single photon heralds entanglement
+between the two ions [29]. The modules are surface-
+electrode ion traps [34, 35] with integrated optics for light
+emission and collection [30, 36]. The organization of M
+modules into a scalable network [37–39] is developed in
+Sec. V A (Fig. 5).
+
+The physical process behind each herald is a single-
+photon, two-step scheme applicable to level structures
+similar to those of alkaline-earth ions with an S
+D
+quadrupole transition (Fig. 1): each ion is prepared in
+
+→
+
+FIG. 1. Energy level diagrams of commonly used 40Ca+,
+88Sr+, and 138Ba+ ions that show the two-step excitation
+used for (a) state preparation and (b) entanglement without
+requiring circularly polarized light. An electric-quadrupole
+transition allows a change in angular momentum of
+=2,
+such that a π-polarized excitation to the stretched state of an
+excited level with a dipole-allowed decay back to the ground
+state leaves the ion with a net change of
+=1 in the pro-
+jection of angular momentum.
+
+∆m
+
+∆m
+
+|
+
+|
+
+|
+
+|
+
+one qubit state, driven on a narrow-line quadrupole tran-
+sition to a metastable state with a finite probability pe,
+and then excited to a short-lived state, from which it
+decays to the opposite qubit state by emitting a sin-
+gle photon. The intermediate state cleanly separates
+the photon-emitted and no-photon branches into dis-
+tinct qubit states by angular-momentum selection rules.
+The two-step structure spectrally separates the drive and
+emission light, so drive-light scatter can easily be sup-
+pressed by high-extinction filters at the detectors, and
+only linearly polarized light is required [40]. The same
+cycle is used for state preparation (Fig. 1(a)), where a dif-
+ferent narrow-linewidth laser frequency selectively emp-
+ties the other qubit state without polarization purity re-
+quirements. These qualities suit compact integrated pho-
+tonics (Sec. V), which can also reduce mode-matching
+infidelity [30].
+
+We prefer the single-photon entanglement scheme due
+to its linear detection efficiency scaling compared to the
+quadratic scaling of protocols using two-photon coinci-
+dence. While the latter in principle implement ideal en-
+tanglement swapping, the single-photon scheme comes
+with intrinsic imperfections. The raw entangled density
+matrix following a herald is
+
+(cid:17)
+
+11
+
+|
+
+ρ = (1
+(cid:16)(cid:114)
+
+−
+1 + χ
+2
+
+pe)
+
+|
+KA |
+
+Ψχ,ϕ⟩⟨
+10
+
++ eiϕ
+
++ pe |
+Ψχ,ϕ|
+(cid:114)
+χ
+1
+−
+2
+
+11
+
+⟩⟨
+KB |
+
+|
+
+|
+
+⟩
+
+⟩
+
+=
+
+01
+
+Ψχ,ϕ⟩
+ζAζB⟩
+(1)
+where the Bell state phase ϕ is set by the Mach–Zehnder
+interferometer of excitation and emission pathways [29],
+while the spin-dependent kick operators Ki capture en-
+of
+tanglement between the qubit and motional state
+ion i
+due to photon recoil [31]. A larger excita-
+}
+tion probability pe, desirable to increase the rate, leads
+component, while any
+to a larger double-excitation
+
+ζi⟩
+
+A, B
+
+∈ {
+
+|
+
+11
+
+|
+
+⟩
+
+,
+
+m=+1/2m=−1/2m=−3/2m=−3/2Δm=−2pe=1Δm=0Δm=+1(a)State preparation 1⟩ 0⟩m=−1/2m=+1/2m=+3/2m=+3/2S1/2D5/2P3/2Δm=+2pe<1/3Δm=0Δm=−1(b)Photon generation 0⟩ 1⟩3
+
+lation (Sec. V B).
+
+III. ENTANGLEMENT RATE
+
+To deliver a distilled, high-fidelity Bell pair on a given
+channel, a fast loop repeats entanglement attempts of du-
+ration tcycle, each heralding a raw Bell pair with probabil-
+ity pherald. A slower correction loop then consumes two
+raw pairs to stochastically distill one high-fidelity pair
+with probability pdistill. The resulting rate (Fig. 2) rises
+linearly with detection efficiency while collection is the
+bottleneck and then asymptotically approaches a local-
+operation limit.
+
+The duration of the entanglement attempt tcycle is fun-
+damentally limited by the linewidth of the excited state
+and the distance between the modules, as these determine
+the minimum time for state preparation and spontaneous
+emission and the decision branching time tdecision. For a
+given narrow-line π-pulse duration tπ, excited state life-
+time τ , and latency of excitation texcite and photon de-
+tection tdetect, the cycle time is
+
+tcycle = tπ + te + 12 τ + tdecision + texcite + tdetect.
+
+(2)
+
+The narrow-line drive time includes a π-pulse for state
+preparation and te = 2
+π tπ arcsin√pe for excitation, where
+pe is the desired excitation probability. The 12 τ includes
+both time to completely clear the metastable level during
+state preparation and time for a photon to be emitted
+after excitation.
+
+The herald probability per cycle pherald depends on
+the excitation probability pe, the branching ratio to the
+desired state γ, the end-to-end detection probability pd,
+and the probability pwindow that spontaneous emission
+falls within the detector acceptance window. Since either
+ion A or B of the pair could emit a photon, the herald
+probability assuming perfect state preparation is
+
+pherald ≈
+
+pA + pB
+
+pi = pe,i γ pd,i pwindow i
+
+(3)
+
+.
+
+A, B
+
+}
+
+∈ {
+
+One iteration of the correction loop, apart from the
+generation of two raw Bell pairs, also includes one CNOT
+gate, several single-qubit rotations, shuttling and merg-
+ing of ion chains, and up to two detection windows at each
+module. Single-qubit rotations are comparatively fast,
+so the duration is dominated by raw Bell-pair generation
+time tBell, detection time tdetect, the local CNOT dura-
+tion tCNOT, and per-handoff shuttling duration tshuttle
+(Sec. V A). Recoil correction takes comparable time to
+a single-qubit rotation due to the small phase space dis-
+placement required [31] and is neglected here. We envi-
+sion raw Bell-pair generation, the local CNOT, and the
+leakage-detected readout to be pipelined across dedicated
+zones (Fig. 3) such that the steady-state distilled-pair
+rate is set by the slowest of these:
+
+tdistill-cycle = max
+
+
+
+
+
+
+2 tBell + tshuttle,
+tCNOT + tshuttle,
+2 tdetect + tshuttle
+
+
+
+
+
+
+.
+
+(4)
+
+FIG. 2. Heralded entanglement rate as a function of the pho-
+ton detection probability pd for 88Sr+, assuming the cycle
+times and local-operation timings in Table III. Dotted blue:
+single-excitation raw heralded rate and dotted orange: dis-
+tilled rate assuming instantaneous local operations (both at
+excitation probability pe = 1/3). Solid orange:
+single-
+excitation rate under the parallelized model of Eq. 4, with
+the rate set by the slowest of (Bell-pair, detection, CNOT)
+blocks and pe optimized to maximize rate at each pd using the
+parameters of Table III but without accounting for buffer lim-
+itations. Dotted green: time-bin (two-photon coincidence)
+rate at pe = 1. The marked points denote the highest-rate
+demonstrations for polarization-encoded [17] and time-bin-
+encoded [15] entanglement of ions. The dashed vertical line
+marks the loss-tolerant working point pd = 0.5% used in the
+text.
+
+|
+
+⟩
+
+∈
+
+01
+
+10
+|
+
+1, 1].
+
+and
+⟩
+pB)/(pA + pB)
+
+imbalance of excitation and single-photon transmission
+probabilities between the two ions leads to an asymmetry
+between the
+components as parametrized by
+[
+χ = (pA −
+−
+To ensure that the delivered states are maximally en-
+tangled, the raw entanglement generation stage is fol-
+lowed by an error correction and projective distilla-
+tion stage. While spin-motion-entanglement errors can
+be severe in the single-excitation scheme [41], a spin-
+dependent force can be applied after a herald success
+to disentangle spin and motion [31]. Two raw Bell pairs
+are then combined in a node-local parity measurement
+to implement a single entanglement-distillation round,
+which removes the remaining double-excitation error and
+avoids sensitivity to interferometer phase and asymme-
+try drifts [32, 42]. A separate leakage-detection step flags
+ion decays to non-qubit states; if either distillation or
+leakage checks fail, the current candidate Bell pair is re-
+jected. Appendix A discusses this scheme in detail us-
+ing 88Sr+. Because each error mechanism is addressed
+at its source, recoil correction, leakage detection and a
+single distillation round suffice to exceed 99.9% distilled
+fidelity (Sec. IV), avoiding the rate cost of deeper distil-
+
+10−310−210−1Photon detection probability pd10−1100101102103104105106Entanglement rate (s−1)pd=0:5%/pd/p2dSE, raw (tlocal !0)SE, distilled (tlocal !0)SE, distilledTime-bin (tlocal !0)Time-bin Saha 2025Polarization O'Reilly 20244
+
+FIG. 4. The Bell-state error 1
+F for 88Sr+ as a function of
+−
+the mean motional occupation number ¯nth, for three secular
+frequencies ν/2π
+MHz and assuming a collection
+optic NA of 0.4; solid curves are the bare result, dot-dashed
+curves include the post-herald application of a spin-dependent
+displacement to correct photon recoil [31] and successful distil-
+lation (spin-dependent displacement and distillation assumed
+to be error-free).
+
+1, 2, 4
+
+∈ {
+
+}
+
+FIG. 3. Pipeline for entanglement generation separated into
+blocks that can execute in parallel. Pre-cooled ions from a
+buffer move into the entanglement zone. After a successful
+herald, the recoil is corrected and consecutive ion pairs are
+buffered and then combined for a local CNOT. The ion pair
+undergoes leakage checks in the detection zone before the tar-
+get ion is read out to determine the distilled state parity. A
+successfully distilled control ion exits the channel to be used
+while remaining ions are recycled to the starting buffer.
+
+The first detection checks for one set of leakage events
+and the second combines further leakage checks with
+state readout of the CNOT target ion for distillation
+(App. A 2 c). At low detection probability the Bell-pair
+block dominates and the distilled rate scales linearly with
+pd; once the local-operation blocks become comparable,
+the cycle time is pinned to the slowest local block and
+the rate depends on pd only weakly, through the optimal
+pe (Fig. 2).
+
+Distillation succeeds with a probability pdistill limited
+by the excitation probability pe and the excitation and
+detection symmetry χ:
+
+pdistill =
+
+1
+2
+
+(1
+
+−
+
+χ2) (1
+
+pe)2.
+
+−
+
+(5)
+
+The average entanglement generation rate per parallel
+channel of R = pdistill/tdistill-cycle can be guaranteed by
+buffering distilled Bell pairs before distribution. The
+trade-off in pe between pdistill and pherald makes the
+distilled Bell-pair rate insensitive to pe near the opti-
+mum. In the limit of vanishing local operation durations
+(tCNOT, tdetect, tshuttle), the optimum pe is 1/3, otherwise
+it lies lower.
+
+A. Comparison with time-bin scheme
+
+The natural point of comparison to the single-
+excitation scheme is a two-photon coincidence scheme
+in which each entanglement attempt drives both ions in
+two time bins (early and late). The photonic qubit is
+encoded in the bin of arrival, and the two photons are
+interfered at a linear-optics Bell-state analyzer [15, 19].
+As the protocol no longer admixes a double-excitation
+error, the excitation probability can be unity. The extra
+rotations included in the time-bin cycle cost 3
+2 tπ in ad-
+dition to 3 tπ from state preparation and excitation, such
+that tTB
+2 tπ + 18 τ + tdecision + texcite + tdetect. The
+herald requires a detected photon from each ion within
+the acceptance window; a standard linear-optics analyzer
+resolves two of the four Bell states. The per-attempt her-
+ald probability is therefore
+
+cycle ≈
+
+9
+
+pTB
+herald ≈
+
+1
+
+2 (pe γ pwindow pd)2,
+
+(6)
+
+quadratic in pd and so penalized increasingly heavily as
+the collection efficiency drops (Fig. 2). The photon-recoil
+correction introduced in [31] allows the delay between
+time bins to be chosen freely to optimize the entangle-
+ment rate, while prior demonstrations had to wait for an
+integer number of periods of the ion’s motion between
+bins to suppress photon-recoil-induced errors [15]. Other
+options for coincidence-based entanglement schemes in-
+clude polarization- and frequency-based schemes [19].
+However, these schemes are less suited to implementa-
+tion with compact integrated optics. They suffer from
+polarization mixing challenges and difficulty correcting
+the recoil error in the frequency basis [30, 31].
+
+0. Coolingin buffer1. Bell pairgeneration2. Entangle-ment buffer3. CNOT4. Detection5. Decision &transport0200400time (µs)CheckMeasureCNOTCheckMeasureCNOTCheckMeasureCNOTBellBellBellBellBellBellWorkWaitHandoffCooled ionBell pair ion(s)Bell pair generation attemptsRecoilcorrectionShuttle ionstcycle=237ns,avg≈129µs1μs50μs⋯⋯10−1100101102Mean thermal occupation number ¹nth10−610−410−212Distilled-pair infidelity 1¡FF = 99.9%F = 99.99%Sr+, º=2¼1 MHz2 MHz4 MHzError mechanism
+Double excitation
+Phase drift
+Recoil effects
+State preparation
+(ϵsp left in
+|
+⟩
+Decay to
+0
+⟩
+(ϵret of excited pop.) −
+False herald
+
+1
+
+)
+
+|
+
+Raw inf.
+
+Residual inf. Proj. inf.
+
+pe
+sin2( ϕi
+2 )
+see Fig. 4
+
+0
+sin2( ϕ2−ϕ1
+
+2
+
+0
+0.007%
+0.002%
+
+)
+
+ϵsp(1
+
+pe)
+
+−
+
+0
+
+0
+
+peϵret/2
+
+pfalse(1
+
+pe)2
+
+−
+
+ϵret
+
+pe
+1−pe
+6pepfalse
+
+≈
+
+≈
+
+0.006%
+
+0.024%
+
+TABLE II. This table summarizes the Bell-pair infidelities
+before (raw) and after (residual) recoil correction and suc-
+cessful distillation, as derived in App. A 2 b. The projected
+infidelities are based on assumptions of Sec. V B and param-
+eters from Table III. Bell pair i has entangled-state phase
+ϕi, defined such that the target Bell state has ϕi = 0. The
+error actually reduces the bare pe double-
+raw decay to
+2 ) pe (see App. A 2 b). Polarization
+excitation error to (1
+impurity of the second excitation drive is the dominant ex-
+ample of returning to the initial state after excitation. False
+heralds due to detector dark counts, stray light, and network
+crosstalk have the same infidelity effect.
+
+ϵret
+
+−
+
+0
+
+⟩
+
+|
+
+IV. ENTANGLEMENT FIDELITY
+
+The correction and projective distillation loop de-
+scribed in Sec. II is tailored to suppress errors intrin-
+sic to the single-photon scheme; in this section, we dis-
+cuss the errors remaining in the remote Bell pairs deliv-
+ered to the QPU. We treat only the errors particular to
+the entanglement scheme; general issues such as qubit
+dephasing and two-qubit gate or readout imperfections
+also affect the delivered Bell pairs, but must already be
+well-controlled in a working quantum computer. Further
+details are given in App. A 2.
+
+Table II summarizes the main error mechanisms affect-
+ing the raw Bell pairs and the distilled result. Double-
+excitation and state preparation errors are entirely sup-
+pressed by distillation (at the cost of a reduction in rate).
+The distillation stage removes a phase common to both
+raw Bell pairs, but propagates the phase difference [32].
+Long-term interferometric stability of the apparatus is
+thus not required, but across the two Bell pairs, a dif-
+ference δϕ in phase of the excitation pulses or along the
+collection pathways in either node decreases the fidelity
+as 1
+F = sin2(δϕ/2) (assuming χ = 0). This insensitiv-
+ity to long-term drift allows separate lasers to be used at
+each node as long as they are locked with sufficient short-
+term phase stability, and it dramatically reduces the need
+for active path-length stabilization. These points make
+the scheme attractive for complex, large-scale networks.
+In general, the distillation circuit only rejects Z errors
+common to both Bell pairs; it doubles the sensitivity to
+individual Z errors. One source of such errors is residual
+spin-motion entanglement due to photon recoil. A post-
+herald correction using a simple spin-dependent displace-
+ment, as is standard in the trapped-ion toolbox, suffices
+
+−
+
+5
+
+to remove most of these errors for moderate ion temper-
+atures (Fig. 4). For nonzero collection solid angles, the
+collection mode differs from a plane wave, so the first-
+order correction suggested here is only approximate [31].
+Following an excitation, a photon-emission path that
+returns the ion to its initial qubit state can produce a
+parity-correct but unentangled outcome, which the dis-
+tillation circuit fails to reject. This can occur due to po-
+larization impurities. Finally, as for any heralded entan-
+glement generation scheme, false heralds due to photons
+not generated by the ions – whether from detector dark
+counts, uncontrolled scatter, or signal photon crosstalk
+in the optical routing fabric – can generate unentangled
+states, which are only partially rejected by distillation.
+Appendix A 2 b treats these potential infidelity sources
+in more detail.
+
+V. ARCHITECTURE AND SYSTEM
+PERFORMANCE
+
+This section assembles the entanglement scheme into a
+complete, scalable architecture and evaluates its end-to-
+end performance using demonstrated device parameters.
+
+A. Architecture
+
+Our Bell factory architecture scales to large numbers
+of modules while maintaining flexible connectivity, high
+entanglement rate, and high Bell-pair density. Fig. 5
+shows how local nodes are structured around the single-
+excitation entanglement scheme and associated fidelity
+corrections described in Sec. II. Ions are moved along
+parallel channels following a QCCD architecture with
+dedicated zones for photon generation, gates, detection,
+cooling and entanglement buffers, and transport (Figs. 5
+and 3) [34]. Raw Bell pairs are distilled within each en-
+tanglement channel to ensure that slow drifts affecting
+the entangled state phase are common mode. With trans-
+port zones shared over the entire Bell factory, each chan-
+nel requires six QCCD zones and two junctions. Because
+the scheme’s loss tolerance allows for compact, integrated
+collection and emission optics [30, 43], each zone is self-
+contained and channels can be densely tiled. The archi-
+tecture parallelizes control across channels for transport,
+entanglement attempts, gates, and readout to minimize
+the individual control lines needed to operate many chan-
+nels [9]. The central station is split by input channel into
+C independent photonic networks for photon interference
+and detection, which enable independent M -module con-
+nectivity maps on each of the C channels (Fig. 5). Mul-
+tiple central stations could scale the system to arbitrarily
+large module numbers.
+
+Both emission collection and drive-light delivery re-
+quire similar channel-specific photonic networks
+to
+achieve the desired single-photon interference. The emis-
+sion collection networks enable interference of arbitrary
+
+6
+
+FIG. 5. Remote entanglement generation architecture. Each quantum processing unit (QPU) is a module consisting of a
+microfabricated surface-electrode trap with integrated optics. The Bell factory produces and distills remote Bell pairs for
+intermodule operations. The photonic links consist of single-mode waveguides and fibers. A switch network enables all-to-all
+connectivity and passive beamsplitters provide the photon interference needed for entanglement. Detectors herald entangled
+states and a classical processing unit coordinates the entanglement process.
+
+inputs and could be either passive symmetric multi-
+ports [44] or active butterfly switch networks (App. C);
+the choice depends on the component specifications and
+required connectivity density based on the trade-offs pre-
+sented in Table V. On the drive side, each channel in a
+module requires one switch per wavelength to gate mod-
+ule participation in that entanglement cycle. In contrast
+to existing schemes, our scheme relaxes the extinction ra-
+tio requirements because the two-step excitation with the
+change in net angular momentum turns most imperfect-
+extinction errors into rate hits after leakage detection and
+distillation. This robustness to leaked state preparation
+and excitation light opens the door to compact and scal-
+able integrated switches [45–47]. To minimize control
+requirements, a single modulator on each of the two ex-
+citation lasers can shape the pulses for state preparation
+and excitation. From that single source, the light can
+be fanned out using passive structures to each channel
+in each module with just the final participation-gating
+switch. App. C explores these photonic networks in de-
+tail.
+
+B. Projected performance
+
+We use the parameters defined in Table III to evaluate
+the entanglement rate, fidelity, and density for a distilled
+88Sr+–88Sr+ Bell pair delivered to the edge of each QPU;
+mapping that pair onto QPU data qubits is not included
+in the budgets below. Our analysis uses 88Sr+ because
+it has the highest branching ratio γ back to the ground
+state of similar ions and achieves a given entanglement
+rate with the least optical power (App. D).
+
+×
+
+106 s−
+
+First, we estimate the entanglement rate. Using the
+Table III parameters, the single-excitation cycle time is
+1. The latencies
+237 ns, so the attempt rate is 4.2
+texcite, tdetect assume a distance < 8 m between modules
+and the speed of light in optical fiber. We choose a 75
+ns tπ to balance entanglement rate and optical power. It
+requires 4.4 mW for a square pulse using a 2 µm Gaus-
+sian beam (see App. D for the trade-off). With rout-
+ing and detection losses based on the current state of
+the art (
+4 dB) and predicted collection efficiency from
+grating couplers covering a numerical aperture of 0.4
+19 dB), the end-to-end detection efficiency could be
+(
+−
+23 dB) (Table IV), conservative in comparison
+0.5% (
+with the 2–3% end-to-end detection efficiency demon-
+strated for lens-based collection [17, 48]. For our pa-
+
+−
+
+−
+
+Fast classical controlReconﬁgurable interconnect chipSingle-photon detectorSingle-mode ﬁberQPU moduleBell factoryQPU moduleBell factoryQPU moduleBell factoryQPU moduleBell factoryPhotonic beamsplitter1.Photon     generation0. Cooling in     bufferClassical control linesBell measurementPhoton routingHeralding and feedforwardPhotonic switchTrapped ionDiffraction grating Single-mode waveguideSurface-electrode ion trap3. CNOT2. Bell pair     bufferChannel 1Channel 2Channel 4Channel 34. Detection5. Decision/      transportrameters and including a finite buffer capacity Nbuf = 4,
+the optimum excitation probability is pe = 0.198. Un-
+der these assumptions, pherald = 0.18% and the average
+rate of heralds is 7.7
+1, which is similar to local
+103 s−
+×
+operation rates in trapped ions (Table III).
+
+Our optimal pe = 0.198 yields pdistill = 0.32. The
+three pipelined blocks of Eq. 4 have comparable durations
+of 359, 325, and 300 µs. Since the Bell-pair generation
+is slowest, the average distilled rate is pdistill/359 µs =
+1 per channel if using an infinite buffer. Fig. 2
+896 s−
+shows how once local operations become limiting, the
+rate becomes independent of further improvements in col-
+lection or detection efficiency, setting an upper bound for
+the target raw Bell-pair generation rate. Our parameters
+sit just below this limit, but decreasing tπ by increas-
+ing the narrow-line laser power pushes the rate into the
+local-operations plateau (Fig. 12). Without pipelining,
+the sum of the block times would set the distilled rate
+and reduce it to 327 s−
+1, quantifying the rate advantage
+of the pipelined architecture.
+
+Next, we determine the Bell pair density. The delivered
+per-channel rate is set by the finite entanglement buffer:
+a four-ion buffer locks the distillation cadence to the 325
+µs CNOT block instead of the 359 µs Bell-pair block,
+giving an unskipped rate of pdistill/325 µs = 990 s−
+1; a
+Monte-Carlo-modeled 13.3% buffer-starvation skip frac-
+tion then reduces this to a net 858 s−
+1 per channel (as-
+suming the buffer-to-buffer swaps around the entangle-
+ment zone can be done at half of the usual inter-zone
+handoff time tshuttle, see Fig. 3). Assuming the demon-
+strated square zones of side length 375 µm from [49] and
+an amortized 6 zones per channel (cooling buffer, entan-
+glement, entanglement buffer, gate, readout, transport),
+then each channel holds up to 13 ions at steady state
+and occupies 0.84 mm2 for an entanglement rate density
+of 1.0
+2 of Bell factory. Future devices will
+achieve higher densities since the full square grid of junc-
+tions used in [49] is not required and zones will become
+more compact. The entanglement rate is decoupled from
+the density at our parameters because the 0.4 NA inte-
+grated collection optic covers only 0.0015 mm2 of the 0.14
+mm2 per QCCD zone. The per channel rate (858 s−
+1)
+and area (0.84 mm2) give rise to the values in Table I,
+which will improve as future devices increase shuttling
+rates and zone densities.
+
+105 s−
+
+1cm−
+
+×
+
+Finally, we examine the fidelity limitations. We choose
+a phase deviation between consecutive Bell pairs σδϕ
+based on phase noise spectral densities reported for 10 m-
+scale fiber patch cords in a laboratory environment (see
+App. B). The relative path length could be further sta-
+bilized by light spectrally separated from the emitted
+photons, as has already been demonstrated over 10 km
+path length [50] using well-established techniques for ac-
+tive cancellation of fiber phase noise [51, 52]. Alter-
+natively, discarding a raw pair whose partner is not
+heralded within a set time would bound the phase ex-
+cursion at a small rate cost. Doppler cooling in the
+buffer suffices to bound the motion after a successful
+
+7
+
+−
+
+−
+
+Ftarget)(1
+
+pe)/(pe γ), where ε2
+
+herald to the assumed thermal state (App. A 2 a). Of
+the dephasing errors where photon emission returns the
+ion to its initial qubit state, the least avoidable mech-
+anism is polarization impurity on the second excitation
+step. Keeping the distilled fidelity above Ftarget requires
+ε2 ≲ 2(1
+Iσ− /Iπ
+(App. A 2 b). We choose an intensity ratio less than that
+already achieved at 674 nm using an integrated grating
+emitter [36]. Other dephasing mechanisms are negligi-
+ble in practice: population left in the metastable state
+before excitation is removed by deshelving after state
+preparation, and off-resonant excitation on the first step
+is suppressed by pulse shaping and beam geometry at a
+modest
+20 G field, and double excitation is limited by
+the branching ratio, which eases the requirements on the
+second-excitation-step pulse length [53].
+
+∼
+
+≡
+
+Recoil correction, distillation, and leakage checks re-
+move the scheme’s intrinsic errors,
+leaving only tech-
+nical residual errors. At the assumed σδϕ, ¯n, and ε2
+(Table III), the link phase, motional, and polarization
+infidelities are 0.007%, 0.002%, and 0.006% after dis-
+tillation. The dominant term is a 0.024% false-herald
+infidelity from two detectors, assuming either an active
+network with high-extinction switches or a passive net-
+work of two modules (App. C). Summed linearly, these
+errors bound the delivered fidelity to F
+99.96%. Be-
+cause each of these errors could be improved by technical
+choices – for instance, superconducting nanowire single-
+photon detectors (SNSPDs) offer much lower dark-count
+1) [54] – the achievable fidelity is
+rates (Rdc ≪
+F > 99.9% and set by the QPU’s local operations rather
+than by the remote entanglement scheme.
+
+0.01 s−
+
+≈
+
+VI. DISCUSSION
+
+Having projected the rate, density, and fidelity, we
+situate the architecture by comparing it to existing
+trapped-ion interconnects, analyzing its application to
+other schemes and platforms, determining its feasibility
+using already-demonstrated components, and examining
+its implications.
+
+A. Comparison to prior work
+
+into two categories:
+
+The records for remote entanglement of 250 s−
+1 and
+97% fidelity are held by small-scale demonstrations
+≤
+with high-NA lenses and up to a few ions per node with
+no easy path to scaling channel density [15–17]. Other
+proposals for increasing trapped-ion interconnect rates
+fall
+increasing end-to-end collec-
+tion efficiency using optical cavities [19] or using quan-
+tum memories to circumvent photon coincidence require-
+ments [58]. Optical cavities could achieve similar QPU
+rates but require substantial volume and can introduce
+infidelity mechanisms [22, 23, 25]. Quantum memo-
+ries such as silicon vacancy centers in nanophotonic
+
+Branching ratio [56]
+4τ acceptance window
+Photon detection probability
+Efficiency asymmetry, χ
+Link phase uncertainty (see App. B) < 0.02 rad
+Dark-count ratea
+Motion thermal state
+Trap frequency
+Intensity ratio Iσ− /Iπ [36]
+
+7 s−1
+10
+2π
+×
+0.05%
+
+1, 1]
+
+−
+
+∈
+
+[
+
+2 MHz
+
+Symbol
+Description
+Atomic / optical (88Sr+)
+Narrow-line π time
+tπ
+P3/2 lifetime [55]
+τ
+Decision latency
+tdecision
+texcite, tdetect One-way latency
+γ
+pwindow
+pd
+χ
+σδϕ
+Rdc
+¯n
+ν
+ε2
+Local operations
+tdetect
+tCNOT
+tshuttle
+Nbuf
+dzone
+Scheme-dependent
+pe (SE)
+pe (TB)
+Derived cycle times
+tcycle
+tTB
+cycle
+
+SE cycle, Eq. 2
+TB cycle
+
+Fluorescence detection [57]
+Local CNOT [18]
+Per-handoff shuttle / merge [49]
+Buffer capacity
+QCCD zone side length [49]
+
+SE excitation probability
+TB excitation probability
+
+Value
+
+75 ns
+6.63 ns
+20 ns
+20 ns
+0.94
+0.98
+0.005
+0
+
+100 µs
+225 µs
+100 µs
+4
+375 µm
+
+0.198
+1
+
+237 ns
+517 ns
+
+a Hamamatsu C11202-050
+
+TABLE III. Input parameters of the entanglement rate, fi-
+delity, and density models used throughout. Values with-
+out citations are assumptions and derived parameters. Ap-
+proximate operation times are from state-of-the-art demon-
+strations. Symbols match those defined in Sec. III, IV, V B,
+App. A 2 b, and App. B. SE = single-excitation, TB = time-
+bin.
+
+cavities promise similar p2
+pd scaling improvement
+d →
+to the single-excitation scheme but face challenges of
+lower-fidelity operations in solid-state qubits and coher-
+ent single-photon frequency conversion [59]. A related
+single-photon ion link by Liu et al. [40] heralds entangle-
+ment in the same loss-tolerant regime, but does not sepa-
+rate the photon-emitted and no-photon branches into dis-
+tinct qubit states. The loss tolerance of our architecture
+(Fig. 2) removes the need for optical cavities or quantum
+memories, enables dense scaling of parallel channels, and
+eases the engineering requirements for the collection op-
+tic and photonic network.
+
+B. Applicability to other platforms
+
+8
+
+the barium ions commonly used as data qubits. It would
+be even better mass-matched to 89Y+ [62]. The handoff
+between the networking qubit and the data qubits lies
+outside our scope.
+
+If a given platform has access to high end-to-end pho-
+ton collection, then the time-bin implementation of our
+scheme becomes competitive in rate. Figure 2 shows that
+local operation rates become the determining factor of
+when the cross-over happens. Recoil-correction enables
+high attempt rates and the cavity complexity is mini-
+mized since it needs to collect photons of only a single fre-
+quency and polarization. Unlike in the single-excitation
+case, the fast qubit rotation fidelity and off-resonant ex-
+citation suppression directly contribute to the entangled
+state fidelity in the time-bin approach. Because of this
+sensitivity and finite local operation times, the achievable
+rate will fall below the dotted line of Fig. 2.
+
+In principle, the entanglement scheme, distillation, and
+recoil correction all transfer directly to neutral atoms;
+however, recoil heating makes implementation with neu-
+tral atoms less practical. Tweezer-trapped atoms typi-
+higher than those
+cally have Lamb–Dicke parameters 10
+of trapped ions, and the η2 scaling implies 100
+higher
+recoil heating. Combined with the worse recoil correction
+at higher η [31], the cooling requirement for high-fidelity
+two-qubit gates [63, 64], and difficulty of cooling neutral
+atoms while maintaining internal-state qubit coherence,
+this scheme appears less suitable for neutral atoms. De-
+velopments in the control of circular Rydberg states or
+cycling atoms to amortize recooling time could shift this
+calculus [65, 66].
+
+×
+
+×
+
+C. Technical feasibility
+
+The architecture requires a working QCCD quantum
+computer at each QPU such that ion rearrangement,
+readout, and local qubit operations all perform well
+enough not to limit the fidelity of our protocol [67]. The
+Zeeman qubits we use within the Bell factory require a
+combination of magnetic field stability and dynamical
+decoupling sufficient that the coherence time does not
+limit the distilled Bell-pair fidelity. Beyond these stan-
+dard operations that have been demonstrated in commer-
+cial platforms [1, 18], the scheme requires sophisticated
+timing and decision branching at nanosecond timescales
+across a network of modules as shown in [48]. For the
+highest rates, the optical power required becomes sub-
+stantial; however, the trade-off between optical power
+and channel rate is favorable (App. D). At our work-
+less optical
+ing point, a 2
+power.
+
+slower channel requires 20
+
+×
+
+×
+
+While integrated optics are well-matched to the loss
+tolerance, parallelism, and density afforded by this
+scheme, our architecture also works with bulk optics or
+metalenses [60] and fiber or free-space photonic networks.
+Our ion of choice, 88Sr+, is already a common network-
+ing ion [16, 61] and functions as a sympathetic coolant to
+
+Most of the key integrated-optics metrics that the ar-
+chitecture requires (low-loss routing, balanced splitting
+ratios, focusing optics, and switching) have already been
+demonstrated individually [68]. Bell factories on 23 mod-
+ules could achieve 4 dB detection and routing loss using
+amorphous Al2O3 single-mode waveguides and commer-
+
+9
+
+99.99% fidelity two-qubit gates operate at the Doppler
+limit, it seems possible to skip this step [18, 77–79]. The
+cost difference in rate, fidelity, and space between local
+and remote two-qubit gates invites architectural exploita-
+tion using cache storage and memory/processor hierar-
+chies [2–5, 80].
+
+D. Outlook
+
+×
+
+Near our working point, the pipelined structure and
+its additive time floors mean no parameter enters the
+rate linearly, creating a broad region of high rate. While,
+with our deliberately conservative parameters, Bell-pair
+generation rather than local operations limits the per-
+channel rate, even perfect collection (pd = 1) would
+raise it by at most 1.8
+. This robustness, together with
+the trap-zone-limited density, local-operation-limited fi-
+delity, and straightforward multiplexing, makes the ar-
+chitecture practical. These dense interconnects with
+high rates and fidelities open up the design space of
+modular trapped-ion quantum computing, and invite
+systematic study of the optimal module size, compo-
+sition, and specialization. Beyond distributed quan-
+tum computing, the same scheme could serve a range
+of quantum-networking applications, including quantum-
+enhanced long-baseline interferometry [81–83], entangled
+clock networks [84, 85], blind quantum computing [86],
+device-independent quantum key distribution [87], and
+quantum-computing-enhanced sensing [88–91].
+
+ACKNOWLEDGMENTS
+
+We acknowledge Gavin West, John Chiaverini, Ethan
+Clements, and Adrian Menssen for helpful discus-
+sions, and thank Tenzan Araki for comments on the
+manuscript. Support in part is acknowledged from the
+NSF Frontier Center for Ultracold Atoms (grant number
+PHY-2317134). J.B. acknowledges support from the MIT
+Center for Quantum Engineering–Laboratory for Physi-
+cal Sciences Doc Bedard Fellowship. This material is
+based upon work supported by the U.S. Department of
+Energy, Office of Science, National Quantum Informa-
+tion Science Research Centers, Quantum Systems Accel-
+erator (Award No. DE-SCL0000121). This material is
+based upon work supported by the Department of En-
+ergy under Air Force Contract No. FA8702-15-D-0001 or
+FA8702-25-D-B002. Any opinions, findings, conclusions
+or recommendations expressed in this material are those
+of the author(s) and do not necessarily reflect the views
+of the Department of Energy.
+
+Device
+Routing loss
+Waveguide transmission [72]
+Fiber transmissiona
+Waveguide-fiber coupler [73]
+MMI transmission [69]
+SPAD quantum efficiencyb
+Collection loss
+Solid angle (NA = 0.4)
+Polarization overlap
+Mode matching [43]
+End-to-end loss
+
+a Thorlabs PM-S405-XP
+b Hamamatsu C11202-050
+
+λ (nm)
+
+Loss (dB)
+
+369
+405
+405
+405
+408
+
+408
+408
+408
+408
+
+1.35 cm−1
+0.05 m−1
+
+1 cm
+4 m
+2
+×
+3
+×
+1.6
+
+×
+×
+0.29
+0.09
+
+14
+3
+2
+23
+
+TABLE IV. Photonic parameters taken from demonstrations
+and designs in the literature for calculating expected end-
+to-end photon detection efficiency for 88Sr+. The 0.29 dB
+transverse-electric-mode (TE-mode) edge coupler used a cus-
+tom fabrication process [73]; in a standard process, 3.53 dB
+has been achieved [74]. The overlap of σ-photon dipole emis-
+sion into a linear polarization mode introduces a 3 dB collec-
+tion loss [43]. SPAD = single-photon avalanche diode.
+
+cially available fibers and detectors (Table IV). Beam-
+splitter ratios better than 49:51 are routine using multi-
+mode-interferometer (MMI) splitters at 405 nm [69]. De-
+signs for focused-beam-emitting grating couplers have
+achieved 2 dB mode-matching loss with effective NA>0.4
+(<14 dB solid angle limit) in dual layer Si3N4, which
+could be replicated in dual-layer Al2O3 [30, 43]. Finally,
+a Mach–Zehnder mesh operated at 5 K has demonstrated
+>10 MHz bandwidth and 30 dB extinction ratio for 737-
+nm light, which meets the switching requirements for
+the excitation lasers [46]; similar devices have already
+demonstrated control of a Ca+ qubit at 729 nm [70]. The
+only component whose architecture requirements exceed
+demonstrated performances is the high-extinction ratio,
+fast switch at 408 nm; the closest demonstrated device
+achieves a >10 dB extinction ratio at 420 nm [71]. Devel-
+oping such switches could unlock simultaneous entangle-
+ment attempts on all arbitrary module pairs to increase
+the system entanglement rate by a factor of up to M
+. To
+2
+meet the architecture’s phase stability requirement be-
+tween consecutive Bell pairs, switches should be driven
+push–pull, which cancels the common-mode phase im-
+parted on the routed light and leaves a residual propor-
+tional to the fractional mismatch between the two arms’
+responses.
+
+We expect faster ion transport [75] and more compact
+zones to increase the entanglement rate and density of fu-
+ture large-scale fault-tolerant devices and thus decrease
+the required channel numbers and Bell factory area. If
+the high-fidelity two-qubit gates used in distillation re-
+quire ground-state cooling, the ions can be sympatheti-
+cally cooled between leakage checks and distillation [76].
+However, since composite pulse sequences are known to
+address motion errors in single-qubit gates and recent
+
+Appendix A: Trapped-ion implementation details
+
+This appendix works through a concrete realization of
+the entanglement scheme in the relatively simple level
+structures of 40Ca+, 88Sr+, and 138Ba+, with the full
+pulse sequence shown in Fig. 8. The scheme is organized
+as two nested loops (Fig. 6): a fast inner entanglement
+loop and a slower outer correction loop.
+
+10
+
+FIG. 7. Pulse timing of the 237 ns entanglement generation
+loop with 20 ns optical latency, 75 ns narrow-line π-time, 50
+ns repumping time, 4τ photon acceptance window, and 20 ns
+decision time. The latency assumes up to 4 m distance in
+fiber between the central station and either QPU. The entire
+loop can be repeated at 4.2 MHz.
+
+1.
+
+Inner entanglement generation loop
+
+Each entanglement attempt consists of a fixed sequence
+with probability
+of state preparation, excitation of
+pe, and decision branching. Figure 7 shows a graphical
+representation of the loop timing.
+
+0g⟩
+
+|
+
+a. State preparation
+
+FIG. 6. Control flow of the nested entanglement protocol
+(App. A). The fast inner loop repeats state preparation and
+two-step excitation until a single-photon herald succeeds; the
+detector that clicked fixes the Bell-state sign. Each her-
+alded Bell pair enters the outer loop, which corrects photon-
+recoil spin–motion entanglement, pairs two raw Bell pairs in
+a buffer, and distills them in a locked cycle of two 325 µs
+steps using a CNOT and parity check with leakage detection
+(Fig. 3). Dashed red paths mark the errors each check con-
+verts into rate loss rather than infidelity: distillation rejects
+and collection asymmetry χ and fixes
+double excitation
+the herald phase ϕ; leakage detection rejects population that
+has escaped to the D manifolds.
+
+11
+|
+
+⟩
+
+|
+
+3/2
+
+5/2
+
+At the start – when an ion first enters the entangle-
+ment loop, or after a previous unsuccessful iteration –
+as quickly
+the electron population is pumped into
+0g⟩
+as possible to maximize the overall entanglement gen-
+eration rate. Population remaining in the D
+mani-
+fold and
+is turned into small rate loss by the sub-
+1g⟩
+|
+sequent outer-correction-loop checks. However, residual
+manifold could be excited by the
+population in the D
+pulse and cause a dephasing
+π-polarized D5/2 →
+error which the distillation would not project out if it
+ends up in
+(App. A 2 b). A convenient implementa-
+tion using integrated optics, where pure circular polar-
+ization presents additional challenges [92, 93], is to use
+a π pulse on the
+3
+D5/2, m =
+2 ⟩
+−
+|
+transition, followed by a “quench” on the D5/2 →
+P3/2
+transition (Fig. 8). Note that as the protocol is operated
+in the weak excitation regime, pe < 1/3, the steady state
+benefits from effectively applying the state preparation
+sequence p−
+times per excitation out of
+e
+
+S1/2, m = 1
+
+2 ⟩ → |
+
+1g⟩
+
+0g⟩
+
+P3/2
+
+=
+
+1
+
+|
+
+|
+
+.
+
+0g⟩
+
+|
+
+Innerloop(fast,∼4.2MHz)Outerloop(asyncgeneration,locked-cycledistillation)Statepreparation(pumpto|0g⟩)Two-stepexcitation|0g⟩→D5/2→P3/2(pe)Single-photonherald?noclickRecoilcorrectionEntanglementbufferCNOTgateLeakagedetected?CNOTparity?DeliverdistilledBellpairtoQPUclickskipif<2bufferedpass(1,1)reject:D-manifoldleakagereject:|11⟩,ϕ,χLockedcycle050100150200t / nsS1=2!D5=2(¢m=¡2)D3=2!P1=2D5=2!P3=2 (¾)S1=2!D5=2(¢m=+2)D5=2!P3=2 (¼)AcceptancewindowExcitationlatencyDetectionlatencyDecisionbranching11
+
+FIG. 8. This entanglement and correction pulse sequence is applied simultaneously to ions in two different modules to herald
+Bell pairs, check for leakage events, and distill higher fidelity Bell pairs. Steps a, b (optical pumping) and c, d (weak excitation
+and single-photon detection) are repeated until a successful detection event heralds an approximate Bell state. The photon
+recoil correction and two-qubit gate for distillation both use a spin-dependent force that could be supplied by either a laser
+(e1) or an RF gradient (e2). Two fluorescence detection steps project out any errors due to leakage out of the qubit subspace.
+The second step also reads out the parity of the CNOT target ion for projective distillation (f-i).
+
+b. Excitation
+
+c. Decision branching and latency
+
+|
+
+−
+
+and
+
+1
+2 ⟩
+
+Anticipating the outer-loop distillation stage, we ex-
+cite in a two-step process via the metastable D5/2
+level,
+such that angular momentum prevents an excited elec-
+state. First, a
+tron from quickly returning to the
+0g⟩
+narrow-line laser drives a transition between the
+=
+states with pulse
+D5/2, m = + 3
+S1/2, m =
+2 ⟩
+|
+area θ such that pe = sin2(θ/2). Subsequently, a short
+τ ) pulse with π polarization and π pulse area
+(tp ≪
+excites the
+P3/2, m = + 3
+2 ⟩
+state with lifetime τ , which decays with high probability
+to the
+. To avoid
+1g⟩
+|
+after excitation, the polarization of the
+ending up in
+0g⟩
+|
+transition must be π with high purity. For
+D5/2 →
+P3/2
+this excitation scheme, the collection optic should maxi-
+mize σ+-polarized collection.
+
+D5/2, m = + 3
+2 ⟩
+|
+|
+state and cannot decay back to
+
+state to the
+
+0g⟩
+|
+
+0g⟩
+
+|
+
+|
+
+S1/2
+
+The P3/2 →
+
+emission from the two nodes is routed
+to a beamsplitter, where a click in one of the detectors
+in the output ports heralds the successful preparation of
+a raw Bell pair. Which detector clicked determines the
+sign of the entangled state. This sign difference could be
+tracked as a Pauli frame or removed with a local single-
+qubit operation. On success, a fast processor must pre-
+empt the execution of the next entanglement attempt
+because further laser pulses would scramble the state.
+The detectors and control logic are assumed to be lo-
+cated halfway between the two modules to minimize the
+longest round-trip communication time between control
+logic and a module, hence optimizing the attempt rate.
+Here, the relevant latency is the duration between trig-
+gering the next attempt and the arrival of the first optical
+
+g  g  Fluorescence detectionf  f  Shelve qubitS1/2P1/2|1m>D5/2S1/2P1/2|1m>D5/2D3/2D3/2Leakage checks and projective measurementLeakage checks and projective measurementh h  Deshelve error/|1m> statesi  i  Fluorescence detectionCNOT targetCNOT controlS1/2P1/2|1m>D5/2S1/2P1/2|1m>|0m>|0m>|0m>|0m>D5/2D3/2D3/2|1g>Recoil correction and distillation CNOT gateRecoil correction and distillation CNOT gateS1/2P1/2D5/2|0g>|1m>D3/2e1e1  Bichromatic drive on optical qubitS1/2P1/2D5/2|0g>|1m>|0m>|1g>D3/2e2e2  Bichromatic RF gradient drive on        ground or metastable state qubitS1/2P1/2D5/2|0g>|1g>P3/2D3/2c  c  Create superpositionS1/2P1/2D5/2|0g>|1g>×N(untilsuccess)P3/2D3/2d  d  Pulsed excitation (π)Single-photon excitation attemptsSingle-photon excitation attemptspe(1-pe)S1/2P1/2D5/2|0g>|1g>P3/2D3/2a  a  Clear |1g> state S1/2P1/2D5/2|0g>|1g>P3/2D3/2b  b  Quenchpulse at the ions or conversely the time between photon
+emission and registering the detector click. Signal prop-
+agation in optical fiber sets a practical limit of approxi-
+mately 5 ns/m for a given node distance, resulting in a
+10 ns/m round-trip latency lower bound on the inverse
+attempt rate unless the excitation loop itself is pipelined.
+
+2. Outer correction loop
+
+In the correction loop, we apply error mitigation tech-
+niques outside the latency-critical entanglement attempt
+path, merge the two raw Bell pairs to suppress errors
+through distillation, and deliver successfully entangled
+qubits to the rest of the processor while re-using the rest
+of the ions for subsequent rounds. To optimize through-
+put, it can be implemented by transporting ions between
+five physically separated pipeline zones (Fig. 3). To start,
+ions are cooled to remove built-up motional excitation in
+a cooling buffer zone. In the next zone, photon-mediated
+entanglement is generated (executing the inner entan-
+glement loop), and following a successful herald, resid-
+ual qubit-motion entanglement is removed. Ions entan-
+gled this way are buffered and forwarded in pairs to a
+zone where a CNOT gate is applied to implement the
+single-stage entanglement distillation, followed by a flu-
+orescence readout zone for parity and leakage detection.
+The photon timestamps and the number of attempts be-
+fore success provide soft information on the ion temper-
+ature, phase error, dark count probability, recoil correc-
+tion, and photon distinguishability that a higher-level de-
+coder could use to mitigate infidelity [66]. Assuming that
+per channel four ions are being transported and cooling-
+buffered, one ion is in the entanglement zone, four are
+held in the entanglement buffer, and two ions each are
+in the distillation and readout zones, then each channel
+contains 13 ions at steady state.
+
+a. Coherent disentanglement of spin and motion
+
+The phase sensitivity of the Bell states generated by
+the single-photon scheme requires attention in our ar-
+chitecture for two distinct reasons. Slow drifts in the
+cross-module link phase are addressed by a single stage
+of distillation, as described in the next section. However,
+the motion of the ion emitters in the trap potential during
+the emission process also scrambles the state phase; this
+can be viewed as unwanted spin-motion entanglement,
+and is not reduced by the single distillation stage.
+
+The loss in fidelity due to this effect could be reduced
+to some extent by orienting the excitation laser along the
+collection axis (at least for single-stage excitation and low
+trap frequencies) [29, 40]. We discard this option here,
+as scalable fabrication using surface-electrode traps and
+integrated photonics strongly favors excitation and col-
+lection optics that lie in the same plane. However, with
+knowledge of the excitation and emission geometry, pho-
+
+12
+
+ton timing, and trap frequencies, the spin-motion entan-
+glement resulting from the excitation and decay process
+can be calculated exactly and largely undone by a spin-
+dependent displacement operation [31].
+
+A simple spin-dependent displacement is the exact dis-
+entangling correction for the case of instantaneous im-
+pulsive excitation and collection from an infinitesimally
+small solid angle, where it completely removes motional
+loss of fidelity for arbitrary initial states of motion. For
+the example 88Sr+ parameters considered here, and col-
+lection from a Gaussian mode with a hard stop at nu-
+merical aperture 0.4 (collection cone half-angle 24◦), the
+residual error remains below 10−
+4 for thermal states with
+mean occupation numbers ¯nth ≲ 20 and a 2 MHz mode
+frequency, as shown in Fig. 4.
+
+|
+
+|
+
+η
+
+This relative insensitivity to motional effects enables
+high-rate operation, as no cooling is necessary within an
+inner entanglement attempt loop. We can estimate an
+upper bound for the motional excitation in each mode
+due to the photons scattered during state preparation
+and excitation as 8/3
+2, where η is the Lamb–Dicke pa-
+rameter for the 408 nm photons scattered. Here, we have
+assumed that the attempt rate is not commensurate with
+the motional mode frequency, limiting coherent build-up
+of excitations. Given an average of pe/pherald excitation
+events per successful Bell-pair generation and a 2 MHz
+secular frequency, this loose bound yields a heating esti-
+mate of
+1 quantum due to the entanglement generation
+process. Thus, heating due to the entanglement genera-
+tion process can be neglected for the system-level anal-
+ysis; the details of the realization of the spin-dependent
+forces used for the disentangling correction and the sub-
+sequent CNOT gate may drive these requirements.
+
+≈
+
+As is standard in trapped-ion two-qubit gates, the spin-
+dependent displacement can be implemented by a bichro-
+matic drive on the motional sidebands of a resolved side-
+band transition. Because the recoil displacement is rela-
+tively small (magnitude determined by the Lamb–Dicke
+1), recoil correction requires less time and
+parameter η
+precision for equivalent fidelity than a two-qubit gate.
+The motional frequencies in each trap need to be cali-
+brated locally to a precision given by the latency between
+scattering event and application of the spin-dependent
+correction, but are not required to match between nodes.
+
+≪
+
+The two-step excitation process in our scheme requires
+a slight extension of the treatment in Ref. [31]. The sec-
+ond, fast step can still be modeled as an impulsive plane-
+wave absorption event (though of a different Lamb–Dicke
+parameter to the emitted photon); the preceding transfer
+from
+on the narrow-line transition is only approxi-
+mately impulsive, but numerical calculations show that
+a spin-dependent post-herald displacement nevertheless
+disentangles spin and motion to < 10−
+7 residual infi-
+delity.
+
+0g⟩
+
+|
+
+13
+
+If the rate of distillation attempts is dominated by en-
+tanglement generation (linear in the excitation efficiency
+pe), the optimal success rate is achieved at pe = 1/3; if
+the rate is dominated by another step, the optimal exci-
+tation efficiency will be lower to trade off entanglement-
+loop success probability for increased distillation P11. For
+the pe = 0.198 working point discussed here, distillation
+succeeds in a fraction P11 = 0.322 of correction-loop cy-
+cles.
+
+|
+
+|
+
+|
+
+|
+
+1
+
+⟩
+
+⟩
+
+⟩
+
+−
+
+1
+
+0
+
+0
+
+≡
+
+−
+
+−
+
+ϵret
+
+00
+
+10
+
+)−
+
+11
+|
+
+The parity measurement completely rejects all even-
+parity populations (
+). Coupled with the
+and
+⟩
+herald condition of having detected a photon, such that
+at least one ion must have emitted a photon, this leads to
+erroneous population in
+from imperfect state prepa-
+⟩
+ration or additional decay pathways (that do not lead
+to a signal photon being emitted) being converted into
+rate loss, which is favorable in the context of a heralded
+scheme. However, branching back to
+after excita-
+tion is not rejected by the distillation step: a fraction
+after excitation in the raw entangle-
+ϵret decaying to
+ment case leads to a nominal reduction in double excita-
+tion infidelity from pe to (1
+2 )pe (a classical admix-
+and
+ture of
+contributes F = 1/2 as opposed to
+01
+|
+⟩
+|
+⟩
+F = 0 for
+), but after distillation leads to an error
+11
+|
+⟩
+ret). As we do
+of (1
+(1 + peϵret
+2)/2 = pe
+ϵret + O(ϵ2
+pe
+pe
+1
+step to be spectrally
+not assume the second D5/2 →
+−
+P3/2
+resolved, this yields a requirement on its polarization be-
+ing purely π. For an intensity fraction ε2
+Iσ− /Iπ,
+the Clebsch–Gordan factors and branching ratio to the
+ground state set ϵret = γ
+
+2 ε2 (Fig. 10b).
+While the chosen distillation stage rejects Z rota-
+tions common to both Bell pairs,
+individual Z errors
+are not rejected. As two Bell pairs are consumed, this
+leads to twice the sensitivity to dephasing errors. Con-
+cretely, an additional factor
+< 1) in the off-
+|C|
+coherence element of the raw density
+diagonal
+10
+⟩⟨
+matrix (A1) leads to a factor
+2 in the coherence of the
+post-distillation state. Thus, the fidelity decreases from
+)/2 for a single raw Bell pair to a distilled-
+(1
+state fidelity of (1 +
+2)/2 (for small errors, a doubling).
+|C|
+One such dephasing mechanism stems again from the po-
+decays
+larization of the D5/2 →
+drive:
+P3/2
+to
+with probability 2/3. If the π-polarized photons
+emitted by this decay are not entirely filtered out and are
+sometimes mistaken for σ-polarized signal photons, this
+leads to an admixture of a completely dephased compo-
+nent, reducing the contrast to
+ϵπ)2, where ϵπ is
+the overall probability for such an erroneous photon to
+be generated and detected per node. Assuming a drive
+laser intensity fraction ε2 (see last paragraph) and that
+π-polarized photons are filtered out with suppression ηπ
+gives ϵπ = 1
+2 ηπ ε2, yielding a post-distillation error of
+ηπε2 + O((ηπε2)2). We neglect this in Fig. 10(b), as with
+reasonable polarization selectivity this error will be much
+. Other de-
+smaller than the error due to decays to
+phasing mechanisms include residual spin–motion entan-
+glement (see App. A 2 a), and errors not specific to the
+optical interface (e.g. qubit frequency noise).
+
+P3/2, +1/2
+
+p)(1 +
+
+(0 <
+
+1g⟩
+
+0g⟩
+
+= (1
+
+|C|
+
+|C|
+
+01
+
+−
+
+−
+
+C
+
+C
+
+⟩
+
+|
+
+|
+
+|
+
+|
+
+|
+
+⊗
+
+B2 of the form
+
+FIG. 9. Distillation circuit. For two input Bell pairs A1
+⊗
+B1 and A2
+)/√2,
+|
+the classical outcomes (mA, mB) = (1, 1) of the measurement
+on the second signal the generation of the fixed output state
+irrespective of the arbitrary, constant phase ϕ. The
+Ψ+
+|
+circuit also rejects an imbalance between the
+01
+10
+⟩
+⟩
+component (see text).
+components, and an admixture of a
+
++ eiϕ
+
+= (
+
+and
+
+Ψϕ
+
+10
+
+01
+
+⟩
+
+⟩
+
+⟩
+
+⟩
+
+|
+
+|
+
+|
+
+|
+
+11
+
+|
+
+⟩
+
+b. Distillation
+
+In each of the modules, A and B, we combine two sub-
+sequent raw Bell pairs (A1, B1 and A2, B2) locally to im-
+plement entanglement distillation. We perform a CNOT
+gate between the qubits, and subsequently read out the
+target qubit in the Z basis, realizing a parity measure-
+ment as proposed by Bennett et al. [26] (Fig. 9). As
+pointed out by Campbell and Benjamin [32] (there for-
+mulated in a measurement-based setting, but the pro-
+tocol is equivalent), this is an excellent fit to the errors
+inherent in single-photon entanglement, rejecting dou-
+errors, as well as unknown entangled
+ble excitation
+state phase ϕ and collection/beamsplitter asymmetry χ
+as long as they are stable across two subsequent Bell
+pairs. This protocol was experimentally demonstrated
+in single-photon-based entanglement of nitrogen vacancy
+center qubits by Kalb et al. [42].
+
+11
+
+⟩
+
+|
+
+Concretely, for a raw input Bell pair described by
+
+ρraw = (1
+(cid:114)
+
+Ψχ,ϕ⟩
+
+|
+
+=
+
+pe)
+
+−
+1 + χ
+2
+
+Ψχ,ϕ⟩⟨
+|
+10
+
+|
+
+⟩
+
++ eiϕ
+
+Ψχ,ϕ|
+(cid:114)
+
++ pe |
+χ
+1
+−
+2
+
+11
+
+11
+
+⟩⟨
+
+,
+
+|
+
+01
+
+,
+
+⟩
+
+|
+
+(A1)
+
+|
+
+⟩
+
++
+
+= (
+
+01
+⟩
+
+10
+⟩
+|
+
+the result (1,1) for measuring the target pair in the Z
+basis projects the control pair into a pure Bell state
+)/√2 independent of the input phase
+Ψ+
+|
+.
+ϕ, the asymmetry χ, and the admixture pe of
+⟩
+The other outcomes do not contain entanglement with-
+out knowledge of ϕ, leading to the correction loop be-
+ing restarted without a Bell pair being delivered to the
+QPU. The desired outcome occurs with probability P11 =
+pe)2 (Eq. 5), leading to optimal perfor-
+1
+2 (1
+mance for symmetric efficiencies χ = 0. The asymmetry
+infidelity for a single Bell pair i is (1
+and
+the residual infidelity after distillation is
+, set
+by the asymmetry difference between the two Bell pairs.
+
+−
+χ1)2
+−
+4
+
+χ2
+2
+(χ2
+
+χ2) (1
+
+√1
+
+i )(1
+
+11
+
+pe)
+
+−
+
+−
+
+≈
+
+−
+
+−
+
+|
+
+|Ψϕ⟩|Ψϕ⟩A1A2mAB1B2mBNodeANodeB14
+
+c. Leakage detection
+
+±
+
+3/2
+
+3/2
+
+5/2
+
+level to D
+
+1/2 states of the D
+
+There are several leakage states that can be populated
+after a successful herald due to nonzero branching ratios
+of the P
+and possible popula-
+and D
+tion left in these manifolds after state preparation. By
+rotating the qubit into the m =
+5/2
+manifold, a first round of fluorescence detection checks
+for leakage errors that were in these states or the D
+3/2
+manifold. If the first fluorescence result is dark, a sec-
+ond round applies different operations to the control and
+target ions of the distillation CNOT and requires indi-
+vidually resolving the two ions. For the control ion, the
+second round deshelves the m = 3/2, 5/2 states of the
+D
+manifold that could have been populated in the ex-
+citation. For the target ion, the qubit state that heralds
+a successful parity check is deshelved. A second dark flu-
+orescence result on the control ions and bright results on
+the target ions projects out the remaining leakage errors
+and signals a successfully distilled Bell pair. If the control
+ion is measured in a separate potential well, its motion
+is not heated by the bright measurement of the target
+ion in successful distillation runs. Separating the leak-
+age checks and parity measurement into three detections
+makes it possible for a successful distillation to require
+all-dark detection for both ions and thus minimize mo-
+tional excitation and recooling.
+
+5/2
+
+The two-step excitation allows leakage detection and
+distillation to catch most imperfect-extinction errors and
+turn them into rate hits. All possible remaining errors
+require at least two improbable events; an example er-
+0.2), then decay
+ror pathway is: excitation to P (p
+= 0 after
+back into the metastable manifold with ∆m
+excitation (p
+P
+light re-exciting (extinction ratio ηex) and the electron
+decaying back to the initial state (p
+0.16), totaling
+p
+
+0.004 for 88Sr+) and residual D
+
+0.0001ηex.
+
+→
+
+≈
+
+≈
+
+≈
+
+≈
+
+Appendix B: Link phase sensitivity
+
+The phase sensitivity of the entangled states gener-
+ated by the single-photon scheme can be understood by
+analogy to a Mach–Zehnder interferometer whose two
+arms consist of the combined excitation and photon emis-
+In our two-step exci-
+sion pathways at the two nodes.
+tation scheme, this includes the optical phase of both
+laser pulses at the ion, as well as the phase accumulated
+along the optical path from the collection optic to the
+beamsplitter at which the photons emitted from the two
+nodes are interfered. The distillation scheme removes the
+requirement for the two paths to be interferometrically
+stabilized globally and across longer times (App. A 2 b),
+but the overall phase still needs to be stable at the shorter
+time scale set by the average inter-herald interval. As-
+suming subsequent Bell pairs used for distillation are gen-
+erated using the same routing configuration, the domi-
+nant source of phase fluctuations are likely to be optical
+
+vs. deterministic
+FIG. 10. (a) Distilled-pair infidelity to
+relative herald phase δϕ = ϕ2
+ϕ1 in the balanced case (χ =
+−
+0). (b) Distilled-pair infidelity vs. the σ−/π drive-intensity
+Iσ− /Iπ, for the working-point pe = 0.198 and the
+ratio ε2
+local-operations-free optimum pe = 1/3; upper axis is the
+polarization extinction ratio PER =
+
+10 log10 ε2.
+
+Ψ+
+
+≡
+
+⟩
+
+|
+
+−
+
+|
+
+0
+
+1
+
+⟩⟨
+
+−
+
+0
+|
+
+pe)
+
+1
+⟩⟨
+
+False heralds, where a heralding event occurs indepen-
+dent of the signal photons incident on the beamsplit-
+ter network, can occur due to detector dark counts or
+crosstalk of classical excitation light or photons from
+In the limit of low system efficiency
+other modules.
+it is described by an admix-
+and small other errors,
+ture of a separable state ρfalse ⊗
+ρfalse, where ρfalse ≈
+is the local state after excitation
+(1
++ pe |
+(entirely tracing out the signal photon, if any). As the
+joint state contains odd-parity terms, the raw infidelity
+for a certain false herald probability pfalse of (1
+pe)2pfalse
+(on top of the double-excitation error) is imperfectly sup-
+false).
+pressed by the distillation process to 6pepfalse + O(p2
+False heralds merit attention because the otherwise high
+fidelities inherent to the scheme mean that even 1-s−
+1
+level false heralds may become limiting (especially in
+passive networks, see App. C). False-herald errors can
+be traded off against rate using the acceptance window
+length.
+
+−
+
+|
+
+and
+
+For two Bell pairs (A1) with generally different phases
+, the state after successful distillation
+Ψχ,α⟩
+Ψχ,β⟩
+|
+|
+. Any common offset α = β = ϕ is cor-
+is
+Ψ0,α
+|
+rected for arbitrary ϕ, but a difference δϕ in phases
+leads to a loss in fidelity to the nominal output state
+of 1
+
+2 = sin2(δϕ/2) (see App. B).
+
+Ψ+
+
+β⟩
+
+−
+
+− | ⟨
+
+Ψ0,δϕ⟩ |
+
+|
+
+10−310−210−1Relative herald phase ±Á=¼10−510−410−310−210−1Distilled-pair infidelity 1¡FF = 99.9%F = 99.99%1¡F=sin2(±Á=2)(a)10−410−310−210−1¾¡/¼ intensity ratio "2=I¾¡=I¼10−510−410−310−2Distilled-pair infidelity 1¡FF = 99.9%F = 99.99%1¡F/"2(b)pe=0:198 (working point)pe=1=3 (local ops !0)10152025303540Polarisation extinction ratio (dB)̸
+fibers connecting the modules.
+
+Consider two successive heralds occurring at times t0
+and t1. Neglecting the discrete nature of the attempt
+cycles, the inter-herald interval δt = t1 −
+t0 is well-
+approximated by an exponential distribution with a mean
+T = tcycle/pherald. The average infidelity ϵlink-phase is
+then (Table II, App. A 2 b)
+
+ϵlink-phase = E
+
+(cid:20)
+sin2 δϕ
+2
+(cid:18)
+1
+1
+T
+
+−
+
+(cid:21)
+
+(cid:90) ∞
+
+e−
+
+δt
+
+T E [cos δϕ
+
+0
+
+=
+
+1
+2
+
+(cid:19)
+
+δt] dδt
+
+,
+
+|
+
+|
+
+δt] = re E (cid:2)eiδϕ
+
+(B1)
+δt(cid:3) is obtained from the
+where E [cos δϕ
+characteristic function of the phase increment δϕ at a
+given δt. Assuming δϕ follows a zero-mean Gaussian dis-
+σ2
+δϕ(δt)/2, where
+tribution [51], we have E [cos δϕ
+|
+the phase-increment variance σ2
+may be expressed in
+δϕ
+terms of the phase noise spectrum Sϕ(f ) as
+
+δt] = e−
+
+|
+
+σ2
+δϕ(δt) = 4
+
+(cid:90) ∞
+
+0
+
+Sϕ(f ) sin2(πf δt) df .
+
+(B2)
+
+Here, Sϕ(f ) means a power spectral density in the usual
+engineering sense; the phase evolution may not strictly be
+a stationary process. A white-frequency-noise (Wiener)
+process with Sϕ(f ) = b
+2/f 2 yields ϵlink-phase = (1 +
+1)−
+2 π2 T )−
+(b
+−
+In the small-error
+
+i.e. neglecting higher
+
+−
+regime,
+
+1/2.
+
+moments (whether Gaussian or not),
+E[σ2
+
+ϵlink-phase
+
+≈
+
+δϕ(δt)]/4, and hence
+(cid:90) ∞
+
+ϵlink-phase
+
+1
+2
+
+≈
+
+0
+
+Sϕ(f )
+
+1
+1 + 1/(2πf T )2 df .
+
+(B3)
+
+∼
+
+10−
+
+Distillation thus suppresses link phase noise akin to
+a first-order high-pass filter with a corner frequency
+given by the inverse of the average inter-herald interval,
+1/(2πT ).
+
+3 . . . 10−
+
+The phase stability of single-mode fiber links depends
+strongly on their mechanical environment; vibrations
+typically dominate in the frequency band of interest.
+For 10 m-scale patch cords in a laboratory environment,
+phase noise densities of Sϕ(f )
+1/f 2 rad2 Hz
+have been reported in the literature [52, 94].
+In Ta-
+ble III, we give a representative phase deviation σδϕ =
+(cid:113)E[σ2
+δϕ(δt)] = 0.02 rad based on the upper end of that
+range, equivalent to an error of ϵlink-phase = 0.007 %. In
+experiments optimized for passive stability of fiber links
+on the 10 m scale, significantly better stability is rou-
+tinely achieved [95], giving rise to negligible estimated
+infidelities ϵlink-phase < 10−
+6; the floor due to thermal
+noise is yet lower [96]. On the other hand, local dis-
+turbances can dominate the stability independent of the
+link length, such as observed in Ref. [40], where a simi-
+lar level of stability is reported for 10 m and 10 km links
+(equivalent to ϵlink-phase
+In situations where
+the passive stability of the link phase is not sufficient,
+active stabilization may be employed.
+
+0.1 %).
+
+≈
+
+15
+
+Appendix C: Photonic networks for excitation and
+interference
+
+On the emission side, the choice of a switch network
+or a passive symmetric multiport (see Fig. 11) carries fi-
+delity consequences as well as parallelism implications.
+Both designs discussed here assume optical paths can
+cross, which reduces the element number compared to
+crossing-free networks [97]. While the depth and total
+element number are comparable, an active network al-
+lows fully parallel connection (as shown in the following
+section), while a passive network only supports entan-
+gling two of M modules at any given time. By contrast,
+the passive device is simpler, easier to fabricate, requires
+fewer controls, and may incur less loss. The networks face
+competing fidelity trade-offs: an active network accrues
+infidelity due to crosstalk at each switch crossing a live
+line, whereas the passive case has no network crosstalk
+because only two inputs are simultaneously active. The
+infidelity from detector dark counts scales with the num-
+ber of active detectors per Bell pair and thus favors ac-
+tive networks. For both networks, ignoring heralds from
+a detector for a short time after it fires mitigates detector
+afterpulsing errors at low rate cost.
+
+Both dark-count and crosstalk infidelity are propor-
+tional to the probability that a given herald arises from
+a false-positive detection pfalse. For nd detectors with
+dark-count rate Rdc,
+
+p(dc)
+false =
+
+nd Rdc twindow
+pherald
+
+(C1)
+
+The infidelity is M
+times larger for the multiport than
+2
+for the switch network. A second potential source of
+infidelity is crosstalk arising either from crossed optical
+signals in waveguides or imperfect switches. Since the
+symmetric multiport supports only a single active pair
+at any given time and distillation turns static imbalances
+into rate hits, crosstalk causes no infidelity in passive net-
+works. In the butterfly switch network, p(X)
+false = nX ϵX ,
+the number of opportunities nX for other photons to leak
+into the path times the probability ϵX . Time-interleaving
+the excitations on different modules could increase the
+parallelism of passive networks and reduce the crosstalk
+errors in switch networks while also making more efficient
+use of laser power. However, an additional switch may
+be required per input module to gate photons scattered
+during state preparation.
+
+The butterfly network routes any pairing
+
+We show that, for any pairing of the M = 2D modules,
+a depth-D butterfly network can route the two members
+of every pair to a beamsplitter of their own.
+
+We label each output port with a D-bit address, where
+the D
+1 higher bits give the binary expansion of the
+beamsplitter index. The low bit labels which of the two
+
+−
+
+16
+
+−
+
+ule. This bit must differ between the two members of
+a matched pair, as they must occupy the two ports of
+one beamsplitter. Take the desired connections between
+modules as one pairing, and the hard-wired input pairing
+of modules entering the same stage-0 switch as the other.
+By the observation above, the port bits can be chosen to
+differ both between the members of every matched pair
+and between the two inputs of every stage-0 switch. Ev-
+ery stage-0 switch can then be set correctly.
+
+Each later stage fixes one bit of the shared beamsplitter
+index. Assume stages 0, . . . , s
+1 have been set correctly,
+meaning each module occupies a position whose address
+agrees with its target in all bits below s. A stage-s switch
+joins positions differing only in bit s, so its two inputs
+agree on all lower bits, including the beamsplitter-port
+bit. Modules with port bit 0 therefore meet only other
+modules with port bit 0 (likewise for port bit 1).
+
+The same pairing argument now applies with the
+matched pairs themselves as the objects. The port-0
+modules, one per matched pair, are paired up by which
+stage-s switch they enter. No pair meets itself in this
+pairing, as each pair contributes only one port-0 mod-
+ule. The port-1 modules define a second pairing in the
+same way. Alternating the stage-s beamsplitter-index
+bit around the resulting cycles gives one shared bit to
+each matched pair and opposite bit values to the two
+modules entering every stage-s switch. Every stage-s
+switch can then be set correctly. Continuing through
+1 fixes the full beamsplitter index of ev-
+s = 1, . . . , D
+ery pair, and every module reaches its target address.
+Because the network of two-port switches implements a
+permutation, every output port receives exactly one mod-
+ule, so no two pairs share a beamsplitter.
+
+−
+
+Appendix D: Narrow-line power requirement
+
+The rate model in Sec. III treats the narrow-line π time
+tπ as an input parameter. Here we translate that param-
+eter into an optical power per entanglement channel. The
+dipole-allowed D
+P step requires orders of magnitude
+less power at the same waist and is neglected below.
+
+→
+
+For a resonant quadrupole transition driven by a spa-
+tial Gaussian beam with 1/e2 intensity diameter d and
+power Pch,
+
+tπ(Pch, d) = d
+
+(cid:115)
+
+π5 ℏc τD5/2
+60 λ3 C 2
+eff Pch
+
+,
+
+(D1)
+
+where τD5/2
+is the upper-state radiative lifetime and
+eff = 1/30 is the product of the Clebsch–Gordan (1/5)
+C 2
+and geometric (1/6) factors for our
+= 2 drive at the
+optimal beam/field orientation [99]. For 88Sr+, Eq. D1
+1.1, 4.4, and 9.9 mW for
+gives tπ = 75 ns at Pch ≃
+d = 1, 2, and 3 µm. The rate rises with power while
+tπ limits the cycle time, then flattens near 1 kHz once
+tπ becomes negligible. Among the species considered in
+Fig. 12, 88Sr+ reaches a given rate with the least power
+
+∆m
+
+|
+
+|
+
+FIG. 11. A comparison of the active and passive photonic
+network for a single channel and eight modules.
+
+Passive
+
+Active
+
+Switches
+Beamsplitters
+Detectors
+Depth
+Simultaneous connections
+
+0
+M
+2 log2 M
+M
+log2 M BS
+1 pair
+
+≤
+
+M
+2 log2 M
+M
+2
+M
+log2 M SW + 1 BS
+
+all M
+2
+
+pairs
+
+Crosstalk infidelity
+Detectors per pair
+
+—
+M
+
+log2 M factors
+2
+
+≤
+
+TABLE V. Comparison of passive and active photonic net-
+works for realizing all-to-all connectivity between modules.
+Counts assume M = 2D with D =
+. BS =
+beamsplitter, SW = switch.
+
+log2 modules
+
+⌈
+
+⌉
+
+ports of that beamsplitter the module occupies, and we
+call it the beamsplitter-port bit. We number the stages
+so that stage 0 acts on the module inputs and stage D
+1
+−
+precedes the fixed beamsplitter layer. A stage-s switch
+separates its inputs according to bit s of the target ad-
+dress. It can be set correctly if and only if its two inputs
+require opposite values of that bit [98].
+
+The routing condition at each stage thus becomes a bi-
+nary assignment problem: assign one bit to each object
+in a collection, with certain pairs of objects required to
+receive opposite values.
+In the stages considered here,
+these requirements always come from two pairings of the
+same collection. Drawing both pairings as edges gives ev-
+ery object one edge of each kind, so the graph separates
+into cycles that alternate between the two edge types and
+are therefore even. Assigning bits 0, 1, 0, 1, . . . around
+each cycle then satisfies every requirement of both pair-
+ings at once. This alternating construction is the cycle-
+decomposition step of the classical looping algorithm for
+rearrangeable networks [98]. All that remains is to iden-
+tify the two pairings at each stage.
+
+Stage 0 sets the beamsplitter-port bit of every mod-
+
+(a)(b)8-node passive multiport8-node active switch networkM0M1M2M3M4M5M6M7Detector arrayM0M1M2M3M4M5M6M7Detector arrayMMI beam splitterMZI 2×2 switchphase shifter17
+
+O(d) Bell pairs per round but must be repeated for O(d)
+rounds [33, 102]. The two therefore sit at opposite ends
+of a rate–run-time trade-off: for a comparable total Bell-
+pair count, the transversal scheme requires O(d) more
+Bell pairs per round, but has O(d) shorter run time. The
+required Bell-pair rate is the per-round pair count di-
+vided by τsyndrome, so the aggressive τsyndrome = 1 ms as-
+sumed by architecture papers [3, 4, 6] and the near-term
+τsyndrome = 55 ms of the Quantinuum Helios operations
+layer [1] already span more than an order of magnitude
+in Bell-pair rate.
+
+The distance needed, and hence the absolute Bell-pair
+count, grows only slowly with problem size. Treating idle,
+local, and remote operations on equal footing through the
+circuit spacetime volume V (a conservative choice), and
+assuming a sub-threshold logical error pL ≈
+with physical error rate p, threshold pth, and constant κ,
+the minimum distance for which the total logical error
+stays of order one is
+
+κ ( p
+pth
+
+d+1
+2
+
+)
+
+d
+
+≈
+
+2 ln(κ V )
+ln(pth/p) −
+
+1.
+
+(E1)
+
+d
+
+≥
+
+≤
+
+∝
+
+∝
+
+∝
+
+∝
+
+99.9%).
+
+99.93% vs.
+
+Because the distance grows only logarithmically with cir-
+ln(κ V ), so does the number of Bell pairs
+cuit volume, d
+∝
+consumed per syndrome cycle, through its dependence on
+d: it is
+ln(κ V ) for surgery and
+ln2(κ V )
+for transversal gates. The concrete cases of Table I use
+distance-27 surface-code patches (d2 = 729 Bell pairs
+in one round) [6] or a smaller distance d
+20 lifted-
+product code for surgery [4], consuming approximately
+2d = 40 to 4d = 80 Bell pairs per round depending on
+the adapter [33] (but assuming a higher operation fidelity
+of
+
+d2
+
+≥
+The structure of the remote operation sets the required
+Bell-pair fidelity. Both codes above assume approxi-
+mately
+99.9%-fidelity operations to run RSA-2048 fac-
+toring and comparable algorithms; however, for certain
+operation structures the link fidelity could be lower than
+the bulk fidelity. Bell-pair-mediated lattice surgery be-
+tween two surface-code patches tolerates 14
+higher error
+on the seam than on local operations within a patch [103]
+(to our knowledge, the analogous tolerance for a bridge
+between two qLDPC surgery gadgets is unexplored). As
+an alternative approach that we do not analyze further,
+two [[n, k, d]] qLDPC blocks in different QPUs can be en-
+tangled into k logical Bell pairs by consuming n physical
+Bell pairs, either through a transversal CNOT when the
+code is CSS [66] or through distillation [104]. The dis-
+tilled logical pairs can be built from lower-fidelity phys-
+ical pairs at the cost of more physical qubits and extra
+distillation code blocks per connected module.
+
+≥
+
+×
+
+Reaching the fast-cycle rates summarized in Table I
+will require multiplexing many Bell-pair generation chan-
+nels that are dense enough to supply the Bell factory
+within the cm2 scale of a single module.
+
+FIG. 12. Single-excitation distilled Bell-pair rate vs. per-
+channel narrow-line power Pch for 88Sr+,
+40Ca+, and
+138Ba+. Assuming a rectangular pulse and 1/e2 diam-
+eter d = 2 µm Gaussian beams, with pe re-optimized
+The narrow-line π-time follows from
+at each power.
+Eq. D1 using τD5/2 = 0.39, 1.17, 31 s and wavelengths
+674, 729, 1762 nm (Sr+/Ca+/Ba+); the remaining cycle-time
+and herald-probability inputs are τ = 6.6, 6.6, 6.3 ns and
+γ = 0.94, 0.935, 0.74, with other parameters following Ta-
+ble III. The dashed line marks the 88Sr+ working point
+(tπ = 75 ns, Pch
+
+4.4 mW).
+
+≈
+
+because of its favorable quadrupole matrix element and
+transition wavelength.
+
+Appendix E: Resource requirements
+
+In this section we explain the assumptions behind Ta-
+ble I and, more importantly, show that upstream choices
+set the three quantities the interconnect must deliver.
+The QEC encoding (transversal surface code vs. qLDPC
+code with surgery) and the syndrome measurement cycle
+time τsyndrome govern the Bell-pair rate and the algorithm
+run time, while the style of the remote operation (direct
+Bell-pair-mediated gates vs. consuming distilled logical
+Bell pairs) governs the Bell-pair fidelity required. The
+details of the codes are out of scope; we simply adopt the
+codes that recent architecture papers use to solve large-
+scale problems such as factoring a 2048-bit RSA num-
+ber or quantum chemistry [4, 6], and, as a representative
+scale, derive the number of Bell pairs each QPU must
+supply to sustain one remote two-qubit logical operation
+between a pair of QPUs every logical cycle [5].
+
+The encoding fixes how many Bell pairs a remote log-
+ical operation costs and how that cost is spread in time.
+A surface-code patch of distance d has d2 data qubits,
+so a transversal CNOT between two patches on different
+modules consumes d2 Bell pairs in a single syndrome-
+extraction round [6]. A CNOT between two qLDPC
+blocks instead proceeds by a joint Pauli measurement
+with a bridge system [33, 100, 101], which consumes
+
+10−610−510−410−310−210−1Per-channel narrow-line power Pch (W)101102103Distilled Bell-pair rate (s−1)88Sr+ WP88Sr+40Ca+138Ba+[1] A. Ransford et al., Nature 655, 81 (2026).
+[2] C. Gidney, How to factor 2048 bit RSA integers with
+less than a million noisy qubits (2025), arXiv:2505.15917
+[quant-ph].
+
+[3] P. Webster, L. Berent, O. Chandra, E. T. Hockings,
+N. Baspin, F. Thomsen, S. C. Smith, and L. Z. Cohen,
+The pinnacle architecture: Reducing the cost of break-
+ing RSA-2048 to 100 000 physical qubits using quantum
+LDPC codes (2026), arXiv:2602.11457 [quant-ph].
+[4] M. Cain, Q. Xu, R. King, L. R. B. Picard, H. Levine,
+M. Endres, J. Preskill, H.-Y. Huang, and D. Blu-
+vstein, Shor’s algorithm is possible with as few as 10,000
+reconfigurable atomic qubits (2026), arXiv:2603.28627
+[quant-ph].
+
+[5] F. Tripier, W. C. Chung, J. Young, S. Alam, B. Bjork,
+A. Brodutch, F. L. Buessen, N. J. Coble, T. Del-
+laert, D. Maslov, M. Roetteler, E. Tham, M. Webster,
+M. Ye, J. Gamble, A. Maksymov, J. P. Marceaux, and
+N. Delfosse, Fault-tolerant quantum computing with
+trapped ions: The walking cat architecture (2026),
+arXiv:2604.19481 [quant-ph].
+
+[6] H. Zhou, C. Duckering, C. Zhao, D. Bluvstein, M. Cain,
+A. Kubica, S.-T. Wang, and M. D. Lukin, in Proceedings
+of the 52nd Annual International Symposium on Com-
+puter Architecture (ISCA ’25) (ACM, Tokyo, Japan,
+2025).
+
+[7] D. Stick, W. K. Hensinger, S. Olmschenk, M. J. Madsen,
+K. Schwab, and C. Monroe, Nat. Phys. 2, 36 (2006).
+[8] K. R. Brown, J. Chiaverini, J. M. Sage, and H. Häffner,
+
+Nat. Rev. Mater. 6, 892 (2021).
+
+[9] M. Malinowski, D. T. C. Allcock, and C. J. Ballance,
+
+PRX Quantum 4, 040313 (2023).
+
+[10] B. Lekitsch, S. Weidt, A. G. Fowler, K. Mølmer, S. J.
+Devitt, C. Wunderlich, and W. K. Hensinger, Science
+Advances 3, e1601540 (2017).
+
+[11] A. Bermudez, X. Xu, R. Nigmatullin, J. O’Gorman,
+V. Negnevitsky, P. Schindler, T. Monz, U. G.
+Poschinger, C. Hempel, J. Home, F. Schmidt-Kaler,
+M. Biercuk, R. Blatt, S. Benjamin, and M. Müller, Phys.
+Rev. X 7, 041061 (2017).
+
+[12] E. Tham, M. Ye, I. Khait, J. Gamble, and N. Delfosse,
+Distributed fault-tolerant quantum memories over a 2
+l
+×
+array of qubit modules (2025), arXiv:2508.01879 [quant-
+ph].
+
+[13] D. L. Moehring, P. Maunz, S. Olmschenk, K. C. Younge,
+D. N. Matsukevich, L.-M. Duan, and C. Monroe, Nature
+449, 68 (2007).
+
+[14] D. Hucul, I. V. Inlek, G. Vittorini, C. Crocker, S. Deb-
+nath, S. M. Clark, and C. Monroe, Nat. Phys. 11, 37
+(2015).
+
+[15] S. Saha, M. Shalaev, J. O’Reilly, I. Goetting, G. Toh,
+A. Kalakuntla, Y. Yu, and C. Monroe, Nature Commu-
+nications 16, 2533 (2025).
+
+[16] D. Main, P. Drmota, D. P. Nadlinger, E. M. Ainley,
+A. Agrawal, B. C. Nichol, R. Srinivas, G. Araneda, and
+D. M. Lucas, Nature 638, 383 (2025).
+
+[17] J. O’Reilly, G. Toh, I. Goetting, S. Saha, M. Sha-
+laev, A. L. Carter, A. Risinger, A. Kalakuntla, T. Li,
+A. Verma, and C. Monroe, Phys. Rev. Lett. 133, 090802
+(2024).
+
+[18] A. C. Hughes, R. Srinivas, C. M. Löschnauer, H. M.
+
+18
+
+Knaack, R. Matt, C. J. Ballance, M. Malinowski, T. P.
+Harty, and R. T. Sutherland, Trapped-ion two-qubit
+gates with > 99.99% fidelity without ground-state cool-
+ing (2025), arXiv:2510.17286 [quant-ph].
+
+[19] S. D. Barrett and P. Kok, Phys. Rev. A 71, 060310(R)
+
+(2005).
+
+[20] C. Simon and W. T. M. Irvine, Phys. Rev. Lett. 91,
+
+110405 (2003).
+
+[21] V. Krutyanskiy, M. Galli, V. Krcmarsky, S. Baier, D. A.
+Fioretto, Y. Pu, A. Mazloom, P. Sekatski, M. Canteri,
+M. Teller, J. Schupp, J. Bate, M. Meraner, N. San-
+gouard, B. P. Lanyon, and T. E. Northup, Phys. Rev.
+Lett. 130, 050803 (2023).
+
+[22] E. Novakoski and J. Kim, Design tradeoffs in photon-
+ically linked qubit networks (2025), arXiv:2506.06268
+[quant-ph].
+
+[23] E. Sutcliffe, B. Jonnadula, C. Le Gall, A. E. Moylett,
+and C. M. Westoby, in 2025 IEEE International Confer-
+ence on Quantum Computing and Engineering (QCE)
+(2025).
+
+[24] A. L. Carter, J. O’Reilly, G. Toh, S. Saha, M. Sha-
+laev, I. Goetting, and C. Monroe, Rev. Sci. Instrum.
+95, 033201 (2024).
+
+[25] S. Kikura, K. Tanji, A. Goban, and S. Sunami, Passive
+quantum interconnects: multiplexed remote entangle-
+ment generation with cavity-assisted photon scattering
+(2026), arXiv:2507.01229 [quant-ph].
+
+[26] C. H. Bennett, G. Brassard, S. Popescu, B. Schumacher,
+J. A. Smolin, and W. K. Wootters, Phys. Rev. Lett. 76,
+722 (1996).
+
+[27] R. Reichle, D. Leibfried, E. Knill, J. Britton, R. B.
+Blakestad, J. D. Jost, C. Langer, R. Ozeri, S. Seidelin,
+and D. J. Wineland, Nature 443, 838 (2006).
+
+[28] R. Nigmatullin, C. J. Ballance, N. de Beaudrap, and
+S. C. Benjamin, New J. Phys. 18, 103028 (2016).
+[29] C. Cabrillo, J. I. Cirac, P. García-Fernández, and
+
+P. Zoller, Phys. Rev. A 59, 1025 (1999).
+
+[30] F. W. Knollmann, E. Clements, P. T. Callahan,
+M. Gehl, J. D. Hunker, T. Mahony, R. McConnell,
+R. Swint, C. Sorace-Agaskar, I. L. Chuang, J. Chi-
+averini, and D. Stick, Optica Quantum 2, 230 (2024).
+
+[31] J. Apolín and D. P. Nadlinger, PRX Quantum 7, 010326
+
+(2026).
+
+[32] E. T. Campbell and S. C. Benjamin, Phys. Rev. Lett.
+
+101, 130502 (2008).
+
+[33] E. Swaroop, T. Jochym-O’Connor, and T. J. Yoder,
+
+PRX Quantum 7, 010324 (2026).
+
+[34] D. Kielpinski, C. Monroe, and D. J. Wineland, Nature
+
+417, 709 (2002).
+
+[35] J. Chiaverini, R. B. Blakestad, J. Britton, J. D. Jost,
+C. Langer, D. Leibfried, R. Ozeri, and D. J. Wineland,
+Quantum Inf. Comput. 5, 419 (2005).
+
+[36] K. K. Mehta and R. J. Ram, Scientific Reports 7, 2019
+
+(2017).
+
+[37] C. Monroe, R. Raussendorf, A. Ruthven, K. R. Brown,
+P. Maunz, L.-M. Duan, and J. Kim, Phys. Rev. A 89,
+022317 (2014).
+
+[38] L.-M. Duan and C. Monroe, Rev. Mod. Phys. 82, 1209
+
+(2010).
+
+[39] C. Monroe and J. Kim, Science 339, 1164 (2013).
+[40] W.-Z. Liu, Y.-B. Zhou, J.-P. Chen, B. Wang, A. Teng,
+
+X.-W. Han, G.-C. Liu, Z.-J. Zhang, Y. Yang, F.-G. Liu,
+C.-H. Xue, B.-W. Yang, J. Yang, C. Zeng, D.-R. Pan,
+M.-Y. Zheng, X. Zhang, S. Cao, Y.-Z. Zhen, Y. Xiao,
+H. Li, L. You, X. Ma, Q. Zhao, F. Xu, Y. Wang, Y. Wan,
+Q. Zhang, and J.-W. Pan, Nature 652, 51 (2026).
+[41] L. Slodička, G. Hétet, N. Röck, P. Schindler, M. Hen-
+nrich, and R. Blatt, Phys. Rev. Lett. 110, 083603
+(2013).
+
+[42] N. Kalb, A. A. Reiserer, P. C. Humphreys, J. J. W. Bak-
+ermans, S. J. Kamerling, N. H. Nickerson, S. C. Ben-
+jamin, D. J. Twitchen, M. Markham, and R. Hanson,
+Science 356, 928 (2017).
+
+[43] F. W. Knollmann, S. M. Corsetti, E. R. Clements,
+R. Swint, A. D. Leu, M. E. Kim, P. T. Callahan,
+D. Kharas, T. Mahony, C. Sorace-Agaskar, R. Mc-
+Connell, C. D. Bruzewicz, I. L. Chuang, J. Notaros,
+and J. Chiaverini, Light: Science & Applications 15, 95
+(2026).
+
+[44] E. M. Ainley, A. Agrawal, D. Main, P. Drmota, D. P.
+Nadlinger, B. C. Nichol, R. Srinivas, and G. Araneda,
+Multipartite entanglement for multi-node quantum net-
+works (2024), arXiv:2408.00149 [quant-ph].
+
+[45] D. Assumpcao, D. Renaud, A. Baradari, B. Zeng, C. De-
+Eknamkul, C. J. Xin, A. Shams-Ansari, D. Barton,
+B. Machielse, and M. Lončar, Nature Communications
+15, 10459 (2024).
+
+[46] M. Dong, G. Clark, A. J. Leenheer, M. Zimmermann,
+D. Dominguez, A. J. Menssen, D. Heim, G. Gilbert,
+D. Englund, and M. Eichenfield, Nature Photonics 16,
+59 (2022).
+
+[47] M. Momenzadeh, K. Sun, Q. Wu, B. You, Y.-L. Tang,
+H. Häffner, and M. R. Shcherbakov, Scalable trapped
+ion addressing with adjoint-optimized multimode pho-
+tonic circuits (2025), arXiv:2505.08997 [physics.optics].
+[48] L. J. Stephenson, D. P. Nadlinger, B. C. Nichol, S. An,
+P. Drmota, T. G. Ballance, K. Thirumalai, J. F. Good-
+win, D. M. Lucas, and C. J. Ballance, Phys. Rev. Lett.
+124, 110501 (2020).
+
+[49] R. D. Delaney, L. R. Sletten, M. J. Cich, B. Estey,
+M. I. Fabrikant, D. Hayes, I. M. Hoffman, J. Hostetter,
+C. Langer, S. A. Moses, A. R. Perry, T. A. Peterson,
+A. Schaffer, C. Volin, G. Vittorini, and W. C. Burton,
+Phys. Rev. X 14, 041028 (2024).
+
+[50] G.-C. Liu, C.-H. Xue, F.-X. Chen, M.-Y. Zheng,
+Y. Yang, L.-B. Li, B. Wang, B.-W. Yang, H.-F. Jiang,
+Y. Wan, Y. Wang, J.-P. Chen, Q. Zhang, and J.-W.
+Pan, Bayesian phase stabilization at the shot-noise limit
+for scalable quantum networks (2026), arXiv:2604.21388
+[quant-ph].
+
+[51] J. Minář, H. de Riedmatten, C. Simon, H. Zbinden, and
+
+N. Gisin, Phys. Rev. A 77, 052325 (2008).
+
+[52] G. Grosche, O. Terra, K. Predehl, R. Holzwarth, B. Lip-
+phardt, F. Vogt, U. Sterr, and H. Schnatz, Opt. Lett.
+34, 2270 (2009).
+
+[53] C. Crocker, M. Lichtman, K. Sosnova, A. Carter,
+S. Scarano, and C. Monroe, Optics Express 27, 28143
+(2019).
+
+[54] E. E. Wollman, V. B. Verma, A. D. Beyer, R. M. Briggs,
+B. Korzh, J. P. Allmaras, F. Marsili, A. E. Lita, R. P.
+Mirin, S. W. Nam, and M. D. Shaw, Optics Express 25,
+26792 (2017).
+
+[55] E. H. Pinnington, R. W. Berends, and M. Lumsden, J.
+
+Phys. B: At. Mol. Opt. Phys. 28, 2095 (1995).
+
+[56] H. Zhang, M. Gutierrez, G. H. Low, R. Rines, J. Stuart,
+
+19
+
+T. Wu, and I. Chuang, New J. Phys. 18, 123021 (2016).
+[57] J. P. Gaebler, C. H. Baldwin, S. A. Moses, J. M. Dreil-
+ing, C. Figgatt, M. Foss-Feig, D. Hayes, and J. M. Pino,
+Phys. Rev. A 104, 062440 (2021).
+
+[58] L.-M. Duan, M. D. Lukin, J. I. Cirac, and P. Zoller,
+
+Nature 414, 413 (2001).
+
+[59] M. K. Bhaskar, R. Riedinger, B. Machielse, D. S. Levo-
+nian, C. T. Nguyen, E. N. Knall, H. Park, D. Englund,
+M. Lončar, D. D. Sukachev, and M. D. Lukin, Nature
+580, 60 (2020).
+
+[60] H. Lim, J. E. Fröch, C. M. Pluchar, A. Majumdar, and
+S. L. Mouradian, ACS Photonics 13, 2052 (2026).
+[61] I. V. Inlek, C. Crocker, M. Lichtman, K. Sosnova, and
+C. Monroe, Phys. Rev. Lett. 118, 250502 (2017).
+[62] C. N. Gilbreth, D. Filin, M. S. Safronova, G. Lao, and
+E. R. Hudson, Yttrium ion as a platform for quantum in-
+formation processing (2026), arXiv:2604.16274 [quant-
+ph].
+
+[63] D. Petrosyan, F. Motzoi, M. Saffman, and K. Mølmer,
+
+Phys. Rev. A 96, 042306 (2017).
+
+[64] A. Pagano, S. Weber, D. Jaschke, T. Pfau, F. Meinert,
+S. Montangero, and H. P. Büchler, Phys. Rev. Research
+4, 033019 (2022).
+
+[65] C. Hölzl, A. Götzelmann, E. Pultinevicius, M. Wirth,
+and F. Meinert, Phys. Rev. X 14, 021024 (2024).
+[66] Y. Li and J. D. Thompson, PRX Quantum 5, 020363
+
+(2024).
+
+[67] C. D. Bruzewicz, J. Chiaverini, R. McConnell, and J. M.
+
+Sage, Appl. Phys. Rev. 6, 021314 (2019).
+
+[68] G. Moody et al., J. Phys. Photonics 4, 012501 (2022).
+[69] S. A. Tabatabaei Mashayekh, Visible wavelength pho-
+tonic integrated circuits for life science applications,
+Ph.D. thesis, RWTH Aachen University (2023).
+
+[70] C. W. Hogle, D. Dominguez, M. Dong, A. Leenheer,
+H. J. McGuinness, B. P. Ruzic, M. Eichenfield, and
+D. Stick, npj Quantum Information 9, 74 (2023).
+[71] Z. A. Castillo, R. Shugayev, D. Dominguez, M. Gehl,
+N. Karl, A. Leenheer, B. Little, Y.-Y. Jau, and
+M. Eichenfield, Optica Quantum 4, 114 (2026).
+
+[72] J. Kwon, W. J. Setzer, M. Gehl, N. Karl, J. Van
+Der Wall, R. Law, M. G. Blain, D. Stick, and H. J.
+McGuinness, Nature Communications 15, 3709 (2024).
+[73] C. Lin, M. Kiewiet, R. R. Petit, J. Dendooven,
+N. Le Thomas, C. Detavernier, and B. Kuyken, Journal
+of Lightwave Technology 43, 7265 (2025).
+
+[74] Y. Du, X. Ji, W. Xie, Y. He, Y. Zhang, M. Tian,
+and Y. Su, Advanced Materials Technologies 9, 2400196
+(2024).
+
+[75] R. Munoz, P. Nuschke, T. Meiners, B. Kaune,
+and C. Ospelkaus, A framework for the benchmark-
+ing of transport-induced excitations in shuttling-based
+ion-trap quantum processors (2026), arXiv:2605.25118
+[quant-ph].
+
+[76] D. J. Larson, J. C. Bergquist, J. J. Bollinger, W. M.
+Itano, and D. J. Wineland, Phys. Rev. Lett. 57, 70
+(1986).
+
+[77] S. Wimperis, Journal of Magnetic Resonance, Series A
+
+109, 221 (1994).
+
+[78] H. K. Cummins, G. Llewellyn, and J. A. Jones, Phys.
+
+Rev. A 67, 042308 (2003).
+
+[79] N. Timoney, V. Elman, S. Glaser, C. Weiss, M. Johan-
+ning, W. Neuhauser, and C. Wunderlich, Phys. Rev. A
+77, 052334 (2008).
+
+[80] D. D. Thaker, T. S. Metodi, A. W. Cross,
+
+I. L.
+
+Chuang, and F. T. Chong, in Proceedings of the 33rd
+Annual International Symposium on Computer Archi-
+tecture (ISCA-33) (2006) pp. 378–390, arXiv:quant-
+ph/0604070 [quant-ph].
+
+[81] P.-J. Stas, Y.-C. Wei, M. Sirotin, Y. Q. Huan,
+U. Yazlar, F. Abdo Arias, E. Knyazev, G. Baranes,
+B. Machielse, S. Grandi, D. Riedel, J. Borregaard,
+H. Park, M. Lončar, A. Suleymanzade, and M. D. Lukin,
+Nature 651, 326 (2026).
+
+[82] D. Gottesman, T. Jennewein, and S. Croke, Phys. Rev.
+
+Lett. 109, 070503 (2012).
+
+[83] E. T. Khabiboulline, J. Borregaard, K. De Greve, and
+M. D. Lukin, Phys. Rev. Lett. 123, 070504 (2019).
+[84] P. Kómár, E. M. Kessler, M. Bishof, L. Jiang, A. S.
+Sørensen, J. Ye, and M. D. Lukin, Nat. Phys. 10, 582
+(2014).
+
+[85] B. C. Nichol, R. Srinivas, D. P. Nadlinger, P. Drmota,
+D. Main, G. Araneda, C. J. Ballance, and D. M. Lucas,
+Nature 609, 689 (2022).
+
+[86] J. F. Fitzsimons, npj Quantum Information 3, 23
+
+(2017).
+
+[87] D. P. Nadlinger, P. Drmota, B. C. Nichol, G. Araneda,
+D. Main, R. Srinivas, D. M. Lucas, C. J. Ballance,
+K. Ivanov, E. Y.-Z. Tan, P. Sekatski, R. L. Urbanke,
+R. Renner, N. Sangouard, and J.-D. Bancal, Nature
+607, 682 (2022).
+
+[88] S. A. Khan, S. Prabhu, L. G. Wright, and P. L. McMa-
+hon, Quantum computational-sensing advantage (2025),
+arXiv:2507.16918 [quant-ph].
+
+[89] R. R. Allen, F. Machado, I. L. Chuang, H.-Y. Huang,
+and S. Choi, Quantum computing enhanced sensing
+(2025), arXiv:2501.07625 [quant-ph].
+
+[90] V. Giovannetti, S. Lloyd, and L. Maccone, Nature Pho-
+
+tonics 5, 222 (2011).
+
+[91] C. L. Degen, F. Reinhard, and P. Cappellaro, Rev. Mod.
+
+Phys. 89, 035002 (2017).
+
+[92] S. M. Corsetti, A. Hattori, E. R. Clements, F. W. Knoll-
+mann, M. Notaros, R. Swint, T. Sneh, P. T. Callahan,
+G. N. West, D. Kharas, T. Mahony, C. D. Bruzewicz,
+C. Sorace-Agaskar, R. McConnell, I. L. Chuang, J. Chi-
+averini, and J. Notaros, Light: Science & Applications
+15, 57 (2026).
+
+20
+
+[93] E. Clements, F. W. Knollmann, S. Corsetti, Z. Li,
+A. Hattori, M. Notaros, R. Swint, T. Sneh, M. E.
+Kim, A. D. Leu, P. Callahan, T. Mahony, G. N. West,
+C. Sorace-Agaskar, D. Kharas, R. McConnell, C. D.
+Bruzewicz, I. L. Chuang, J. Notaros, and J. Chiaverini,
+Phys. Rev. Lett. 136, 023201 (2026).
+
+[94] S. Mukherjee, J. Millo, B. Marechal, S. Denis,
+G. Goavec-Mérou, J.-M. Friedt, Y. Kersalé, and
+C. Lacroûte, IEEE Trans. Ultrason. Ferroelectr. Freq.
+Control 69, 878 (2022).
+
+[95] B. Hacker, K. Günthner, C. Rößler, and C. Marquardt,
+
+New J. Phys. 25, 113007 (2023).
+
+[96] R. E. Bartolo, A. B. Tveten, and A. Dandridge, IEEE
+
+J. Quantum Electron. 48, 720 (2012).
+
+[97] M. Koyama, C. Yun, A. Taherkhani, N. Benchasat-
+tabuse, B. O. Sane, M. Hajdušek, S. Nagayama, and
+R. Van Meter,
+in 2024 IEEE International Confer-
+ence on Quantum Computing and Engineering (QCE)
+(2024).
+
+[98] V. E. Beneš, Mathematical Theory of Connecting Net-
+works and Telephone Traffic (Academic Press, New
+York, 1965).
+
+[99] C. F. Roos, Controlling the quantum state of trapped
+ions, Ph.D. thesis, Universität Innsbruck (2000).
+[100] Z. He, A. Cowtan, D. J. Williamson, and T. J. Yoder,
+Extractors: QLDPC architectures for efficient pauli-
+based computation (2025), arXiv:2503.10390 [quant-
+ph].
+
+[101] A. W. Cross, Z. He, P. J. Rall, and T. J. Yoder, Im-
+proved QLDPC surgery: Logical measurements and
+bridging codes (2025), arXiv:2407.18393 [quant-ph].
+
+[102] T. J. Yoder, E. Schoute, P. Rall, E. Pritchett,
+J. M. Gambetta, A. W. Cross, M. Carroll, and
+M. E. Beverland, Tour de gross: A modular quan-
+tum computer based on bivariate bicycle codes (2025),
+arXiv:2506.03094 [quant-ph].
+
+[103] J. Ramette, J. Sinclair, N. P. Breuckmann, and
+
+V. Vuletić, npj Quantum Information 10, 106 (2024).
+
+[104] J. P. Bonilla Ataides, H. Zhou, Q. Xu, G. Baranes, B. Li,
+M. D. Lukin, and L. Jiang, Phys. Rev. Lett. 135, 130804
+(2025).
+
+

@@ -1,0 +1,3839 @@
+1
+
+Distributed Entanglement Distribution Using
+Multiple Entanglement Sources in WDM-based
+Quantum Optical Networks
+
+Anuj Agrawal†,∗, Abhay Singh Dulta†, Bhaskar Kanseri§
+
+Abstract—Quantum network implementations using single
+spontaneous parametric downconversion (SPDC)-based broad-
+band entangled photon pair source (EPPS) have been reported
+recently. Here,
+leveraging the wavelength-correlation between
+entangled photon pairs, the traditional wavelength division mul-
+tiplexing (WDM) method is utilized to route photons based on
+their wavelengths. From single EPPS, entangled photon pairs
+are distributed in a centralized way to different node pairs in
+the network. However, the number of nodes pairs that can be
+entangled in a network is limited by the number of entangled
+wavelength pairs that an EPPS can generate. To entangle a
+higher number of node pairs in a network, multiple EPPSs
+can be employed. In this work, we present a WDM-based
+entanglement distribution approach using multiple EPPSs in
+multi-hop repeaterless mesh optical networks. We experimentally
+characterize two EPPSs developed in-house and consider multiple
+such EPPSs in the network to perform network-level simulations.
+We consider heterogeneous entanglement demands requiring
+different entanglement bit (ebit) rates and entanglement visibil-
+ity. For each entanglement demand, EPPS placement/selection,
+wavelength-pair assignment, and photon pair routing are per-
+formed considering the degradation in both ebit rate and visibility
+with ﬁber length and hops in the network. Two main ﬁndings of
+this study include: (i) a hybrid approach of one-photon (OP) and
+both-photon (BP) entanglement distribution provides higher ﬂexi-
+bility in multi-EPPS placement and (ii) distributed entanglement
+distribution using multiple EPPSs enables better entanglement
+resource utilization and higher entanglement demand acceptance
+as compared to centralized entanglement distribution.
+
+Index Terms—Entanglement Distribution, Entanglement Rout-
+ing, Quantum Network, Wavelength Assignment, Wavelength
+Division Multiplexing.
+
+I. INTRODUCTION
+
+Entanglement is the quantum resource that is continuously
+consumed to run several quantum network applications in-
+cluding distributed quantum computing, clustered quantum
+computing, quantum-enhanced navigation, very-long-baseline
+interferometry, quantum key distribution, among others [1].
+Thus, distribution of this quantum resource, i.e., entanglement
+distribution at required rate and quality, is the fundamental
+task in quantum networks. Among the envisioned quantum
+network applications [1], [2], most of the applications can be
+
+This work is supported by the National Quantum Mission (NQM), Ministry
+of Science and Technology, India, and the Indian Institute of Technology (IIT)
+Delhi, India.
+
+†A. Agrawal and A.S. Dulta are with the Experimental Quantum Interfer-
+ometry and Polarization (EQUIP) Group, Department of Physics, IIT Delhi,
+New Delhi, India (e-mail: anujagrawal@ieee.org∗ , phz228454@iitd.ac.in).
+
+§B. Kanseri is with the Experimental Quantum Interferometry and Polariza-
+tion (EQUIP) Group, Department of Physics, and Optics and Photonics Centre
+(OPC), IIT Delhi, New Delhi, India (e-mail: bkanseri@physics.iitd.ac.in).
+
+Entanglement 
+Source
+
+h
+t
+g
+n
+e
+
+l
+
+e
+v
+a
+W
+
+l
+
+r
+e
+x
+e
+p
+i
+t
+l
+u
+m
+e
+D
+
+-n
+
+-2
+
+-1
+
+1
+
+2
+
+n
+
+B
+
+A
+
+N
+
+Fig. 1: An example of WDM-based entanglement distribution using single broadband
+EPPS [4]. Here, the entanglement source spectrum is ﬁrst demultiplexed into different
+wavelengths and then entangled photon pairs at correlated wavelength-pairs (shown in
+same color) are routed towards the two entangling nodes (connected by a wiggly line of
+same color as the wavelength-pair color).
+
+realized using Bell-state entanglement (also referred as Bell
+pair) [3]. Spontaneous parametric downconversion (SPDC)-
+based polarization-entanglement source has been commonly
+employed as a Bell pair source or entangled photon pair source
+(EPPS) in quantum networking studies [4], [5] due to its ease
+of generation, manipulation, and compatibility with off-the-
+shelf optical devices.
+
+Wavelength division multiplexing (WDM) has been of great
+utility in the existing classical optical networks for several
+decades. WDM is now being leveraged in quantum optical
+networks too, where a multi-node repeaterless quantum net-
+work can be established using single broadband EPPS by
+transmitting entangled photons at different wavelengths to dif-
+ferent nodes [4], [5]. Fig. 1 shows an example of WDM-based
+entanglement distribution using single broadband EPPS, where
+the output of an entanglement source is ﬁrst demultiplexed into
+different wavelengths (also referred to as ‘channels’) and then
+photons at correlated wavelengths are routed towards different
+nodes in the network. As per the law of conservation of energy,
+in the SPDC process, the entangled photons are correlated in
+wavelengths such that a photon at wavelength λc+δc has its
+corresponding paired photon at λc−δc, where λc is the central
+wavelength of the SPDC output spectrum. Thus, one node
+pair in the network can be entangled utilizing one correlated
+wavelength pair. For example, to entangle node A and node
+B, photons at λ−1 and λ1 (shown in green color) can be
+routed to node A and node B, respectively, as shown in Fig.
+1. Similarly, the wavelength pairs λ2 − λ−2 and λn − λ−n can
+be used to entangle node pairs B−N and A−N, respectively.
+
+arXiv:2607.19849v1  [quant-ph]  22 Jul 2026 
+These node pairs are referred to as the ‘entangling nodes’ or
+‘entangling node pair’. Depending on the quantum network
+application, the distributed entangled photons can then either
+be measured immediately (such as to perform quantum key
+distribution) or be stored in quantum memories (such as to
+perform clustered quantum computing). In addition, depending
+on the quantum network application, different entangling node
+pairs require different entanglement bit (ebit) rates and entan-
+glement quality [1] (measured in terms of visibility, ﬁdelity,
+negativity, S-parameter, etc.). In this work, we use visibility
+as the measure of entanglement quality and consider different
+visibility thresholds for different entanglement demands as our
+experimental EPPS characterization (explained in Section III)
+is in terms of visibility.
+
+For WDM-based entanglement distribution between all the
+n
+2(cid:1) unique node pairs in a network of n nodes using one
+(cid:0)
+n
+EPPS, (cid:0)
+2(cid:1) wavelength pairs need to be generated by the EPPS
+(see Fig. 1). Thus, the number of node pairs that can be
+entangled in a network using one EPPS is limited by the
+number of wavelength pairs generated by the EPPS. For a
+ﬁxed spectral granularity (e.g., 100 GHz), this means that
+with an increase in the number of entangling nodes in a
+network, the EPPS output spectrum should be increasingly
+broader. While EPPS bandwidth can be varied to an extent
+with device-level reconﬁguration by temperature and wave-
+length tuning in the type-0 SPDC process [6], it affects the
+optimality of EPPS due to simultaneous undesired variations in
+central wavelength, photon count rates, among others. Another
+approach to increase the number of wavelength pairs is by
+using ﬁner spectral granularity de/multiplexing (e.g., 50 GHz,
+25 GHz), however, it reduces the photon counts per wavelength
+and hence the resulting ebit rate for each node pair. Moreover,
+this centralized approach of entanglement distribution, where
+single broadband EPPS distributes entangled photon pairs
+to all the node pairs (some of which could be located far
+away from the EPPS location) in the network would result
+in a signiﬁcantly high loss of entangled photon pairs enroute
+the links and nodes in the network. To circumvent these
+limitations, multiple narrower-band EPPSs can be deployed
+distributively to entangle the same number of node pairs in
+the network, which is the focus of this work. In WDM-based
+quantum networks, photons are routed solely on the basis of
+their wavelengths [4]. With only one EPPS in a network, no
+challenge is encountered at nodes (consisting of wavelength
+de/multiplexers and/or wavelength-selective switches (WSSs))
+to make wavelength-based routing decisions. However, with
+multiple EPPSs sharing ﬁber links in a common network, to
+avoid wavelength contention, the output spectra of different
+EPPSs must not overlap with each other (further explained in
+Section IV and depicted in Fig. 3). With multiple EPPSs to be
+operated simultaneously in a network, where should different
+EPPSs be placed in the network for optimal performance is
+an important question to be addressed. Further, selecting one
+suitable EPPS among others to provision each entanglement
+demand is another crucial problem as it can impact the overall
+entanglement distribution rate and visibility in the quantum
+network.
+
+In this work, we present a distributed entanglement distri-
+
+2
+
+bution approach using multiple SPDC-based EPPSs in WDM-
+based quantum optical networks. We ﬁrst experimentally
+characterize entangled photon pair generation rates and en-
+tanglement visibilities using two type-0 SPDC-based EPPSs
+developed in-house (explained in Section III) and then perform
+network-level simulations considering multiple such EPPSs in
+the quantum optical network. From the demultiplexed output
+spectrum of the EPPS (shown in Fig. 2), it can be observed
+that different wavelength pairs offer different ebit rates and/or
+visibilities (explained further in Section III). Thus, we perform
+entanglement demand-aware wavelength pair assignment to
+provision heterogeneous entanglement demands representing
+different quantum applications for which entanglement
+is
+distributed in the same network. While initial repeaterless
+and trusted-node-free WDM-based entanglement distribution
+demonstrations have been based on star network topology [4],
+[5], [7], mesh networks are preferred and are widely deployed
+due to its merits such as path diversity, better fault-tolerance,
+ﬂexible routing, better resource utilization, among others.
+However, WDM-based entangled photon routing over multi-
+hops in multi-node mesh networks becomes more complex
+than star networks, and the mesh network nodes should have
+wavelength-based add/drop/bypass capability. In this work, we
+consider mesh optical networks of varying connectivity with
+multiple EPPSs placed at different nodes in the network to
+analyze their performance.
+
+A node having an EPPS placed at it is referred to as a
+‘source node’ in this paper. Each node pair in the network can
+be entangled by either using an EPPS available at one of the
+two entangling nodes or using an EPPS available at some other
+node in the network. The former approach simpliﬁes photon
+routing since in this case, one photon from each entangled
+photon pair can be routed within the source node and only
+the other photon needs to be routed over the network towards
+the second entangling node. This is advantageous in 2-node
+(point-to-point) studies, however, to entangle all the node pairs
+in a network, this approach requires an EPPS to be available
+at all nodes except one node in a multi-node mesh network.
+On the other hand, using an EPPS placed at none of the
+two entangling nodes (which is the case in star networks)
+would require routing both the entangled photons of each
+pair from EPPS over the network, in which case routing
+becomes more complex and the resulting photon pair loss
+would be multiplicative (or additive in decibel scale) over the
+two routes that each photon of the pair traverse. We study
+both these photon distribution approaches (referred to as ‘one
+photon’ (OP) and ‘both photons’ (BP) distribution schemes)
+and compare several scenarios of EPPS placements for WDM-
+based entanglement distribution in repeaterless multi-hop mesh
+quantum optical networks. For a comprehensive analysis,
+we consider several network topologies such as ring, full-
+mesh, and random partial-mesh network topolgies obtained
+using Erd˝os–R´enyi graph model [8]. For EPPS placement,
+we consider the graph-theoretical concepts of ‘betweenness
+centrality of a vertex’ and ‘dominant set’. Entangled photon
+pair generation rates (coincidence counts) are obtained ex-
+perimentally using two EPPSs developed in-house and then
+demand-, loss-, and visibility-aware entanglement distribution
+
+is performed considering multiple such EPPSs in the network.
+Main contributions of this paper are summarized as: (a) A
+distributed entanglement distribution approach using multiple
+EPPSs in WDM-based quantum optical networks is proposed;
+(b) A candidate node architecture for WDM-based entangle-
+ment distribution in mesh optical networks using multiple
+EPPSs is presented; (c) Estimated reduction in both entangle-
+ment rate and visibility with distance and hops is considered
+while provisioning heterogeneous entanglement demands; and
+(d) A comprehensive analysis considering different photon
+routing approaches and centralized/distributed EPPS place-
+ments in several types of network topologies is done.
+
+II. RELATED WORK
+
+This paper is focused on repeaterless and trusted-node-free
+entangled photon pair (i.e., bipartite entanglement) distribu-
+tion using a passive WDM approach, hence we discuss the
+related works which this study builds up on accordingly in
+this section. Beyond 2-node point-to-point studies, the ﬁrst
+fully passive WDM-based bipartite entanglement distribution
+using a single EPPS was demonstrated in [4] for a 4-node
+star network topology, where a separate node (referred to as
+‘network provider’ in [4]) distributes entangled photon pairs
+at different wavelengths to different node pairs, as represented
+in Fig. 1. The EPPS used here [4] is a Sagnac-loop conﬁgured
+type-0 SPDC-based source that generates six wavelength pairs
+4
+of 100 GHz granularity, which entangle all the (cid:0)
+2(cid:1)= 6 node
+pairs in the 4-node star network. In [5], a similar setup is
+used, however, using a conﬁgurable optical ﬁber switch (OFS)
+between the demultiplexing and multiplexing stages, it enables
+dynamicity to reconﬁgure the network. Here, a similar EPPS
+that generates 15 wavelength pairs of 100 GHz granularity
+6
+has been used that can entangle up to (cid:0)
+2(cid:1)= 15 node pairs
+in the considered 6-node star network. While these works
+laid a foundation for WDM-based entanglement distribution
+in quantum optical networks, the transmission of photons was
+still point-to-point (from a central node to other nodes) in a hub
+and spoke model. Moreover, using a separate node as ‘network
+provider’ (i.e., a separate location where an EPPS is installed)
+may not be as pragmatic approach as co-locating the EPPS at
+one of the network nodes (i.e., entangling nodes) themselves.
+In case of multiple EPPSs placed at different nodes in mesh
+networks, a node can use an EPPS available locally to entangle
+itself with another node in the network in which case only
+one photon of the pair needs to be routed over the network.
+However, in multi-hop mesh networks, photons need to be
+bypassed through intermediate nodes. In [9], [10], WDM-
+based entanglement distribution in mesh optical network using
+single, however, different types of EPPSs based on dual-SPDC
+and quantum discord, are presented, where an EPPS placed at
+one of the entangling nodes has been considered.
+
+Using single EPPS,
+
+the number of nodes that can be
+entangled is limited by the number of wavelength pairs that
+an EPPS generates, as explained in Section I, unless further
+de/multiplexing based on other degrees of freedom such as
+polarization [7] or ﬁner spectral granularities (e.g., 50/25/12.5
+GHz) are used, which reduce the ebit rates per wavelength pair
+
+3
+
+or some wavelength-pairs may remain unused if the node pairs
+to be entangled are located farther from the EPPS location. We
+argue in this paper that the centralized approach of entangle-
+ment distribution from a single broadband EPPS causes a huge
+loss of the ﬁnite quantum entanglement resource and hence we
+propose a distributed approach of entanglement distribution
+using multiple narrower-band EPPSs, where several EPPSs are
+placed distributively at different nodes in the network. One of
+the EPPSs and wavelength pairs are then selectively used to
+entangle each node pair in the network, as per the entangle-
+ment demands. To the best of our knowledge, this is the ﬁrst
+work that addresses WDM-based entanglement distribution in
+quantum optical networks using multiple EPPSs.
+
+In entanglement distribution studies that consider quantum-
+memory based quantum repeaters, the entanglement quality
+not only degrades with distance but also with the opera-
+tions such as entanglement swapping (used for long dis-
+tance) and entanglement puriﬁcation (used to improve en-
+tanglement ﬁdelity). In addition, quantum transduction [11]
+and its efﬁciency are other important factors that impact the
+ebit rate and quality of entanglement. Thus, entanglement
+distribution analysis should be done considering the effect of
+such operations that affect the resulting ebit rate and ﬁdelity.
+In [12], quantum repeater protocols are studied and it has
+been found that routing entanglement through multiple paths
+in a quantum network improves entanglement distribution
+rate. However, entanglement ﬁdelity is rather considered as
+a constraint. In [13], it is highlighted that ﬁdelity is rarely
+considered in the entanglement routing studies and hence the
+authors proposed a method for entanglement routing with
+guaranteed-ﬁdelity. First-generation quantum repeaters [14],
+deterministic entanglement generation and a constant capacity
+for each quantum channel are considered in [13]. In [15], the
+importance of considering both the ebit rate and entanglement
+ﬁdelity for entanglement distribution is further emphasized,
+where the authors study the rate-ﬁdelity trade-off consider-
+ing ﬁrst-generation quantum repeater networks. A survey on
+several aspects of entanglement routing in quantum repeater
+equipped quantum networks is done in [16]. A comprehensive
+survey underscoring the protocol-level fundamental aspects in
+quantum repeater equipped quantum networks is presented in
+[17]. Here, the classical-inspired methods, protocols, and lay-
+ering approaches proposed for entanglement-based quantum
+networks are reviewed and their suitability for the quantum
+internet is ﬂagged. As our work is focused on the approach of
+repeaterless WDM-based broadband entanglement distribution
+[4] from probabilistic type-0 SPDC-based EPPSs, we defer
+the readers interested in entanglement distribution in quantum
+repeater networks to [12], [13], [15]–[17]. In our work, the
+network nodes are not equipped with quantum repeaters. Here,
+the intermediate nodes in mesh optical network passively route
+the photons based on their wavelength towards the destination
+node, as explained in section IV.
+
+In classical WDM-based optical networks, any of the avail-
+able wavelengths can be assigned for lightpath establishment
+[18]. However, for WDM-based entanglement distribution in
+quantum optical networks, wavelength pair assignment should
+be performed based on each entanglement demand since each
+
+wavelength pair offers different entanglement rates (charac-
+terized by coincidence counts) and entanglement visibilites.
+In [19], it has been experimentally demonstrated that entan-
+glement visibilities may vary for different wavelength pairs
+as well as with different demultiplexing technologies. Thus,
+for wavelength-pair assignment in quantum optical networks,
+it must be ensured for each entanglement demand that the
+required ebit rate and entanglement visibility are achievable on
+reaching the entangling node pair. In this work, we consider
+both the entangled photon pair rates and the visibilities for
+different wavelength pairs and their estimated reduction over
+ﬁber distances and hops while provisioning the entanglement
+demands in multi-hop mesh networks, as explained in Section
+IV. However, unlike ﬁrst-generation quantum repeater based
+networks where entanglement quality is signiﬁcantly impacted
+by swapping and puriﬁcation operations, we study the impact
+on entanglement visibility degradation due to the increasing
+accidental-count contribution with increase in ﬁber length, as
+explained in the Section IV.
+
+III. CHARACTERIZATION OF ENTANGLED PHOTON PAIR
+SOURCE (EPPS)
+
+We experimentally obtain characteristics of two EPPSs de-
+veloped in-house [20]. The developed EPPSs are Sagnac-loop
+conﬁgured type-0 SPDC-based (periodically poled lithium nio-
+bate waveguide) sources similar to that used in [4] and [5]. The
+developed EPPSs are optimized for coincidence photon counts.
+The ﬁrst EPPS generates three wavelength pairs (as shown
+in Fig. 2) and the second EPPS generates ﬁve wavelength
+pairs. These coincidence counts for different wavelength pairs
+are considered as the entanglement generation rates at source.
+As highlighted in [19], our experiment conﬁrms that different
+entanglement visibilities (shown by blue circles in Fig. 2)
+may be observed for different wavelength pairs. Thus, while
+allocating a wavelength pair, a demand-aware entanglement
+distribution approach should select a wavelength pair based on
+its visibility at source and the estimated visibility degradation
+en-route.
+
+35000
+
+s
+t
+n
+
+30000
+
+o
+c
+
+25000
+
+20000
+
+15000
+
+10000
+
+n
+o
+t
+o
+h
+p
+
+t
+n
+e
+d
+i
+c
+n
+o
+C
+
+i
+
+5000
+
+0
+
+)
+
+%
+
+(
+
+y
+t
+i
+l
+i
+
+b
+i
+s
+i
+V
+
+93
+
+92
+
+91
+
+90
+
+89
+
+88
+
+87
+
+86
+
+85
+
+λ
+
+λ
+
+λ
+
+λ
+
+λ
+
+λ
+
+λ
+
+λ
+
+λ
+
+−4
+
+−3
+
+−2
+
+−1
+
+0
+
+1
+
+2
+
+3
+
+4
+
+Wavelength
+
+Fig. 2: Experimental characteristics of the three wavelength pair EPPS (3WPS) consid-
+ered in this work. Here, coincident photon counts for different wavelength pairs (shown
+in same color) are represented by bars and their entanglement visibilities are represented
+by blue dots. The central wavelength (λ0) is the point of degeneracy.
+
+It should be noted that the central wavelength (λ0 in Fig.
+2), referred to as the ‘point of degeneracy’ is not used [4],
+
+4
+
+[5] since the entangled photons at
+the central wavelength
+are indistinguishable in all the degrees of freedom including
+wavelength and hence cannot be separated deterministically.
+The wavelength pairs beyond λ−3 − λ3 in Fig. 2 have further
+lower coincidence photon counts and entanglement visibilities
+below the threshold (71%). Thus, wavelength pairs beyond
+λ−3 −λ3 are ﬁltered out from this three wavelength pair EPPS
+(3WPS) spectrum. Since the coincidence counts and visibility
+measurements shown in Fig. 2 already include the effect of
+inefﬁciencies (dark count rate, detection efﬁciency, etc.) of
+the superconducting nanowire single-photon detector (SNSPD)
+used in our experiment, its effect is not incorporated again
+while provisioning entanglement demands. Our second EPPS
+provides ﬁve wavelength pairs (referred to as ﬁve wavelength
+pair EPPS (5WPS) in this work), higher coincidence counts per
+wavelength pair as compared to 3WPS, and almost constant
+visibility (∼ 92%). Though the visibility observed for 5WPS
+is the same for all the wavelength pairs, the node pairs to
+which they are assigned deﬁne the effective visibility based on
+the distance/s from the selected EPPSs to the entangling node
+pairs, as explained next in Section IV. The characteristics of the
+5WPS are given in Table II. We consider both the 3WPSs and
+5WPSs for network-level performance evaluation in Section
+V.
+
+IV. DISTRIBUTED ENTANGLEMENT DISTRIBUTION WITH
+MULTIPLE EPPSS
+
+In classical optical networks, light signals at same wave-
+length cannot co-propagate over same ﬁber without interfering.
+Moreover, unidirectional ampliﬁcation using erbium doped
+ﬁber ampliﬁers (EDFAs) in long-distance optical networks
+prohibit bidirectional communication on a single optical ﬁber.
+Thus, a pair of ﬁber is utilized for bidirectional communication
+in classical optical networks. However, in quantum optical
+networks, entangled photons of same wavelength can travel
+together in the same or opposite direction as their interference
+is possible only when they are indistinguishable (in all the
+degrees of freedom) and that too using a special interferomet-
+ric setup (such as Bell state measurement (BSM)). Moreover,
+classical ampliﬁcation is absent (since impossible) in quantum
+optical networks. Thus, bidirectional communication of en-
+tangled photons generated by different SPDC-based EPPSs is
+possible over single optical ﬁber in quantum optical networks.
+However, for WDM-based entanglement distribution, as repre-
+sented in Fig. 1, entangled photons are routed towards different
+nodes in the network merely on the basis of their wavelength.
+Thus, even though same-wavelength photons can traverse the
+same optical ﬁber without interference, it is not possible for
+WSSs or wavelength de/multiplexers to distinguish among
+multiple photons of same wavelength generated by different
+EPPSs. Thus, the spectrum of different EPPSs used in the
+network for WDM-based entanglement distribution must not
+overlap with each other.
+
+In Fig. 3, non-overlapping wavelength-multiplexed spectra
+of six 3WPSs (as per Fig. 2) is shown. Here, coincidence
+counts bars of same color indicate the correlated wavelengths
+pairs at which entangled photon pairs are generated. Note
+
+ 
+ 
+ 
+ 
+s
+t
+
+n
+u
+o
+c
+
+EPPS-1 EPPS-2 EPPS-3 EPPS-4 EPPS-5 EPPS-6
+
+e
+c
+n
+e
+d
+c
+n
+o
+C
+
+i
+
+i
+
+C-band
+
+Wavelength
+
+Entanglement 
+Source
+
+1 x K
+WSS
+
+5
+
+1
+
+1 x K
+WSS
+
+2
+
+1 x K
+WSS
+
+3
+
+1 x K
+WSS
+
+N
+
+1 x K
+WSS
+
+1
+
+2
+
+K-2
+
+K-1 K
+
+1
+
+2
+
+K-2
+
+K-1 K
+
+1
+
+2
+
+K-2
+
+K-1 K
+
+1
+
+2
+
+K-2
+
+K-1 K
+
+Fig. 3: Wavelength-multiplexing of six 3WPSs in optical C-band (considering 6×7 = 42
+wavelengths of 100 GHz granularity occupying 4.2 THz out of total ∼ 4.4 THz C-
+band). Same-color bars indicate wavelength correlation between entangled photon pairs.
+
+that the central wavelength of the output spectrum of SPDC-
+based EPPS can be tuned by tuning the pump wavelength
+and/or temperature of the crystal/waveguide during the SPDC
+process while achieving almost similar coincidence counts
+[6]. Thus, simultaneous operation of six 3WPSs, as shown
+in Fig. 3,
+is feasible without any routing ambiguity for
+WSSs or wavelength de/multiplexers used for WDM-based
+entanglement distribution in quantum optical networks. A
+total of 18 wavelength pairs (represented by same-color bars)
+obtained using six 3WPSs, as shown in Fig. 3, can be used
+to entangle up to 18 node pairs in a quantum network. In
+this work, we consider transmission in only the conventional
+(C)-band (1530-1565 nm) of ∼ 4.4 THz bandwidth, where
+maximum six 3WPSs (each occupying 7 wavelengths of
+100 GHz granularity) can operate simultaneously without
+any spectral overlapping. Similarly, maximum four 5WPSs
+(each occupying 11 wavelengths) can operate simultaneously
+without any spectral overlapping within C-band. However,
+more such EPPSs can be used in case of multi-band optical
+networks and the presented work remains applicable, without
+loss of generality, in that case.
+
+With multiple EPPSs in a WDM-based multi-node mesh
+optical network, a node can either transmit, receive, or bypass
+photons based on their wavelength. To this end, we present
+a candidate node architecture in Fig. 4. Here,
+the EPPS
+output is ﬁrst demultiplexed using a WSS (which enables
+electronically re/conﬁgurable multi-wavelength selection on
+any desired port) and then different wavelengths are routed
+towards different nodes in the network (as per the photon
+routing and wavelength-pair assignment discussed later in this
+section). Depending on the location of the EPPSs, an EPPS
+can be used to entangle a node at which it is placed with
+another node in the network, i.e., source node is one of the
+entangling nodes. In this case, only one photon needs to be
+transmitted out of the source node over the network towards
+the other entangling node, and the second paired photon is sent
+to the entanglement receiver within the source node. Notice
+that one of the output ports of the WSS (in left) is connected to
+the entanglement receiver within that node to enable this case.
+This is referred to as ‘one-photon’ (OP) distribution scheme
+in this work and is depicted in Fig. 5 in purple color. The
+design of entanglement receiver is application-speciﬁc and
+could consist of either a polarization analysis and detection
+module or a quantum transducer and quantum memory mod-
+ule. We restrict this work to entanglement distribution and
+coincidence detection to calculate the distributed ebit rates
+and visibilities after traversing the selected routes. However,
+application-speciﬁc effective rates such as for memory-based
+
+Entanglement Receiver
+
+Polarization Analysis 
+and Detection
+
+(or)
+
+Quantum Transducer
+
+Quantum Memory
+
+Fig. 4: Node architecture for WDM-based entanglement distribution with multiple EPPSs
+in multi-hop mesh quantum optical networks. Optical circulators are represented by
+circles with circulation direction denoted by arrows inside them.
+
+applications, the efﬁciency of quantum transduction [11], the
+rate of entangled qubit pair storing and retrieving in/from
+quantum memories, memory decoherence, memory buffer
+size, classical communication latency, etc. [21], would further
+scale down the usable rates as per different hardware-level
+inefﬁciencies (which we consider to be out of the scope of
+this work).
+
+When an EPPS is used to entangle nodes other than the node
+at which it is placed, both the photons are routed out of the
+source node. Thus, source node is none of the two entangling
+nodes in this case. This is depicted in Fig. 5 in green color
+and is referred to as ‘both photon’ (BP) distribution scheme
+in this work. The array of N interconnected WSSs (where, N
+is equal to the degree of the node at which an EPPS is placed)
+shown at top in Fig. 4, is used to enable photon routing using
+OP or BP through the desired ﬁber-link (as per the selected
+route) as well as to enable bypass of photons at intermediate
+nodes. For instance, a photon entering a WSS from ﬁber-link
+‘1’ can exit through its ‘K-1’ port to bypass an intermediate
+node and traverse ﬁber-link ‘3’ further. The optical circulators
+(OCs) enable bidirectional communication of photons through
+nodes in the network such that any incoming photon at a
+node from an EPPS placed at another node in the network
+is either bypassed or routed towards its entanglement receiver
+(depending on photon’s destination) but never towards the
+EPPS shown at the left end. For those nodes in the network
+where no EPPSs are deployed, the node architecture consists
+of only the WSS-array directly (i.e., without circulators)
+connected with the entanglement receiver/s.
+
+d
+
+2
+
+Z
+
+d
+
+1
+
+d
+3
+
+Y
+
+X
+
+Fig. 5: Schemes of photon pair distribution: when source node (X) is one of the entangling
+nodes (X-Y), only one photon (OP) is transmitted over the network, as represented in
+purple color; and when source node (Z) is none of the entangling nodes (X-Y), both
+photons (BP) are transmitted over the network, as represented in green color.
+
+The entanglement visibility (V ) for different wavelength
+
+pairs is calculated as
+
+V =
+
+Nc,max − Nc,min
+Nc,max + Nc,min
+
+,
+
+(1)
+
+ 
+where, Nc,max and Nc,min are the measured maximum and
+minimum coincidence counts, respectively, for a wavelength
+pair. Eq. (1) is applicable when calculating V at source, i.e.,
+connecting EPPS directly (with negligible channel length) with
+coincidence detection module and assuming no detector inefﬁ-
+ciencies. However, as the entangled photons are distributed to
+different nodes in the network, due to ﬁber attenuation, either
+or both of the entangled photons from each pair may be lost
+en-route. The resulting photon-pair loss is calculated as the
+sum (product) of losses in dB (linear scale) accrued over the
+two different paths that each photon traverses in the network.
+Let ηL1 and ηL2 be the transmission efﬁciencies of the two
+paths that the photons travel due to ﬁber attenuation, given by
+10−αL1 /10 and 10−αL2 /10, respectively. Here, L1 and L2 are
+the link distances that the ﬁrst and the second photon traverse,
+respectively, and α is the ﬁber attenuation coefﬁcient. Let Nacc
+be the number of accidental coincidence counts due to detector
+dark counts and ambient light. Since coincidence detection
+requires both the photons to reach the two entangling nodes
+within a certain time interval, usually termed as coincidence
+window, the signal scales as η1η2. Therefore, the maximum
+and minimum coincidence counts become
+
+Nc,max = η1η2Nc,max + Nacc,
+
+and
+
+Nc,min = η1η2Nc,min + Nacc
+
+(2)
+
+(3)
+
+On substituting Nc,max and Nc,min from Eq. (2) and Eq. (3)
+to Eq. (1) and simplifying, the visibility (V (d)) as a function
+of distance at the end nodes can be obtained as
+
+V (d) =
+
+Nc,max − Nc,min
+
+Nc,max + Nc,min +
+
+2Nacc
+ηL1 ηL2
+
+(4)
+
+Eq. (4) shows that as the ﬁber length increases, ηL1ηL2
+decreases, causing the accidental-count (Nacc) contribution in
+the denominator to become more signiﬁcant, thereby reducing
+the entanglement visibility. The losses due to OCs and WSSs
+at the two entangling nodes and the intermediate nodes (see
+Fig. 4) en-route traversed by photons further reduce the
+entanglement distribution rate and visibility. Let ηsw be the
+switching efﬁciency given by 10−Lsw/10, where Lsw is the
+total switching loss (due to OCs and WSSs) along the two
+routes. Here, it is assumed that the effect of a switching loss
+of Lsw dB on V (d) is equivalent to the effect of a ﬁber of
+length Lsw/α km. Incorporating the switching losses, Eq. (4)
+becomes
+
+V (d) =
+
+Nc,max − Nc,min
+
+Nc,max + Nc,min +
+
+2Nacc
+ηL1ηL2 ηsw
+
+(5)
+
+In case of BP distribution represented in green color in Fig.
+5, where source node (Z) is none of the two entangling nodes
+(X-Y), L1 = d2 and L2 = d3. In case of OP distribution
+represented in purple color in Fig. 5, where source node (X)
+is one of the two entangling nodes (X-Y), L1 = 0 (as this
+photon is sent to the entanglement receiver within node X)
+
+6
+
+Symbol
+N
+P
+|·|
+N
+E
+de
+W
+
+Uw
+
+S
+Λ
+
+xs
+g
+cgs
+
+Zs
+
+Q
+V
+R
+Θ
+
+TABLE I: Notations
+
+Description
+set of natural numbers
+probability
+Cardinality
+set of nodes, index n, N ⊂ N
+set of links, index e, E ⊂ N
+length of link e, ∀e ∈ E
+set of wavelengths available on each ﬁber link, index w, W ⊂
+N
+Binary variable, ‘Uw = 0’ if wavelength w is available, ‘1’
+otherwise
+set of EPP sources, index s, S ⊂ N
+set of central wavelengths of EPP sources’ output spectra,
+index s, Λ ⊂ W
+location of EPP source s, ∀s ∈ N
+number of wavelengths per EPP source
+photon counts at wavelength g in the output spectra of an EPP
+source s, g ∈ W
+Binary variable, ‘Zs = 1’ if all the wavelengths of the EPP
+source placed at xs are unavailable, ‘0’ otherwise
+set of entanglement demands, index q, Q ⊂ N
+entanglement visibility
+ebit rate
+a very large number
+
+and L2 = d1 as the other paired photon is sent across the
+network over a ﬁber of length d1. In this work, we perform
+both loss- and visibility-aware provisioning of entanglement
+demands, as discussed next.
+
+Quantum networks are envisioned to serve multiple quan-
+tum applications over the common network infrastructure.
+Different quantum applications have different requirements
+[1]. From the entanglement distribution perspective, rate and
+quality (measured in terms of visibility in this work) of dis-
+tributed entangled photon pairs are of predominant importance.
+As the entangled photon pairs obtained using an EPPS are
+ﬁnite and subject to losses, it is beneﬁcial from an operator’s
+perspective to allocate this quantum resource efﬁciently as
+per the entanglement demands. Let entanglement demands
+be denoted by Q{aq, bq, Vq, Rq}, where aq and bq are the
+two entangling nodes demanding entanglement at an ebit rate
+of Rq pairs per second with minimum visibility Vq. Thus,
+to distribute entangled photon pairs to different demands as
+per their requirements in a quantum optical network with
+multiple EPPSs, following tasks need to be done: (i) placement
+of EPPSs at node/s in the network, (ii) selection of one of
+the multiple EPPSs available in the network to serve each
+entanglement demand, (iii) one of the OP or BP distribution
+schemes is used depending on the available and selected EPPS,
+and (iv) assignment of one of the available wavelength pairs
+generated by the selected EPPS. These tasks aren’t necessarily
+sequential but each can impact the overall network perfor-
+mance. To analyze the effect of EPPS placement and OP/BP
+distribution scheme, we ﬁrst consider gradual placement of
+EPPSs in a given network as the entanglement demands arrive
+in the network. We consider an incremental trafﬁc model [18],
+where entanglement demands (Q) of inﬁnite holding times
+arrive randomly (uniform distribution) in the network. Table I
+lists the notations used in this paper.
+
+Using OP distribution, the pseudocode to simulate place-
+ment of EPPSs, photon routing, and wavelength pair assign-
+ment is given in Algorithm 1. For each entanglement demand
+
+Algorithm 1: One Photon (OP) Distribution
+Input: N, E, de, W, S, cgs, Λ, g, Q{aq, bq, Vq, Rq}, su ← 0, Uw, Zs,
+Qacc ← 0, y ← 0, xs ← 0 ∀s
+Output: Qacc, su, xs
+1: for q ← 1 to |Q| do
+2:
+3:
+4:
+5:
+6:
+
+Uw, Zaq , blk, R′
+if blk ∧ (bq ∈ xs) ∧ (Zbq = 0) then;
+Uw, Zbq , blk, R′
+q
+
+lq ← MINLOSSROUTE(aq, bq, N, E, de);
+if (aq ∈ xs) ∧ (Zaq = 0) then;
+
+q ← FFWAVPAIR(g, Λaq , cgs, lq, Rq, Vq, Uw);
+
+←
+
+FFWAVPAIR(g, Λbq , cgs, lq, Rq, Vq, Uw);
+
+else if blk ∧ ((bq /∈ xs) ∨ (Zbq = 1)) ∧ (su < |S|) then
+
+FFWAVPAIR(g, Λbq , cgs, lq, Rq, Vq, Uw);
+
+←
+
+else if (bq ∈ xs) ∧ (Zbq = 0) then;
+
+Uw, Zbq , blk, R′
+
+q ← FFWAVPAIR(g, Λbq , cgs, lq, Rq, Vq, Uw);
+
+else if ((aq /∈ xs) ∨ (Zaq = 1)) ∧ (su < |S|) then;
+
+q ← FFWAVPAIR(g, Λaq , cgs, lq, Rq, Vq, Uw);
+
+7:
+8:
+9:
+10:
+
+append(xs, bq);
+su ← su + 1;
+Uw, Zbq , blk, R′
+q
+
+xs.pop();
+su ← su − 1;
+
+if blk then;
+
+append(xs, aq);
+su ← su + 1;
+Uw, Zaq , blk, R′
+if blk then;
+
+end if
+
+end if
+
+11:
+12:
+13:
+14:
+15:
+16:
+17:
+18:
+19:
+20:
+21:
+22:
+23:
+24:
+25:
+26:
+27:
+28:
+29:
+30:
+31:
+32: end for
+33: return Qacc, su, xs;
+
+end if
+if ¬blk then;
+
+blk ← true;
+
+end if
+
+end if
+
+else
+
+xs.pop();
+su ← su − 1;
+
+Qacc ← Qacc + 1;
+
+(step 1), a minimum-loss route is identiﬁed (step 2) between
+the two nodes (aq and bq) to be entangled. MINLOSSROUTE()
+calculates all possible routes between aq and bq and the losses
+incurred by them, and returns the route that offers lowest
+loss between aq and bq. If one (aq) of the two nodes has
+an EPPS available, wavelength pair assignment is attempted
+using ﬁrst-ﬁt wavelength pair assignment scheme, whose pseu-
+docode is given in Algorithm 2. The ﬁrst-ﬁt wavelength pair
+assignment scheme for entangled photon pair distribution is
+similar to the ﬁrst-ﬁt wavelength assignment scheme used
+in classical optical networks [18] in the sense that all the
+available wavelengths are indexed sequentially and then during
+wavelength assignment, the search for available wavelengths is
+done starting from the ﬁrst index on all the ﬁber links along
+the route (referred to as ‘wavelength continuity constraint’).
+However, for distribution of entangled photon pairs that are
+found at a correlated pair of wavelengths, a wavelength pair
+is assigned for each entanglement demand instead of single
+wavelength. Most importantly, in addition to availability of a
+wavelength pair, whether or not it meets the required ebit rate
+(Rq) and visibility (Vq), is also checked (step 7 in Alg. 2). We
+consider the same (i.e., ﬁrst-ﬁt wavelength pair assignment)
+scheme for wavelength pair assignment for all the compared
+cases in this work to better highlight the impact of EPPS
+placement and OP/BP distribution. However, more optimal
+and complex wavelength pair assignment schemes can be
+designed by interested researchers to further improve spectrum
+
+Algorithm 2: First-Fit Wavelength-Pair Assignment
+
+7
+
+if Ui = 0 then;
+
+blk ← f alse;
+Ui = 1; Ui+2(Λ−i) = 1;
+if count = (g mod 2) − 1 then;
+
+R ← Ci mod g /l;
+Calculate V (d) using Eq. (5);
+if (R ≥ Rth) ∧ (V (d) ≥ Vth) then;
+
+1: function FFWAVPAIR(g,Λ, C, l, Rth, Vth, U )
+blk ← true; count ← 0; z ← 0; R ← 0;
+2:
+for i ← (Λ − (1 + g mod 2)) to (Λ − 1) do
+3:
+4:
+5:
+6:
+7:
+8:
+9:
+10:
+11:
+12:
+13:
+14:
+15:
+16:
+17:
+18:
+19:
+20: end function
+
+end for
+return U, z, blk, R
+
+count ← count + 1
+
+end if
+break
+
+z = 1;
+
+end if
+
+end if
+
+else
+
+utilization. If a wavelength pair is found, the entangled demand
+is accepted (step 30, Alg. 1) or else marked as blocked (‘blk’)
+(returned by FFWAVPAIR()). In case it is blocked, another
+attempt is made by searching for an available EPPS at the
+second entangling node (bq) (step 5, Alg. 1). If no EPPS
+is placed at bq or if the placed EPPSs are fully utilized,
+another EPPS is placed at node bq (subject to availability
+(su < |S|)) and then another ﬁnal attempt is made to satisfy
+the entanglement demand (steps 7-10, Alg. 1). However, only
+if an entanglement demand is accepted using a new EPPS
+placement, it remains placed, otherwise revoked (step 12). If
+no EPPS is found at node aq (step 3), the same is checked at
+bq (step 16) followed by wavelength pair assignment. If none
+of the two nodes (aq and bq) have an EPPS placed already
+(which would be the case for the ﬁrst few demand arrivals)
+or if the available EPPSs at aq are fully utilized (step 18),
+another EPPS is placed (subject to availability (su < |S|))
+at aq (step 19) followed by wavelength pair assignment (step
+21). In none of the wavelength pairs generated by the available
+EPPSs could meet the required ebit rate and visibility of
+entanglement demand or if all the available EPPSs are utilized,
+the entanglement demand is ﬁnally marked as blocked (‘blk′)
+(step 27). The number of accepted entanglement demands
+(Qacc), number of EPPSs utilized (su), and the locations
+of EPPSs placed (xs) are returned. Though OP distribution
+scheme simpliﬁes routing and EPPS placement, it requires
+an EPPS to be placed at at least one of the two entangling
+nodes. For a network of N number of nodes, to entangle all
+the node pairs, it requires EPPSs at at least N −1 nodes. Thus,
+we analyze the BP distribution scheme next that relaxes this
+constraint.
+
+The pseudocode to simulate placement of EPPSs, photon
+pair routing, and wavelength pair assignment using BP distri-
+bution scheme is given in Algorithm 3. Here, an EPPS placed
+at a node other than the two entangling nodes is used to
+provision each entanglement demand. Thus, for each demand
+(step 1, Alg. 3), all the nodes except the two nodes to be
+entangled are searched (steps 3-4) and two minimum-loss
+routes (l′
+) are calculated from each searched node
+to the two nodes (aq and bq) to be entangled. The node that
+offers minimum total loss (l) is selected as the location at
+
+aq and l′
+bq
+
+Algorithm 3: Both Photons (BP) distribution
+Input: N, E, de, S, cgs, Λ, g, Q{aq, bq, Vq, Rq}, su ← 0, Uw, Zs,
+Qacc ← 0, lq ← Θ, y ← 0, xs ← 0 ∀s
+Output: Qacc, su, xs
+1: for q ← 1 to |Q| do
+place ← f alse;
+2:
+for t ← 1 to |N | do
+3:
+4:
+5:
+6:
+7:
+8:
+9:
+10:
+11:
+
+l′
+aq ← MINLOSSROUTE(aq, Nt, N, E, de);
+l′
+← MINLOSSROUTE(bq, Nt, N, E, de);
+bq
+aq + l′
+l ← l′
+bq
+if (l < lq) ∧ (xt 6= 0) ∧ (Zt = 0) then;
+
+else if (l < lq) ∧ ((xt = 0) ∨ (Zt = 1)) ∧ (su < |S|)
+
+if (aq 6= Nt) ∧ (bq 6= Nt) then;
+
+lq ← l;
+y ← t;
+
+then;
+
+append(xs, Nt);
+su ← su + 1;
+lq ← l;
+y ← t;
+place ← true;
+
+end if
+
+end if
+
+end for
+if y 6= 0 then;
+
+12:
+13:
+14:
+15:
+16:
+17:
+18:
+19:
+20:
+21:
+22:
+23:
+24:
+25:
+26:
+27:
+28:
+29:
+30:
+31:
+32: end for
+33: return Qacc, su, xs
+
+end if
+if ¬blk then;
+
+blk ← true;
+
+end if
+
+end if
+
+else
+
+Uw, Zy, blk, R′
+if blk ∧ place then;
+
+xs.pop();
+su ← su − 1;
+
+Qacc ← Qacc + 1;
+
+q ← FFWAVPAIR(g, Λy, cvy, lq, Rq, Vq, Uw);
+
+which an EPPS is to be placed (if not placed already) to serve
+this entanglement demand (steps 7-16). Once EPPS location is
+identiﬁed (step 20), wavelength pair assignment is attempted
+(step 21) for this demand or else blocked otherwise (step 27).
+If wavelength pair assignment remains unsuccessful (step 21)
+on placing a new EPPS as well (step 22), this EPPS placement
+is revoked (step 23).
+
+BP distribution scheme can be employed even with a single
+EPPS in a network if the EPPS generates sufﬁcient rates and
+wavelength pairs. However, transmitting both the photons of
+each pair to farther node pairs from the EPPS location leads
+to higher losses. Thus, both OP and BP distribution schemes
+have pros and cons. Hence, we also study a hybrid distribution
+scheme referred to as ‘any photon’ (AP) in this work, where
+entanglement demand provisioning is ﬁrst attempted using BP
+(Alg. 3), however, if the entanglement demand is blocked,
+another attempt is made to provision it using OP (Alg. 1).
+AP provides ﬂexibility in EPPS placement by relaxing the
+constraints ‘N − 1 nodes must have EPPS/s in a network
+of N nodes’ and ‘an EPPS at nodes other than the two
+entangling nodes must be used’ imposed in case of OP and BP,
+respectively. We evaluate the performance of OP, BP, and AP
+distribution schemes in the next section and observe the EPPS
+placement done once all the entanglement demands are served
+(accepted and blocked). Based on the observations drawn, a
+further analysis of entanglement distribution is performed with
+pre-placement of all the available EPPSs simultaneously at
+different node/s in the network, as explained in detail in the
+
+TABLE II: Simulation parameters
+
+8
+
+Parameter
+Set of demanded ebit rates
+Set of demanded entanglement visibility
+Fiber attenuation (α)
+WSS loss (Lwss)
+OC loss (Loc)
+Nacc
+Tuple of ebit-rate generated using 3WPS
+Tuple of visibility for 3WPS
+Tuple of ebit-rate generated using 5WPS
+
+Visibility for all wavelength pairs of 5WPS
+
+next Section.
+
+Value
+{100, 500, 1000, 2000}(ebps)
+{71, 75, 80, 85, 90} (%)
+0.2 (dB/km)
+3.5 (dB)
+0.5 (dB)
+20 (cps)
+{21.43, 29.65, 33.83}×10
+{85, 87, 93} (%)
+{42.62, 73.34, 34.53, 76.11, 42.79}
+×10
+92 (%)
+
+3 (ebps)
+
+3 (ebps)
+
+V. PERFORMANCE EVALUATION AND DISCUSSION
+
+To evaluate the performance of WDM-based distributed
+entanglement distribution in quantum optical networks with
+multiple EPPSs using the OP, BP, and AP distribution schemes
+described in the previous section, we consider various network
+topologies shown in Fig. 6. Here, the network topology size is
+considered based on the number of wavelength pairs generated
+by multiple EPPSs. With |S| EPPSs generating p (= (g−1)/2)
+wavelength pairs, to entangle all the node pairs in a network
+|N |
+of |N | nodes, |S| · p = (cid:0)
+2 (cid:1). The total number of wavelength
+pairs obtained in C-band from the wavelength-multiplexed
+spectra of six 3WPSs (see Fig. 3) and four 5WPSs is 18 and
+20, respectively. Thus, we consider 6-node and 7-node network
+topologies (shown in Fig. 6) for performance analyses, where
+6
+7
+2(cid:1)= 15 and (cid:0)
+2(cid:1)= 21 unique node pairs (that are to be
+(cid:0)
+entangled) are slightly lower and higher, respectively, than the
+total available wavelength pairs (18 and 20). However, denser
+networks (i.e., higher number of nodes) can be considered
+for this study when a higher number of wavelength pairs
+are available (such as using ﬁner wavelength granularity). To
+generate random partial mesh network topologies shown in
+Fig. 6, we use the Erd˝os–R´enyi [8] graph model. The link-
+lengths are considered based on the available EPPS rates and
+repeaterless entanglement distribution studied in this work.
+However, longer links can be simulated when higher EPPS
+rates and/or quantum repeaters are considered. We use net-
+workx (a python library) to generate and simulate all the graph-
+related tasks in this work. Analyses for different network
+topologies is done in this work to identify if the comparative
+performance of OP, BP, and AP distribution schemes vary
+with network topologies. Thus, ring, partial-mesh, and full-
+mesh network topologies are considered. By varying the edge
+probability 0 < Pe < 1 in Erd˝os–R´enyi graph Ge(|N |, Pe),
+we analyzed WDM-based entanglement distribution for sev-
+eral random partial mesh network topologies and we present
+simulation results for two instances of partial mesh network
+topologies of 7- and 6- nodes, shown in Fig. 6(b) and Fig. 6(e),
+respectively. The simulation results presented in this section
+have been averaged for 106 simulation runs for each variation.
+The simulation parameters are given in Table II.
+
+As the entanglement demands arrive incrementally in the
+network, EPPS placement, photon routing, wavelength pair
+assignment is performed for the six network topologies shown
+in Fig. 6. The effect of photon pair loss and visibility
+degradation (using Eq. (5)) is estimated to ensure that the
+
+9
+
+2
+
+2
+
+2
+
+2
+
+2
+
+2
+
+2
+
+3
+
+2
+
+3
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+3
+
+2
+
+3
+
+3
+
+2
+
+3 3
+
+2
+
+3
+
+2
+
+3
+
+2
+
+3
+
+2
+
+3
+
+3
+
+2
+
+3
+
+2
+3
+
+3
+
+3
+
+2
+
+2
+
+2
+
+2
+
+2
+
+2
+
+2
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+2
+
+2
+
+3
+
+2
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+3
+
+3
+
+3
+
+2
+
+3
+3
+
+2
+
+(a) 7-RING
+
+(b) 7-PMESH
+
+(c) 7-FMESH
+
+(d) 6-RING
+
+(e) 6-PMESH
+
+(f) 6-FMESH
+
+Fig. 6: 7-node and 6-node ring, full mesh (FMESH), and partial mesh (PMESH) random (generated using Erd˝os–R´enyi graph model [8]) network topologies. The values shown at
+edges are link distances.
+
+minimum required ebit rate and visibility by each demand
+are met (step 7, Alg. 2). We assume that polarization auto-
+compensators at the entanglement receivers can recover any
+depolarization that
+the photon pairs undergo en-route the
+network. We calculate entanglement demand acceptance ratio
+(EDAR) as the ratio of the number of entanglement demands
+accepted to the number of entanglement demands arrived in the
+network. EDAR indicates the impact on network performance
+with combined variation of EPPS placement and OP/BP/AP
+distribution schemes using a given (ﬁxed) number of resources
+(EPPSs, wavelength pairs generated, photon pairs count at
+each wavelength pair, nodes and links in network topology).
+A higher value of EDAR signiﬁes better EPPS placement
+and photon distribution scheme (OP/BP/AP). We calculate
+EDAR as the network load increases (i.e., as the number of
+entanglement demands arrive in the network). The network
+load represented in Figs. 7-8 is normalized by the maxi-
+mum number of unique node pairs in the simulated network
+topology. In Fig. 7, EDAR obtained using OP, BP, and AP
+distribution schemes with six 3WPSs is shown for 7-node
+ring (7-RING), 7-node partial mesh (7-PMESH), and 7-node
+full mesh (7-FMESH) topologies (shown in Figs. 6(a-c)). It
+is observed that as the network connectivity increases (ring
+→ partial-mesh → full-mesh), EDAR increases using any of
+the OP, BP, and AP distribution schemes. This is because
+with increasing mesh connectivity, shorter routes (i.e., with
+fewer hops and lesser link-distances) with lower losses get
+selected, enabling entanglement demands with higher ebit rate
+and/or visibility getting accepted. However, the comparative
+performance of OP, BP, and AP remains similar, where OP
+and AP achieve almost same EDAR as the network load varies
+and BP achieves signiﬁcantly lower EDAR as compared to OP
+and AP for all the three network topologies.
+
+When using 5WPSs, AP performs better than OP at higher
+network loads, as shown in Fig. 8, since with four 5WPSs in
+a 7-node network, OP fails to entangle some node pairs as
+it requires an EPPS at at least 6 (i.e., |N | − 1) nodes. Thus,
+AP is advantageous when using broader-band EPPSs such as
+5WPS as compared to 3WPS in this case. BP still performs the
+worst for all the three network topologies, as shown in Fig. 8.
+We analyzed and observed similar comparative performance
+(not shown here for brevity) of OP, BP, and AP distribution
+schemes for all the three 6-node network topologies (Figs. 6(d-
+f)). To observe EPPS placement and to determine the reasons
+behind the obtained comparative performance of OP, BP, and
+AP schemes, we plot the mean number of EPPSs placed in
+each considered case in Fig. 9. Since an EPPS is placed only
+
+when an entanglement demand cannot be provisioned using
+existing EPPSs (if any) in the network and if a new EPPS
+placement (subject to availability) can provision it (refer Algs.
+1 and 3), we observe from Fig. 9 that using BP distribution
+scheme, 100% EPPS placement could not be achieved in all of
+the considered cases. This is because BP always selects a node
+other than the two entangling nodes for EPPS placement in
+which case both the photons are routed out of the source node
+and undergo higher loss (due to an additional WSS (see Fig.
+4)) than OP (where one photon is sent to the entanglement re-
+ceiver within the source node (see Fig. 4)). This indicates that
+the ebit rate and/or visibility required by certain entanglement
+demands could not be met by placing EPPSs (3WPS/5WPS) at
+any of the nodes other than the entangling node pair, but could
+be met when EPPSs were placed at one of the two entangling
+nodes (i.e., using OP). This is evident from Fig. 9(b) where,
+using OP, all the four 5WPSs were placed for all the three
+network topologies. From Fig. 9(a), it is observed that EPPS
+placement, when using OP, increases with increase in network
+connectivity (ring → partial-mesh → full-mesh) indicating that
+for ring and partial mesh topologies, ebit rate and/or visibility
+for certain entanglement demands could not be met due to
+longer routes among node pairs in case of ring and partial-
+mesh network topologies. However, in case of full-mesh, all
+the six 3WPSs were placed when using OP since full-mesh
+provides direct connectivity among all the node pairs. Since
+AP attempts entanglement distribution using ﬁrst BP and then
+OP, it enables ﬂexibility to place different EPPSs (six 3WPSs
+and four 5WPSs) at any node/s in the network while achieving
+similar EDAR as that of OP when six using 3WPSs, and better
+EDAR than that of OP when using four 5WPSs.
+
+Based on the incremental EPPS placements done as the
+entanglement demands arrive in the network, we observed
+that the ﬁnal EPPS placements varied both using 3WPSs and
+5WPSs for all the considered network topologies. It is also
+observed that when EPPSs were placed at nodes of higher
+degree (i.e., nodes with higher number of links connected
+to it), better EDAR was achieved, however, it was not the
+case when multiple EPPSs got placed at those nodes. Since
+EPPS placement order was random based on the random
+arrival order of entanglement demands in this case, a few
+EPPSs placed at non-optimal node locations could not be fully
+utilized. Thus, to identify the effect of EPPS placement on
+entanglement distribution, we now consider pre-placement of
+given EPPSs (i.e., six 3WPSs and four 5WPSs) and analyze
+different ways of placement. Since AP distribution scheme
+enables ﬂexibility in EPPS placement while achieving similar
+
+o
+i
+t
+a
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+7-RING
+
+OP
+
+BP
+
+0.4
+
+AP
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Network load
+
+(a)
+
+7-PMESH
+
+OP
+
+0.6
+
+BP
+
+AP
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Network load
+
+(b)
+
+7-FMESH
+
+OP
+
+BP
+
+AP
+
+0.8
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+10
+
+7-RING
+
+OP
+
+BP
+
+AP
+
+0.40
+
+0.35
+
+0.30
+
+0.25
+
+0.20
+
+0.15
+
+0.10
+
+0.05
+
+0.00
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Network load
+
+(a)
+
+7-PMESH
+
+OP
+
+0.6
+
+BP
+
+AP
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Network load
+
+(b)
+
+7-FMESH
+
+0.8
+
+OP
+
+BP
+
+0.7
+
+AP
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Network l ad
+
+(c)
+
+Network l ad
+
+(c)
+
+Fig. 7: Entanglement demand acceptance ratio (EDAR) versus network load (normalized)
+obtained using OP, BP, and AP distribution schemes with six 3WPSs for (a) 7-RING
+network (see Fig. 6(a)), (b) 7-PMESH network (see Fig. 6(b)), and (c) 7-FMESH network
+(see Fig. 6(c)).
+
+or better performance than OP, we consider AP distribution
+for further analysis on EPPS pre-placement variation. Since
+the comparative performance of OP, BP, and AP does not
+vary with network connectivity in both the cases of 3WPSs
+and 5WPSs, we now consider partial mesh (which represent
+
+Fig. 8: Entanglement demand acceptance ratio (EDAR) versus network load (normalized)
+obtained using OP, BP, and AP distribution schemes with four 5WPSs for (a) 7-RING
+network, (b) 7-PMESH network, and (c) 7-FMESH network.
+
+more realistic optical networks) 7-node and 6-node network
+topologies shown in Figs. 6(b) and 6(e) for further analysis.
+We leverage the classical graph theory concepts of ‘be-
+tweenness centrality’ and ‘dominant sets’ to analyze different
+EPPS placement patterns shown in Figs. 10-13. Betweenness
+centrality of a node in a network is a measure of how many
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+d
+e
+c
+a
+
+l
+
+s
+S
+P
+P
+E
+
+f
+o
+
+r
+e
+b
+m
+u
+n
+
+n
+a
+e
+M
+
+6.0
+
+5.5
+
+5.0
+
+4.5
+
+4.0
+
+3.5
+
+3.0
+
+d
+e
+c
+a
+p
+
+l
+
+s
+S
+P
+P
+E
+
+f
+o
+
+r
+e
+b
+m
+u
+
+n
+a
+e
+M
+
+4.000
+
+3.975
+
+3.950
+
+3.925
+
+3.900
+
+3.875
+
+3.850
+
+3.825
+
+3.800
+
+OP
+
+BP
+
+AP
+
+7-RING
+
+7-PMESH
+
+7-FMESH
+
+(a)
+
+OP
+
+BP
+
+AP
+
+7-RING
+
+7-PMESH
+
+7-FMESH
+
+(b)
+
+Fig. 9: Mean number of (a) 3WPSs and (b) 5WPSs placed using OP, BP, and AP schemes
+in the 7-RING, 7-PMESH, and 7-FMESH networks.
+
+shortest paths between all
+the node pairs in the network
+traverse that node. Since each considered EPPS in this work
+generate multiple wavelength pairs that are to be routed to
+multiple node pairs in the network, an EPPS placed at a
+node with maximum betweenness centrality would be able
+to transmit entangled photon pairs with lowest losses due to
+shorter distances between that node and the other nodes in
+the network. Thus, we leverage the concept of ‘betweenness
+centrality’ for EPPS placement in this work. Mathematically,
+betweenness centrality (Cbw) of a node v in a network of |N |
+nodes is deﬁned as
+
+Cbw(v) = X
+s,t∈N
+s6=t,s6=v,t6=v
+
+σst(v)
+σst
+
+,
+
+where, σst is the number of shortest paths for node pair s − t
+and σst(v) is the number of those shortest paths that pass
+through node v (with v 6= s, t).
+
+Let dist(u, v) be the length of a shortest path between nodes
+u, v ∈ N and let β (≥ 1) be an integer. A subset D ⊆ N of
+nodes in a network is called a ‘distance-β dominating set’ if
+∀u ∈ N, ∃v ∈ D such that dist(u, v) ≤ β. For instance, a
+distance-1 dominating set in an unweighted graph (i.e., de =
+1, ∀e ∈ E) identiﬁes a set D(⊆ N ) of minimum number of
+nodes from which all the other nodes in the graph are directly
+connected by an edge (i.e., one hop away since β = 1). Thus,
+
+11
+
+dominating set is a subset of nodes in a network that are closest
+with the remaining nodes in that network. Since we aim to
+analyze the impact of different EPPS placements, we leverage
+the concepts of ‘betweenness centrality’ and ‘dominant set’
+to identify such node/s for EPPS placement that are most-
+connected and closest to all the other nodes in the network
+to which entangled photon pairs are to be distributed. When
+the number of nodes (= m) in the subset |D| is speciﬁed, it
+is referred to as a ‘dominating set of size m’, where m is an
+integer such that 1 ≤ m ≤ |N |.
+
+We obtain different placements of 3WPSs and 5WPSs in 7-
+PMESH and 6-PMESH network topologies based on Cbw and
+dominant set of size m, as shown in Figs. 10-13. In Fig. 10(a),
+all the six 3WPSs are placed at a node with minimum Cbw
+(Cmin
+bw ). In Fig. 10(b), all the six 3WPSs are placed at a node
+with maximum Cbw (Cmax
+bw ). When multiple nodes have the
+same Cmin
+bw or Cmax
+bw , one of them has been chosen randomly.
+Placing all the 3WPSs at a single node in the network would
+enforce BP distribution (which resulted in lowest EDAR (see
+Figs. 7-8)) for most of the node pairs since OP requires an
+EPPS at one of the two entangling nodes. Thus, we perform
+distributed placement of six 3WPSs in Figs. 10(c-e) based
+on dominant set. In Fig. 10(c), a dominant set of size m =
+2 (which is also the minimum dominant set for 7-PMESH
+network) is obtained and three 3WPSs are placed at each of
+the two (since m = 2) nodes in the obtained dominant set.
+Similarly, we obtain more distributed placements by increasing
+the values of m in Fig. 10(d) (m = 3) and Fig. 10(e) (m =
+6) with two 3WPSs and one 3WPS, respectively, placed at
+each node in the identiﬁed dominant sets. In Fig. 11, different
+placements of four 5WPSs in 7-PMESH network topology are
+obtained similarly. In Fig. 12, placement of 3WPSs in the 6-
+PMESH network (shown in Fig. 6(e)) is obtained similarly
+based on Cbw and dominant sets of different m. A dominant
+set D of size m = |N | is the same as the original set N of
+nodes. Thus, with m = 6, one 3WPS is placed at all the six
+nodes, as shown in Fig. 12(e). Different placements of given
+four 5WPSs in the 6-PMESH network topology are obtained
+similarly, as shown in Fig. 13. Since dominant sets are non-
+unique (i.e., there can be multiple dominant sets of size m
+for a given graph), the dominant set with maximum sum of
+Cbw of the nodes in the dominant set are selected for EPPS
+placements in Figs. 10-13.
+
+We now analyze the impact of different EPPS placements
+obtained in Figs. 10-13 using AP distribution scheme in
+terms of EDAR. In Fig. 14, EDAR obtained for different
+3WPS placements in 7-PMESH network (shown in Fig. 10)
+is plotted. It is observed that when all the six 3WPSs are
+placed at a single node, placing them at a node with Cmax
+(i.e., placement ‘7N-3WPS-P2’ shown in Fig. 10(b)) results
+in higher EDAR as compared to placing them at a node
+with Cmin
+bw . This indicates that betweenness centrality is a
+justiﬁed measure to identify suitable node location/s for EPPS
+placement in quantum networks. Thus, we selected the dom-
+inant sets with Cmax
+among other possible dominant sets
+of same m in Figs. 10-13. Though Cbw is a good measure
+to identify a suitable single node for EPPS placement, it
+is observed from Fig. 14 that with increasingly distributed
+
+bw
+
+bw
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+6
+
+2
+
+3
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+2
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+3
+
+2
+
+1
+
+2
+
+3
+
+1
+
+2
+
+3
+
+2
+
+6
+
+2
+
+3
+
+3
+
+3
+
+2
+
+2
+
+3
+
+2
+
+3
+
+2
+
+3
+
+3
+
+2
+
+3
+
+2
+
+3
+
+2
+
+3
+
+2
+
+2
+
+3
+
+2
+
+2
+
+2
+
+1
+
+3
+
+3
+
+1
+
+3
+
+2
+
+3
+
+1
+
+2
+
+12
+
+2
+
+1
+
+3
+
+2
+
+(a) 7N-3WPS-P1
+
+(b) 7N-3WPS-P2
+
+(c) 7N-3WPS-P3
+
+(d) 7N-3WPS-P4
+
+(e) 7N-3WPS-P5
+
+Fig. 10: Different placements (P1, P2, P3, P4, P5) of 3WPSs in 7-PMESH network based on betweenness centrality (Cbw) and dominant sets (of size m): (a) Cmin
+(c) m = 2, (d) m = 3, (e) m = 6. The value/s speciﬁed inside node/s (circle/s) is the number of 3WPSs placed at that node.
+
+bw , (b) Cmax
+bw ,
+
+4
+
+2
+
+3
+
+3
+
+2
+
+2
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+4
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+2
+
+3
+
+2
+
+2
+
+2
+
+3
+
+2
+
+3
+
+2
+
+2
+
+3
+
+3
+
+3
+
+2
+
+2
+
+3
+
+1
+
+2
+
+1
+
+3
+
+2
+
+3
+
+1
+
+2
+
+2
+
+3
+
+1
+
+3
+
+3
+
+2
+
+(a) 7N-5WPS-P1
+
+(b) 7N-5WPS-P2
+
+(c) 7N-5WPS-P3
+
+(d) 7N-5WPS-P4
+
+Fig. 11: Different placements (P1, P2, P3, P4) of 5WPSs in 7-PMESH network based on betweenness centrality (Cbw) and dominant sets (of size m): (a) Cmin
+m = 2, (d) m = 4. The value/s speciﬁed inside node/s (circle/s) is the number of 5WPSs placed at that node.
+
+bw , (b) Cmax
+
+bw , (c)
+
+3
+
+2
+
+2
+
+2
+
+6
+
+3
+
+3
+
+2
+
+2
+
+2
+
+6
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+2
+
+3
+
+2
+
+2
+
+3
+
+2
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+2
+
+1
+
+1
+
+3
+
+2
+
+2
+
+2
+
+1
+
+3
+
+3
+
+2
+
+1
+
+2
+
+2
+
+2
+
+1
+
+1
+
+2
+
+(a) 6N-3WPS-P1
+
+(b) 6N-3WPS-P2
+
+(c) 6N-3WPS-P3
+
+(d) 6N-3WPS-P4
+
+(e) 6N-3WPS-P5
+
+Fig. 12: Different placements (P1, P2, P3, P4, P5) of 3WPSs in 6-PMESH network based on betweenness centrality (Cbw) and dominant sets (of size m): (a) Cmin
+(c) m = 2, (d) m = 3, (e) one 3WPS at each node. The value/s speciﬁed inside node/s (circle/s) is the number of 3WPSs placed at that node.
+
+bw , (b) Cmax
+bw ,
+
+3
+
+2
+
+2
+
+2
+
+4
+
+3
+
+3
+
+2
+
+2
+
+2
+
+4
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+2
+
+2
+
+2
+
+3
+
+2
+
+2
+
+3
+
+3
+
+2
+
+2
+
+2
+
+2
+
+2
+
+(a) 6N-5WPS-P1
+
+(b) 6N-5WPS-P2
+
+(c) 6N-5WPS-P3
+
+2
+
+3
+
+3
+
+1
+
+3
+
+2
+
+2
+
+1
+
+1
+
+2
+
+(d) 6N-5WPS-P4
+
+2
+
+1
+
+2
+
+Fig. 13: Different placements (P1, P2, P3, P4) of 5WPSs in 6-PMESH network based on betweenness centrality (Cbw) and dominant sets (of size m): (a) Cmin
+m = 2, (d) m = 4. The value/s speciﬁed inside node/s (circle/s) is the number of 5WPSs placed at that node.
+
+bw , (b) Cmax
+
+bw , (c)
+
+placement (i.e., with higher m) of the given six 3WPSs, EDAR
+improves. For the most distributed (m = 6) placement ‘7N-
+3WPS-P5’ shown in Fig. 10(e), 3.75%, 28.26%, 92.44%, and
+274.71% higher EDAR has been achieved as compared to ‘7N-
+3WPS-P4’, ‘7N-3WPS-P3’, ‘7N-3WPS-P2’, and ‘7N-3WPS-
+P1’ placements, respectively. Such extent of distributability
+is, however, dependent on how broad-/narrow-band are the
+EPPSs to be used, how many such EPPSs can be multiplexed
+within the available optical band (C-band in this work),
+wavelength granularity, and the network size. For instance,
+with broader-band EPPS such as the 5WPS, four of which
+
+could be wavelength-multiplexed within C-band (as explained
+in Section IV), m = 4 is the maximum, as shown in Fig. 11(d).
+Nevertheless, the improvement in EDAR with increase in Cbw
+(when all 5WPSs are placed at a single node) and m (when
+5WPSs are placed at multiple nodes distributively) persists, as
+shown in Fig. 15. In this case, 19.72%, 64.51%, and 182.08%
+higher EDAR has been achieved for ‘7N-5WPS-P4’ placement
+as compared to ‘7N-5WPS-P3’, ‘7N-5WPS-P2’, and ‘7N-
+5WPS-P1’ placements, respectively. Thus, depending on the
+bandwidth and wavelength-granularity of EPPSs, maximum
+possible distributive placement of EPPSs is advantageous. For
+
+13
+
+7N-3WPS-P1
+
+7N-3WPS-P2
+
+7N-3WPS-P3
+
+7N-3WPS-P4
+
+7N-3WPS-P5
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.8
+
+0.7
+
+6N-3WPS-P1
+
+6N-3WPS-P2
+
+6N-3WPS-P3
+
+0.6
+
+6N-3WPS-P4
+
+6N-3WPS-P5
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Fig. 14: EDAR versus network load for different 3WPS placements represented in Fig.
+10 for 7-PMESH network.
+
+Fig. 16: EDAR versus network load for different 3WPS placements represented in Fig.
+12 for 6-PMESH network.
+
+Network load
+
+Network load
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.8
+
+7N-5WPS-P1
+
+7N-5WPS-P2
+
+0.7
+
+7N-5WPS-P3
+
+7N-5WPS-P4
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+6N-5WPS-P1
+
+6N-5WPS-P2
+
+6N-5WPS-P3
+
+6N-5WPS-P4
+
+o
+i
+t
+a
+r
+
+e
+c
+n
+a
+t
+p
+e
+c
+c
+a
+
+d
+n
+a
+m
+e
+d
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+0.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Fig. 15: EDAR versus network load for different 5WPS placements represented in Fig.
+11 for 7-PMESH network.
+
+Fig. 17: EDAR versus network load for different 5WPS placements represented in Fig.
+13 for 6-PMESH network.
+
+Network load
+
+Network load
+
+instance, when a single EPPS that generates (cid:0)
+pairs is used to entangle all the (cid:0)
+mesh network, it should be placed at a node with Cmax
+bw .
+
+|N |
+2 (cid:1) wavelength
+|N |
+2 (cid:1) node pairs in an |N |-node
+
+Similar improvements have been observed in EDAR in
+case of different placements of 3WPSs and 5WPSs in 6-
+PMESH network topology, as shown in Figs. 16-17. In Fig. 16,
+4.92%, 19.79%, 71.64%, and 207.38% higher EDAR has been
+achieved for ‘6N-3WPS-P5’ placement as compared to ‘6N-
+3WPS-P4’, ‘6N-3WPS-P3’, ‘6N-3WPS-P2’, and ‘6N-3WPS-
+P1’ placements, respectively. In Fig. 17, 16.67%, 51.61%, and
+117.22% higher EDAR has been achieved for ‘6N-5WPS-
+P4’ placement as compared to ‘6N-5WPS-P3’, ‘6N-5WPS-
+P2’, and ‘6N-5WPS-P1’ placements, respectively. These ob-
+servations reafﬁrm that AP distribution is suitable for ﬂexible
+EPPS placement where, in case of centralized placement of
+wider-band EPPSs, it can provision most of the entanglement
+demands based on BP distribution, and in case of diverse
+placement of narrower-band EPPSs it can provision most of
+the entanglement demands based on OP.
+
+For all the pre-placement variations of considered EPPSs
+shown in Figs. 10-13, we now analyze entanglement resource
+utilization ratio (ERUR) as the ratio of the number of en-
+tangled photon pairs utilized to the number of entangled
+photon pairs generated by all the EPPSs in each considered
+case. The ERUR obtained at maximum network load for
+
+bw
+
+is observed that
+
+all the considered EPPS placement variations is shown in
+Fig. 18. It
+in case of placement of all
+EPPSs at a single node in the network, placement at a node
+with Cmax
+enables higher ERUR (see blue and orange bars
+in Figs. 18(a)−(d)). With distributed placement of EPPSs,
+ERUR increases with increase in m for all the considered
+EPPS placement scenarios (see green, red, and purple bars in
+Figs. 18(a)−(d)). The percentage improvements in ERUR are:
+3.81%, 27.63%, 92.13%, 275.88% higher for ‘7N-3WPS-P5’
+as compared to ‘7N-3WPS-P4’, ‘7N-3WPS-P3’, ‘7N-3WPS-
+P2’, ‘7N-3WPS-P1’, respectively; 18.33%, 63.84%, 177%
+higher for ‘7N-5WPS-P4’ as compared to ‘7N-5WPS-P3’,
+‘7N-5WPS-P2’, ‘7N-5WPS-P1’, respectively; 3.67%, 18.94%,
+71.48%, 207.63% higher for ‘6N-3WPS-P5’ as compared to
+‘6N-3WPS-P4’, ‘6N-3WPS-P3’, ‘6N-3WPS-P2’, ‘6N-3WPS-
+P1’, respectively; and 17.52%, 54.5%, 115.84% higher for
+‘6N-5WPS-P4’ as compared to ‘6N-5WPS-P3’, ‘6N-5WPS-
+P2’, ‘6N-5WPS-P1’, respectively, as shown in Figs. 18(a)−(d).
+These percentage improvements in ERUR are in good agree-
+ment with the corresponding percentage increases in EDAR
+for each considered case, as observed in Figs. 14-17. Thus,
+distributed EPPS placement (based on dominant set) at nodes
+with maximum betweenness centrality achieve high ERUR due
+to lower loss of photon pairs and visibility from source node/s
+to the remaining node/s in the network that subsequently
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+7N-3WPS-P1
+
+7N-5WPS-P1
+
+6N-3WPS-P1
+
+6N-5WPS-P1
+
+0.7
+
+14
+
+7N-3WPS-P2
+
+7N-3WPS-P3
+
+7N-3WPS-P4
+
+7N-3WPS-P5
+
+e
+c
+r
+u
+o
+s
+e
+r
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.8
+
+7N-5WPS-P2
+
+7N-5WPS-P3
+
+7N-5WPS-P4
+
+o
+i
+t
+a
+r
+
+0.6
+
+n
+o
+i
+t
+a
+z
+i
+l
+i
+t
+u
+
+0.4
+
+0.2
+
+e
+c
+r
+u
+o
+s
+e
+r
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.6
+
+6N-3WPS-P2
+
+0.5
+
+o
+i
+t
+a
+r
+
+6N-3WPS-P3
+
+6N-3WPS-P4
+
+6N-3WPS-P5
+
+0.4
+
+0.3
+
+n
+o
+i
+t
+a
+z
+i
+l
+i
+t
+u
+
+0.2
+
+0.1
+
+e
+c
+r
+u
+o
+s
+e
+r
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+6N-5WPS-P2
+
+6N-5WPS-P3
+
+6N-5WPS-P4
+
+0.6
+
+o
+i
+t
+a
+r
+
+0.5
+
+0.4
+
+0.3
+
+n
+o
+i
+t
+a
+z
+i
+l
+i
+t
+u
+
+0.2
+
+0.1
+
+e
+c
+r
+u
+o
+s
+e
+r
+
+l
+
+t
+n
+e
+m
+e
+g
+n
+a
+t
+n
+E
+
+0.8
+
+0.7
+
+0.6
+
+o
+i
+t
+a
+r
+
+0.5
+
+n
+o
+i
+t
+a
+z
+i
+l
+i
+t
+u
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0
+
+0.0
+
+0.0
+
+0.0
+
+(a)
+
+(b)
+
+(c)
+
+(d)
+
+Fig. 18: Entanglement resource utilization ratio (ERUR) at maximum network load for different EPPS placements: (a) 3WPS placements in 7-PMESH network represented in Fig.
+10, (b) 5WPS placements in 7-PMESH network represented in Fig. 11, (c) 3WPS placements in 6-PMESH network represented in Fig. 12, and (d) 5WPS placements in 6-PMESH
+network represented in Fig. 13.
+
+[7] S. K. Joshi, D. Aktas, S. Wengerowsky, M. Lonˇcari´c, S. P. Neumann,
+B. Liu, T. Scheidl, G. C. Lorenzo, ˇZ. Samec, L. Kling et al., “A trusted
+node–free eight-user metropolitan quantum communication network,”
+Science advances, vol. 6, no. 36, p. eaba0959, 2020.
+
+[8] P. Erdos and A. Renyi, “On random graphs i,” Publ. math. debrecen,
+
+vol. 6, no. 290-297, p. 18, 1959.
+
+[9] R. Bali, A. N. Tittelbaugh, S. L. Jenkins, A. Agrawal, J. Horgan,
+M. Rufﬁni, D. C. Kilper, and B. A. Bash, “Routing and spectrum allo-
+cation in broadband quantum entanglement distribution,” IEEE Journal
+on Selected Areas in Communications, vol. 43, no. 5, pp. 1856–1870,
+2025.
+
+[10] H. McAleese, A. Agrawal, V. Vasan, C. J. Campbell, A. G. Hawkins,
+D. C. Kilper, M. Paternostro, and M. Rufﬁni, “Strategies for entangle-
+ment distribution in optical ﬁber networks,” Physical Review Research,
+vol. 7, no. 4, p. 043105, 2025.
+
+[11] M. Calefﬁ, L. D’Avossa, X. Han, and A. S. Cacciapuoti, “Quantum
+transduction: Enabling quantum networking,” IEEE Communications
+Surveys & Tutorials, 2025.
+
+[12] M. Pant, H. Krovi, D. Towsley, L. Tassiulas, L. Jiang, P. Basu, D. En-
+glund, and S. Guha, “Routing entanglement in the quantum internet,”
+npj Quantum Information, vol. 5, no. 1, p. 25, 2019.
+
+[13] J. Li, M. Wang, K. Xue, R. Li, N. Yu, Q. Sun, and J. Lu, “Fidelity-
+guaranteed entanglement routing in quantum networks,” IEEE Transac-
+tions on Communications, vol. 70, no. 10, pp. 6748–6763, 2022.
+[14] S. Muralidharan, L. Li, J. Kim, N. L¨utkenhaus, M. D. Lukin, and
+L. Jiang, “Optimal architectures for long distance quantum communica-
+tion,” Scientiﬁc reports, vol. 6, no. 1, p. 20463, 2016.
+
+[15] H. Gu, Z. Li, R. Yu, X. Wang, F. Zhou, J. Liu, and G. Xue, “Fendi:
+Toward high-ﬁdelity entanglement distribution in the quantum internet,”
+IEEE/ACM Transactions on Networking, vol. 32, no. 6, pp. 5033–5048,
+2024.
+
+[16] A. Abane, M. Cubeddu, V. S. Mai, and A. Battou, “Entanglement routing
+in quantum networks: A comprehensive survey,” IEEE Transactions on
+Quantum Engineering, 2025.
+
+[17] J. Illiano, M. Calefﬁ, A. Manzalini, and A. S. Cacciapuoti, “Quantum
+internet protocol stack: A comprehensive survey,” Computer Networks,
+vol. 213, p. 109092, 2022.
+
+[18] H. Zang, J. P. Jue, B. Mukherjee et al., “A review of routing and
+wavelength assignment approaches for wavelength-routed optical WDM
+networks,” Optical networks magazine, vol. 1, no. 1, pp. 47–60, 2000.
+[19] J. Trapateau, J. Ghalbouni, A. Orieux, E. Diamanti, and I. Zaquine,
+“Multi-user distribution of polarization entangled photon pairs,” Journal
+of Applied Physics, vol. 118, no. 14, 2015.
+
+[20] B. Kanseri et al., System and method for generating multichannel
+entangled photon pairs enabled by miniature hybrid ﬁber and free space
+optical architecture for quantum networks (under patent ﬁling process).
+[21] V. Vasan, A. Agrawal, A. Nico-Katz, J. Horgan, B. A. Bash, D. C. Kilper,
+and M. Rufﬁni, “Control protocol for entangled pair veriﬁcation in
+quantum optical networks,” in ICC 2025-IEEE International Conference
+on Communications, 2025, pp. 4609–4614.
+
+results in high EDAR.
+
+VI. CONCLUSIONS
+
+We presented a distributed entanglement distribution ap-
+proach in WDM-based mesh quantum optical networks using
+multiple EPPSs. We experimentally characterized two EPPSs
+developed in-house and performed network simulations con-
+sidering both the EPPSs individually. We analyzed different
+entanglement distribution schemes, namely, OP distribution
+is commonly used in point-to-point studies, and BP
+that
+distribution that is commonly used in star network studies,
+and observed that a hybrid scheme of OP and BP, namely,
+AP is advantageous for entanglement distribution with mul-
+tiple EPPSs in mesh quantum optical networks. Based on a
+comprehensive analysis done for several network topologies
+and EPPS placement variations, it has been observed that
+distributed placement of multiple EPPSs based on betweenness
+centrality and dominant sets enables higher entanglement
+resource utilization and achieves higher entanglement demand
+acceptance as compared to centralized placement. Thus, we
+conclude that similar to the application-level advantages of
+distributivity in quantum networks such as distributed quantum
+computing and sensing, distributed entanglement distribution
+using multiple EPPSs is advantageous as compared to central-
+ized entanglement distribution.
+
+REFERENCES
+
+[1] Quantum Networks Application Roadmap (QNAR), Center for Quan-
+tum Networks [Online]. Available: https://cqn-erc.arizona.edu/industry/
+applications-roadmap.
+
+[2] B. Kanseri, S. S. Bisht, and A. S. Dulta, “Foundations and advances in
+photonic quantum-secure communication,” J. Opt. Soc. Am. B, vol. 43,
+no. 8, pp. B334–B354, Aug 2026.
+
+[3] J. S. Bell, “On the Einstein Podolsky Rosen paradox,” Physics Physique
+
+Fizika, vol. 1, no. 3, p. 195, 1964.
+
+[4] S. Wengerowsky, S. K. Joshi, F. Steinlechner, H. H¨ubel, and R. Ursin,
+“An entanglement-based wavelength-multiplexed quantum communica-
+tion network,” Nature, vol. 564, no. 7735, pp. 225–228, 2018.
+
+[5] R. Wang, O. Alia, M. J. Clark, S. Bahrani, S. K. Joshi, D. Aktas, G. T.
+Kanellos, M. Perani´c, M. Lonˇcari´c, M. Stipˇcevi´c et al., “A dynamic
+multi-protocol entanglement distribution quantum network,” in Optical
+Fiber Communications Conference and Exhibition (OFC), 2022, pp. 1–
+3.
+
+[6] F. Steinlechner, M. Gilaberte, M. Jofre, T. Scheidl, J. P. Torres,
+V. Pruneri, and R. Ursin, “Efﬁcient heralding of polarization-entangled
+photons from type-0 and type-II spontaneous parametric downconversion
+in periodically poled KTiOPO4,” JOSA B, vol. 31, no. 9, pp. 2068–2076,
+2014.
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+

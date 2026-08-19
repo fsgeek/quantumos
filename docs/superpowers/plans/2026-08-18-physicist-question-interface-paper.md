@@ -34,15 +34,15 @@
 - Consumes: the accepted section spine and claim-ownership decisions.
 - Produces: an empty but complete manuscript skeleton and an updated docket that later tasks can populate without reopening the split.
 
-- [ ] **Step 1: Record the split in the docket**
+- [x] **Step 1: Record the split in the docket**
 
 Add a dated entry stating: split ruled 2026-08-18; physicist paper owns the two-dates method, invariant argument, eight-row tale translation with epistemic labels, instrument evidence, and seven questions; HotOS owns typed contracts and the earned closing sentence; the combined-paper title remains unassigned until abstracts can be compared.
 
-- [ ] **Step 2: Create the manuscript scaffold**
+- [x] **Step 2: Create the manuscript scaffold**
 
 Create these headings in order: `A Tale of Two Dates`; `How an Unknown Earns Representation`; `The Instrument and Its Evidence Contract`; `Four Decision Surfaces` with four named subsections; `One Model Break, Bounded`; `Earned, Refused, and Owed`; `Related Work and the Negative Envelope`; `Methodology and Provenance`. Copy the skeleton's working claim and explicit non-claims into an author note at the top, marked for deletion before release.
 
-- [ ] **Step 3: Verify ownership is explicit**
+- [x] **Step 3: Verify ownership is explicit**
 
 Run:
 
@@ -52,7 +52,7 @@ rg -n "two-dates|carrier/claim/warrant/settlement|fidelity is not a type|title r
 
 Expected: the two-dates ownership and title deferral appear; typed-contract language appears only in the non-ownership note.
 
-- [ ] **Step 4: Checkpoint**
+- [x] **Step 4: Checkpoint**
 
 Review the scaffold against every heading in the accepted skeleton. Do not force-add the ignored draft or docket.
 
@@ -66,23 +66,23 @@ Review the scaffold against every heading in the accepted skeleton. Do not force
 - Consumes: the mono-costume tale, two-dates distinction, and question-generation rules.
 - Produces: Sections 1–2 and the conceptual vocabulary used by every result subsection.
 
-- [ ] **Step 1: Draft the shortened lettuce tale**
+- [x] **Step 1: Draft the shortened lettuce tale**
 
 Retain one costume only. End the tale with the distinction between predicted physical suitability and institutional appointment, plus the pre-generation rule that an unclaimed good has no demand appointment. Remove any sentence implying that either date alone is a complete physical or institutional death.
 
-- [ ] **Step 2: Redesign the first half of the eight-row translation**
+- [x] **Step 2: Redesign the first half of the eight-row translation**
 
 Seat decay, two dates, harm from reading, and maintenance after the tale. Give each row four columns: tale observation; quantum referent; epistemic status; decision exposed. Use only `physical constraint` or `operational consequence` in this first table segment.
 
-- [ ] **Step 3: State the decision-to-measurement chain**
+- [x] **Step 3: State the decision-to-measurement chain**
 
 Define the recurring sequence exactly once: physical uncertainty → runtime decision → signal available to the decision → threshold at which the decision changes → probe and cost → freshness bound. Include both rules: every represented quantity names the decision that reads it; every experimental decision declares every signal it reads, including selection rules.
 
-- [ ] **Step 4: Seat the seven-question index**
+- [x] **Step 4: Seat the seven-question index**
 
 Use columns `Q`, `physicist-facing question`, `decision informed`, and `where earned`. Keep seven questions; Q8 remains outside this paper's instrument-earned set.
 
-- [ ] **Step 5: Run the vocabulary gate**
+- [x] **Step 5: Run the vocabulary gate**
 
 Run:
 
@@ -108,23 +108,23 @@ Expected: no categorical physics-supplies-death sentence and no HotOS resource-k
 - Consumes: the decision-to-measurement chain and existing authored-model artifacts.
 - Produces: Sections 3–4, with every number classified and traceable.
 
-- [ ] **Step 1: State the evidence hierarchy before results**
+- [x] **Step 1: State the evidence hierarchy before results**
 
 Define five classes: authored-model finding; exact enumeration; refusal; physically demonstrated capability; unanswered hardware quantity. State that preregistration and timestamping establish chronology and auditability, not hardware truth.
 
-- [ ] **Step 2: Describe only the instrument features needed by the questions**
+- [x] **Step 2: Describe only the instrument features needed by the questions**
 
 Cover switched photonic modules, stochastic heralding, perishable inventory, contention, deadlines, decoder service, and typed terminal accounting. Remove construction chronology unless it changes the evidence class.
 
-- [ ] **Step 3: Draft the manufacture and maintenance surface**
+- [x] **Step 3: Draft the manufacture and maintenance surface**
 
 Organize Q1/Q4/Q6 as uncertainty → decision → result → threshold → measurement. Include maintenance dominance, the retry spiral, and low/high attempt-price regimes. Put each percentage beside its artifact and state `authored-model finding`, not measured hardware property.
 
-- [ ] **Step 4: Draft quality, observability, and topology surfaces**
+- [x] **Step 4: Draft quality, observability, and topology surfaces**
 
 For Q2/Q7, retain the decision-available quality spread and degenerate-dominated refusal. For Q3, separate proxy readability, back-action, and binary versus budgeted wear. For Q5, keep link concurrency, radix, reconfiguration granularity, and the crash/absence/silence signatures; do not argue typed heterogeneous offers here.
 
-- [ ] **Step 5: Gate numeric provenance**
+- [x] **Step 5: Gate numeric provenance**
 
 Run:
 
@@ -146,23 +146,23 @@ Expected: `0 unregistered numeric claim(s)`. If a new literal is necessary, add 
 - Consumes: the strict no-copy assumption, encrypted-cloning demonstration, and instrument refusal discipline.
 - Produces: Sections 5–6 without importing the HotOS ontology.
 
-- [ ] **Step 1: Write encrypted cloning as one bounded model break**
+- [x] **Step 1: Write encrypted cloning as one bounded model break**
 
 Contrast the original one-carrier assumption with late site choice, one-use authorization, and stranded residue. Introduce only enough vocabulary to state which decisions and measurements become necessary. Refer readers to the separate typed-contract paper for the full structure.
 
-- [ ] **Step 2: Seat the four younger translation rows**
+- [x] **Step 2: Seat the four younger translation rows**
 
 Add splitting, waybill, wilting, and clerk. Label each separately as external physical capability, accounting consequence, proposed mechanism, or instrument finding. Do not call all four laws of physics.
 
-- [ ] **Step 3: State landscape signals conservatively**
+- [x] **Step 3: State landscape signals conservatively**
 
 Use laser-, LED-, and sunlight-pumped entanglement only as evidence that source properties may vary. State explicitly that the cited work does not license integrated price, standing-cost, or facility-level substitutability claims.
 
-- [ ] **Step 4: Build the evidence/debt table**
+- [x] **Step 4: Build the evidence/debt table**
 
 Use columns `finding or question`, `evidence class`, `decision affected`, `artifact or reference`, and `claim not licensed`. Divide debts into unanswered physics, instrument limitations, and unadmitted conjectures. State prominently that qsim does not exercise warrants or settlement under contention.
 
-- [ ] **Step 5: Verify ontology depth**
+- [x] **Step 5: Verify ontology depth**
 
 Run:
 
@@ -183,19 +183,19 @@ Expected: carrier/claim/warrant/settlement appear only in the bounded model-brea
 - Consumes: the repaired invariant, related-work classifications, and docket #12.
 - Produces: Sections 7–8 and the paper's closing sentence.
 
-- [ ] **Step 1: Classify related systems without retroactive obligations**
+- [x] **Step 1: Classify related systems without retroactive obligations**
 
 Apply the two-dates test as a classification. Distinguish systems outside the paper's scope from systems that represent only one constraint; do not call either category a failure unless it claims the omitted obligation.
 
-- [ ] **Step 2: State the repaired invariant**
+- [x] **Step 2: State the repaired invariant**
 
 Argue that physics supplies degradation while applications and institutions supply thresholds, appointments, and enforcement. Retain “a ledger physics cannot see” as the compact expression of why a resource model cannot be derived from physics alone.
 
-- [ ] **Step 3: Preserve the verified part of docket #12**
+- [x] **Step 3: Preserve the verified part of docket #12**
 
 Keep the Kimi K2.6 cross-vendor transport-test fact at the resolution the records support: six generated tales were decoded blind by Kimi K2.6 (Moonshot AI), a different vendor and training lineage, given no laws, protocol, or repository. State that the tale inputs and protocol are public verbatim, the decode is a labeled condensation of a fuller session record, and the failed replication is documented in the repository. Do not call the lettuce seed one of six generated costumes or claim that the complete records and failed replication are published verbatim at the public URL. Move extended workflow narration to the linked record.
 
-- [ ] **Step 4: Land the closing claim**
+- [x] **Step 4: Land the closing claim**
 
 Make the final substantive sentence: `The product is falsifiable questions for the owners of hardware numbers.` No later paragraph may reopen the ontology or add a stronger hardware claim.
 
@@ -210,11 +210,11 @@ Make the final substantive sentence: `The product is falsifiable questions for t
 - Consumes: the completed argument and artifact map.
 - Produces: four unambiguous figure specifications and a reviewable physicist-paper draft.
 
-- [ ] **Step 1: Specify four figures**
+- [x] **Step 1: Specify four figures**
 
 Write exact labels, nodes, axes, data sources, captions, and prohibited inferences for: one-good lifecycle with physical and institutional tracks; question-generation chain; Q1/Q4/Q6 economy charts; Q5 custody/topology map with crash/absence/silence signatures.
 
-- [ ] **Step 2: Check structural budget**
+- [x] **Step 2: Check structural budget**
 
 Run:
 
@@ -225,7 +225,7 @@ rg -n '^## |^### ' docs/drafts/2026-08-18-physicist-question-interface-draft.md
 
 Expected: 9,000–10,500 words and the accepted section order.
 
-- [ ] **Step 3: Repeat the provenance gate**
+- [x] **Step 3: Repeat the provenance gate**
 
 Run:
 
@@ -235,14 +235,14 @@ python scripts/check_number_provenance.py docs/drafts/2026-08-18-physicist-quest
 
 Expected: `0 unregistered numeric claim(s)`.
 
-- [ ] **Step 4: Run the cross-paper ownership gate**
+- [x] **Step 4: Run the cross-paper ownership gate**
 
 If the HotOS draft exists, compare abstracts, opening scenarios, full section headings, and closing sentences. Expected: lettuce appears only here; full typed-contract definitions appear only in HotOS; the two-dates argument is derived only here; each paper has a different final substantive sentence.
 
-- [ ] **Step 5: Audition titles only after the abstract exists**
+- [x] **Step 5: Audition titles only after the abstract exists**
 
 Compare the current combined-paper title against at least one title naming questions, measurements, or model breakage. Keep “The Cold Chain: What a Quantum Operating System Actually Manages” unassigned unless the physicist abstract—not the tale alone—earns it.
 
-- [ ] **Step 6: Stop at the structural review gate**
+- [x] **Step 6: Stop at the structural review gate**
 
 Deliver the draft, figure specifications, word count, provenance output, and overlap audit for author reaction. Do not begin the final voice pass until this structure is accepted.

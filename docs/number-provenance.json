@@ -38,20 +38,20 @@
       "claim": "manufactured entanglement that ages out unused",
       "artifact": "runs/sweep-pool-retry/manifest.json",
       "derivation": "85/334",
-      "status": "recorded-not-rederived",
+      "status": "rederived",
       "recorded_by": "predecessor, draft L1199-1201",
-      "verified_by": null,
-      "verified_date": null
+      "verified_by": "claude thread 2026-08-19 (arm 0 pool_events: deposited 334, expired 85, withdrawn 243; 6 held at horizon)",
+      "verified_date": "2026-08-19"
     },
     {
       "literal": "73%",
       "claim": "deposits consumed rather than lost",
       "artifact": "runs/sweep-pool-retry/manifest.json",
       "derivation": "243/334",
-      "status": "recorded-not-rederived",
+      "status": "rederived",
       "recorded_by": "predecessor, draft L1199-1201",
-      "verified_by": null,
-      "verified_date": null
+      "verified_by": "claude thread 2026-08-19 (arm 0 pool_events: deposited 334, expired 85, withdrawn 243; 6 held at horizon)",
+      "verified_date": "2026-08-19"
     },
     {
       "literal": "86%",

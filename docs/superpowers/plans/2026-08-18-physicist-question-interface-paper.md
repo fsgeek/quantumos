@@ -191,9 +191,9 @@ Apply the two-dates test as a classification. Distinguish systems outside the pa
 
 Argue that physics supplies degradation while applications and institutions supply thresholds, appointments, and enforcement. Retain “a ledger physics cannot see” as the compact expression of why a resource model cannot be derived from physics alone.
 
-- [ ] **Step 3: Preserve docket #12**
+- [ ] **Step 3: Preserve the verified part of docket #12**
 
-Keep the Kimi K2.6 cross-vendor transport-test fact and this sentence verbatim: `The complete records, including the failed replication, are published verbatim (wamason.com/ayllu/pass-the-glass-before-it-goes-dark/records/) and in the repository.` Move extended workflow narration to the linked record.
+Keep the Kimi K2.6 cross-vendor transport-test fact at the resolution the records support: six generated tales were decoded blind by Kimi K2.6 (Moonshot AI), a different vendor and training lineage, given no laws, protocol, or repository. State that the tale inputs and protocol are public verbatim, the decode is a labeled condensation of a fuller session record, and the failed replication is documented in the repository. Do not call the lettuce seed one of six generated costumes or claim that the complete records and failed replication are published verbatim at the public URL. Move extended workflow narration to the linked record.
 
 - [ ] **Step 4: Land the closing claim**
 

@@ -167,6 +167,71 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
 
 ---
 
+*Sweep of 2026-08-24 (fourth scheduled run). Window: submissions 2026-08-17
+through 2026-08-24 (default 8-day window; prior sweep was 2026-08-17). Direct
+arXiv access (export.arxiv.org API and arxiv.org/abs pages) worked this run;
+all abstracts below were read first-hand via WebFetch against the primary.
+Query table run against quant-ph, cs.NI, cs.OS and physics.optics per the
+protocol. Candidates checked and rejected as non-hits: arXiv 2608.18666
+("Experimental zero-added-loss multiplexing Bell-pair source for long-haul
+quantum networks") demonstrates entanglement swapping across 16 parallel
+frequency modes from a single ZALM source — this is source-layer spectral
+multiplexing of generation rate, not memory-module link concurrency or
+switch/topology reconfiguration granularity, so a Q5 reading is too thin to
+carry (no switch, no module, no per-port data). arXiv 2608.20291
+("Programmable cavity QED with a fiber-integrated atomic array") reports
+"cavity-based non-destructive readout of the number of coupled atoms" — this
+is atom-count readout in a tweezer array, not repeated QND readout of a
+stored qubit's state with a per-readout fidelity cost, so it does not answer
+Q3's threshold. arXiv 2608.20443 ("Granthi: Higher-Order Quantum Programming
+via Unitary Wiring") states the language "directly supports the quantum
+switch, compiled to a static circuit" — a second vocabulary trap alongside
+the protocol's named entanglement trap: this "quantum switch" is a
+computational control-flow primitive (coherent branching), not a physical
+photonic switch fabric, so it is excluded on the same principle. arXiv
+2608.17470 ("Absorption-emission quantum repeater using diamond quantum
+memories") reports single-node process fidelity (78%) for one
+absorb-store-teleport cycle via quantum process tomography — no repeated-
+readout wear data and no networked/scheduling content, so it does not answer
+Q3 or any other threshold.*
+
+### arXiv 2608.20954 — Tools for Reducing Service Time in Near-Term Quantum Networks
+*Smith, Beauchamp, Gauthier, Bouchmal, Wehner. Submitted 2026-08-21.*
+- **status:** UNREAD (abstract read 2026-08-24; the paper itself is the debt)
+- **touches:** Q1, Q4 — and *possibly* Q6
+- **would change:** Our Q4 in-place-herald-retry threshold (failure-to-next-
+  attempt cycle time vs deadline slack) and Q1's operational quantile ask
+  (is the upper-tail configuration-plus-generation latency small enough
+  that a replenishment completes before its reserve margin expires?) are
+  both currently answered only by invented numbers in our simulator. This
+  paper's entire object is the same quantity from the other direction: the
+  abstract states that existing multi-user entanglement architectures
+  insert "fixed separations between consecutive batches of entanglement
+  generation attempts" after failures, that this separation leaves the
+  network "idle" when attempts fail, and that their method shortens it
+  "while respecting hardware constraints," using an analytical execution
+  model evaluated within the Arqon architecture (service-time reductions of
+  up to 7.6% single-application, 26-30% co-scheduled). If the full paper's
+  execution model exposes the actual minimum safe separation and what
+  hardware constraint floors it, that could replace our invented
+  failure-to-next-attempt figure and settle whether our simulator's
+  retain-and-retry vs release-and-reacquire asymmetry (Q4) is physics-earned
+  or just a design choice. *Possibly* Q6: "respecting hardware constraints"
+  when shortening the separation is an explicit claim that some constraint
+  bounds achievable cadence, but the abstract does not name the constrained
+  resource (thermal, calibration, controller traffic, or something else),
+  so whether it ratifies Q6's "does an actuation/reservation consume ANY
+  constrained resource" ask is inference pending the full read.
+- **mapping note:** the paper is framed as a scheduling/service-time
+  optimization over an existing hardware-constrained separation, not as a
+  hardware characterization paper — so the debt is whether its analytical
+  execution model contains a hardware-measured (vs assumed) cycle-time
+  distribution. Whoever pays this debt should check whether the "hardware
+  constraints" the abstract references are cited to a measurement or
+  simply asserted.
+
+---
+
 *Sweep of 2026-08-17 (third scheduled run). Window: submissions 2026-08-03
 through 2026-08-17 (last sweep was 2026-08-03; the default 8-day window was
 widened to cover the full 14-day gap). Direct arXiv access (export.arxiv.org

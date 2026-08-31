@@ -167,6 +167,99 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
 
 ---
 
+*Sweep of 2026-08-31 (fifth scheduled run). Window: submissions 2026-08-24
+through 2026-08-31 (default 8-day window; prior sweep was 2026-08-24). Direct
+arXiv access (export.arxiv.org API and arxiv.org/abs pages) worked this run;
+all abstracts below were read first-hand via WebFetch against the primary.
+Query table run against quant-ph, cs.NI, cs.OS and physics.optics per the
+protocol; a broad topic-only category listing (424 results) was fetched first,
+recognized as the topic-sweep failure mode the protocol warns against
+("topic sweeps... return everything and settle nothing"), and abandoned in
+favor of per-question keyword queries. Candidates checked and rejected as
+non-hits: arXiv 2608.23681 ("Bang-bang protocol for nondispersive qubit
+readout") reports a QND readout scheme for superconducting qubits with error
+decreasing as 1/N, but the abstract describes only a **single-shot**
+projective measurement with no discussion of repeated successive readouts of
+a stored qubit, cumulative back-action, or a per-readout fidelity cost — it
+does not answer Q3's graded-vs-cliff wear threshold. arXiv 2608.24299
+("Distributed Resource Theory of Entanglement and Magic") uses "entanglement"
+as a resource-theoretic quantity (distributed LOCC-type protocols), not a
+networked, scheduled resource surviving a scheduling decision — the
+protocol's named vocabulary trap, applied to a resource-theory rather than
+quantum-chemistry paper this time. arXiv 2608.26886 ("Quantum Interconnects
+Part I: Strategic Quantum Network Formation") proposes a hierarchical
+utility-function abstraction (Physical Platforms/Functionalities/Services/
+Applications/Use-Cases) for game-theoretic network formation — an economic/
+incentive framework for *why* networks form, with no perishability, custody,
+or admission content; too thin for the fence. arXiv 2608.27171 ("Conditional
+contraction coefficients and their applications to quantum networks") is an
+information-theoretic contraction-coefficient result, not scheduling or
+resource-management content.*
+
+### arXiv 2608.24152 — A Dynamic-Kernel/QPacket Executable for Quantum Repeater Chains in Q2NS/ns-3
+*Pearson, Caleffi, Cacciapuoti. Submitted 2026-08-25; revised (v2) 2026-08-26.*
+- **status:** UNREAD (abstract read 2026-08-31; the paper itself is the debt)
+- **touches:** fence, Q6 — and *possibly* Q1, Q5
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission), not a component. This paper builds
+  a "Dynamic Kernel" — literally named as a kernel — organized as a
+  Planner-Executor-Engine pipeline processing "QPacket" meta-headers carrying
+  service intent and append-only action-commit stamps, managing entanglement
+  as "a non-local, non-copyable, stateful network resource," including
+  pre-distributed entanglement and forwarding/delegation across nodes with
+  uneven generation support. If the full paper's kernel adjudicates admission
+  among competing service requests over a held, decaying entanglement
+  resource — not just the single scoped linear-chain demonstration the
+  abstract describes — this would be the closest occupant of the fence's full
+  form seen in this project's surveillance to date, and the fence's
+  "unoccupied" conclusion would need re-examining. As abstracted ("deliberately
+  scoped to an analytically verifiable service and policy" on a "linear
+  quantum repeater chain"), it reads as a protocol-architecture demonstration
+  rather than a full multi-request scheduler — that narrowness is exactly what
+  the full read must check. For Q6: the abstract explicitly reports measuring
+  "signaling load, forwarding behavior, and QPacket meta-header growth" as a
+  function of policy choices and available network resources — controller/
+  signaling traffic is one of the constrained-resource classes Q6 names
+  directly. If the full paper shows signaling/controller load scaling with
+  reconfiguration or actuation decisions rather than only header encoding, it
+  could give Q6 a first real number for that resource class.
+- **mapping note:** *possibly* Q1 — the link-preparation policy accounting for
+  pre-distributed entanglement is adjacent to replenishment cadence, but no
+  cadence distribution is claimed, so this is inference. *Possibly* Q5 — the
+  linear-chain topology is a specific, non-switched topology and does not
+  address port-level multiplexing or reconfiguration granularity; also
+  inference. Whoever pays this debt should check the fence and Q6 first.
+
+### arXiv 2608.22766 — Spatio-temporal Path Optimization for Stabilizer-Code-Protected Quantum Networks
+*Zhang, Wang, Zhao, Chen, Guo. Submitted 2026-08-24; revised (v2) 2026-08-25.*
+- **status:** UNREAD (abstract read 2026-08-31; the paper itself is the debt)
+- **touches:** fence
+- **would change:** This paper jointly optimizes, for a logical qubit
+  traversing multiple hops, the path, the QEC-recovery locations, and the
+  protection scheme, under "logical-error and logical-lifetime constraints,"
+  with a multi-flow variant reducing "throughput-normalized congestion"
+  relative to greedy assignment. "Logical-lifetime constraints" is a
+  perishability model (the encoded state has decaying validity); the choice
+  of recovery location is a custody-like decision (where the state is held
+  and reconstituted along the route); multi-flow congestion reduction implies
+  resource contention resolved across competing flows — the three elements
+  the fence names (perishable good + custody + admission). If the full
+  paper's multi-flow algorithm is actually adjudicating admission among
+  contending requests for a shared, decaying network resource, rather than
+  optimizing a single flow's static route in isolation, it would occupy more
+  of the fence's full form than anything read so far in this project's
+  surveillance, and the fence's "unoccupied" conclusion would need
+  re-examining. As abstracted, it is framed as a routing-algorithm
+  contribution ("algorithmic building block for QEC-aware routing"), not as a
+  scheduler or OS — that framing is exactly what the full read must check.
+- **mapping note:** no fidelity-spread or path-persistence data is claimed
+  (Q2, Q7 not mapped — the abstract reports routing-cost and congestion
+  reductions, not fidelity measurements or temporal rank data), so this entry
+  is filed under the fence alone rather than padded with inferential question
+  mappings.
+
+---
+
 *Sweep of 2026-08-24 (fourth scheduled run). Window: submissions 2026-08-17
 through 2026-08-24 (default 8-day window; prior sweep was 2026-08-17). Direct
 arXiv access (export.arxiv.org API and arxiv.org/abs pages) worked this run;

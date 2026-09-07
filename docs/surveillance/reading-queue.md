@@ -321,3 +321,78 @@ failure-cost or blocking data against Q4's threshold.*
   the "ultra-low-loss poled fibre phase modulator" is described only as
   providing "fast, polarisation-insensitive switching," with no latency
   distribution reported, so a Q1 reading is inference, not a claim.
+
+---
+
+*Sweep of 2026-09-07 (sixth scheduled run). Window: submissions 2026-08-31
+through 2026-09-07. **Provenance note:** the previous sweep's entries
+(2026-08-24) are the last ones merged to main, but a fifth sweep dated
+2026-08-31 was in fact already run and is sitting in open, unmerged PR #4
+("Literature surveillance: 2 new debts (2026-08-31 sweep)") with two
+entries — arXiv 2608.24152 and arXiv 2608.22766 — plus four non-hits
+(2608.23681, 2608.24299, 2608.26886, 2608.27171) documented in that PR's
+body. This sweep does not re-litigate that window or those papers; PR #4's
+disposition of them stands pending its own merge. This sweep covers only
+the window after it (2026-08-31 through 2026-09-07). Direct arXiv access
+(export.arxiv.org API and arxiv.org/abs pages) worked this run; all
+abstracts below were read first-hand via WebFetch against the primary.
+Query table run against quant-ph, cs.NI, cs.OS, cs.DC and physics.optics per
+the protocol, plus a category-unfiltered "quantum network" sweep of the
+window to catch anything the topic queries missed. Candidates checked and
+rejected as non-hits: arXiv 2609.04524 ("DPRQ: A Dynamic Programming-based
+Qubit Routing Algorithm for Collective Communication in Distributed Quantum
+Computing") optimizes inter-node qubit routing at the circuit-compilation
+layer to cut communication overhead between processors — a compiler pass
+over a fixed circuit, not runtime scheduling of a perishable physical
+resource, so it does not occupy the fence's form. arXiv 2609.02579
+("Long-lived telecom-heralded single-photon storage in an absorptive
+spin-rephased quantum memory") reports storage lifetimes to 3 ms (classical
+regime) and cross-correlation at 180 μs, but a single store-and-retrieve
+cycle per measurement, not a distribution of degradation over repeated QND
+reads of the same stored state — does not answer Q3's threshold. arXiv
+2609.02554 ("Experimental Evaluation of Passive Polarization Compensation
+Techniques for Fiber-Distributed Polarization-Entangled Photons") reports
+visibilities >93% and fidelities >94.5% after static, single-link
+compensation — no cross-sectional spread across simultaneously available
+paths, so it does not answer Q2's threshold. arXiv 2609.02841 ("Exponential
+speedup of polarization stabilization for long distance DWDM quantum
+networks") was checked closely against Q1/Q6/Q7 given its "optical
+switches" and 24-hour continuous-operation claims; on the full abstract it
+reports no switch actuation latency, no duty-cycle/budget figure, and no
+drift-autocorrelation-vs-lead-time comparison — the switches are a
+calibration-path-decomposition detail, not characterized as a
+scheduled/rationed resource, so it is a component-technology foil, not a
+hit.*
+
+### arXiv 2609.04920 — QUASAR: Quantum Satellite Architecture and Routing Simulator
+*Shi, Wang, Yuan, Wu, Zhao. Submitted 2026-09-04.*
+- **status:** UNREAD (abstract read 2026-09-07; the paper itself is the debt)
+- **touches:** fence — and *possibly* Q5
+- **would change:** The fence excludes work unless it occupies the full form
+  of perishable good + custody + admission, not a component of it. This
+  paper's abstract states the simulator "integrates dynamic orbital
+  topologies, time-varying optical transmittance, and quantum memory
+  decoherence into network-layer attributes," evaluates "concurrent
+  requests," and introduces an "Entanglement Distribution Rate (EDR)-Aware
+  Spatiotemporal Routing (EASR) heuristic" — decoherence (perishable good)
+  and routing under concurrency (admission-shaped) are both explicit claims
+  in the same system. If the full paper's EASR heuristic actually arbitrates
+  competing requests for memory/downlink resources against a decoherence
+  clock — custody, not just point-to-point link scheduling — this would be
+  another candidate (alongside PR #4's arXiv 2608.24152) that plausibly
+  occupies the fence's full form rather than a component of it, and the
+  position paper's novelty claim would need to be checked against it
+  directly. Whether the
+  abstract's "concurrent requests" language rises to genuine custody
+  (queued, competing holds) or is just parallel independent routing runs is
+  inference, not stated outright — that is the specific thing the full read
+  must settle. *Possibly* Q5: "dynamic orbital topologies" is a
+  reconfiguring topology envelope, but it reconfigures by satellite motion
+  (visibility windows), a different physical mechanism from the photonic
+  switch fabric Q5 asks about, so this mapping is thin and should be
+  checked, not assumed, on the full read.
+- **mapping note:** this is a simulation-platform paper, not a hardware
+  characterization — it cannot answer any of Q1-Q7's hardware thresholds
+  (those ask for measured distributions), so fence is the only question
+  mapped. Whoever pays this debt should first determine whether EASR models
+  contention for a held resource or only routes already-available links.

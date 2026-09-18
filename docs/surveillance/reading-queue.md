@@ -264,22 +264,118 @@ entry is a debt and not a finding.
   object model. Q2/Q7: nothing (no measured spreads or persistence; parameters
   are drawn from a 2 km-mean exponential and a 0.15 dB/km loss law).
 
----
+### arXiv 2609.09805 — Electrically tunable, two-photon interference from remote silicon-vacancy centers in industrial silicon carbide
+*Hrunski, Scheller, Hollendonner, Ullerich, Parthasarathy, Fu, Pointner, Knolle, Kaiser, Dasari, Nagy. Submitted 2026-09-09.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** Q7 — and *possibly* Q2, Q6
+- **would change:** Q7 asks how long comparative path/link quality stays
+  valid at OS-actionable lead times. This paper reports a 26-day continuous
+  measurement campaign on two-photon interference between remote SiV
+  centers, with raw visibilities of 82% sustained over that period, and
+  states that recalibrating the diode bias is needed "only every 8.4 hours"
+  to maintain spectral overlap. If the full paper's 8.4-hour figure is the
+  actual drift timescale forcing recalibration (not a conservative safety
+  margin), it gives Q7 a first real number for calibration-drift
+  persistence — long relative to plausible OS decision lead times, arguing
+  against the "chasing a ghost" failure mode for this platform, the opposite
+  direction from arXiv 2608.07163 already in this queue. *Possibly* Q2: the
+  paper demonstrates spectral overlap of 19 randomly selected SiV centers in
+  different diodes, a cross-sectional measurement across many emitters, but
+  the abstract reports that overlap was achieved, not the magnitude of any
+  residual spread — thin evidence for Q2's instantaneous-spread threshold.
+  *Possibly* Q6: the 8.4-hour rebias cadence is a maintenance-actuation duty
+  cycle on a quantum-network component, adjacent to Q6's constrained-resource
+  ask but not a switch actuation.
+- **mapping note:** whoever pays this debt should check Q7 first — the
+  8.4-hour figure and the 26-day stability claim are the paper's strongest,
+  most explicit data.
+- **disposition:** **Q7: the 8.4 h figure is a measured mean interval
+  between threshold crossings, not a safety margin — and it is
+  emitter-specific. Q2 gets an unlooked-for cross-sectional datum. Q6
+  thin.** Mechanism (SI7): every 2 h of *active* correlation time a resonant
+  PLE scan measures each emitter's absolute A₂ frequency; if it lies outside
+  a preset ±20 MHz window around ν_T the diode reverse bias is corrected
+  (6.30 GHz/V). Uncorrected drift is "up to ±40 MHz/h". Across 244
+  verification sessions in 628 h, correction was needed in 12.7% of sessions
+  for one emitter (mean interval 19.4 h, longest 50 h) and 30.7% for the
+  other (8.4 h, longest 32 h); the authors attribute the difference to the
+  two cryostats' thermal/vibration environments. So for this platform the
+  calibration-drift persistence relevant to Q7 is hours to tens of hours,
+  set by the *environment of the node*, not the emitter class — same lesson
+  as the Naples fibre paper (2609.11359): persistence is route/site-class
+  specific. At OS-actionable lead times it is persistent. **Q2:** 19
+  randomly selected centres all tune to a common ν_T, but their linewidths
+  differ 2–4× (27–59 MHz resonant; 30 vs 127 MHz deconvolved under the
+  off-resonant excitation actually used), and the paper computes that
+  linewidth mismatch alone caps HOM visibility at 93% (σ = 0), with
+  session-to-session spectral diffusion σ = 15.5 MHz taking it to the
+  measured 82%. That is a cross-sectional spread across *simultaneously
+  available, nominally equivalent* emitters in which frequency-matched
+  offers differ materially in the quality they can deliver — the Q2 premise,
+  from hardware, though for emitters rather than fabric paths. **Q6:** the
+  fast cavity lock (every 10 s, error signal = transmitted counts) costs no
+  downtime; the slow loop pauses accumulation for a PLE scan every 2 h
+  active time, nodes stabilised consecutively while the other idles —
+  a rationed calibration actuation, but no budget figure. Fence: not
+  touched.
 
-## Open (UNREAD)
-
-*Sweep of 2026-07-25 (first run, fired manually to validate the routine). The
-sweep found these two and correctly excluded arXiv 2607.16394 (condensed-matter
-"entanglement entropy" — the vocabulary trap the protocol names) and arXiv
-2607.05642 (metrics taxonomy, no data answering any threshold). Its own commit
-was stranded in an ephemeral cloud checkout with read-only credentials; these
-entries were rewritten locally from the arXiv abstracts read first-hand, not
-transcribed from the sweep's summary. Question mapping revised on the first
-entry — see note.*
+### arXiv 2608.07163 — Rate-Fidelity Control for Wide-Area Quantum Links
+*Clayton, Nunn, Carmack, McKenzie, Richards, Wu, Bhattacharjee. Submitted 2026-08-07.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** Q7 — and *possibly* Q6
+- **would change:** Q7 asks how long "the best path" stays best at
+  OS-actionable lead times. This paper reports a 24-hour trace-driven
+  evaluation on a 64 km deployed fibre link where polarization drift
+  "destabilizes end-to-end fidelity and forces periodic compensation," and a
+  software controller that re-adapts pump power and polarization
+  compensation to hold a 14% mean-rate improvement over static policy. If
+  the full paper's drift autocorrelation time is short relative to our
+  modeled scheduling lead times, it ratifies Q7's "chasing a ghost" failure
+  mode for comparative routing; if long, a comparative read stays durable
+  and Q7 resolves the other way. *Possibly* Q6: the abstract describes
+  continuous actuation (pump power, polarization compensation) against
+  "uncontrollable link drift," which could carry a duty-cycle or wear cost,
+  but no such figure is stated — this is inference from "active
+  stabilization with fixed control policies," not a claim.
+- **mapping note:** this is a single link's fidelity drifting over time, not
+  a cross-sectional spread across simultaneously available paths — it
+  answers Q7's temporal-persistence framing, not Q2's instantaneous-spread
+  framing, even though both quantities are "fidelity."
+- **disposition:** **Q7 answered for the aerial route class — at seconds,
+  the opposite pole from buried fibre — and Q6 gets a second measured datum,
+  this one involving an actual switch. Fence not touched.** The link is 64 km,
+  > 70% aerial (DC-QNet, LTS→UMD switch→NIST). A 48 h Stokes trace at 100 ms
+  resolution shows drift rates "strongly correlated with time of day," up to
+  ~0.06 rad/s by day; the empirical drift predictor rests on the observation
+  that "polarization drift over a short period of time is strongly
+  correlated with drift over a subsequent short period" — positive
+  short-lag autocorrelation, i.e. predictable, not a ghost, but the
+  actionable horizon is seconds: the best *static* fidelity-check interval
+  is ~1 s by day and ~10 s at night (Sec. 6.2). So Q7 now has two measured
+  poles: buried metro ≈ hours (2609.11359), aerial ≈ seconds (this). Both
+  say comparative quality persists across ms-scale decisions; they differ by
+  three orders of magnitude in how often the OS must pay to keep it so.
+  **Q6:** compensation is in-band classical light, so "the path must be
+  fully switched away from the entanglement source and detector while the
+  APC is in use" (Fig. 1a, two-way switches at both ends) — a calibration
+  actuation that consumes *fabric occupancy* and link downtime, measured: a
+  fidelity check costs 44 ms, compensation is fixed at 1 s, and over 24 h
+  ~9% of time goes to probes and compensation (3.4% at night). Cite as the
+  second rationed-actuation class in the queue, and the first that occupies
+  a switch. **On the provocation:** the paper's control abstraction is
+  F(t) ≈ F_sd·F_pol with pump power as a knob — fidelity traded
+  continuously against rate, pairs discarded when F < F_min, no second date
+  — a clean 2026 instance of fidelity-as-scalar at the link layer; and its
+  Sec. 7.3 proposes that each link expose "a feasible set of rate–fidelity
+  operating points" upward — a per-link offer *frontier*, which is one step
+  short of a typed offer (no carrier, decay law, cardinality or residue
+  axes). Ratifies the framing the HotOS paper argues past; multi-link
+  arbitration ("Opt-3") is explicitly future work, so no custody or
+  admission. Q1/Q4/Q5: nothing.
 
 ### arXiv 2607.15262 — Dynamic Entanglement Distribution for Multi-User and Multi-Protocol Quantum Networking
 *Wang, Clark, Alia, Bahrani, Aktas, Peranić, Stipčević, Lončarić, Rarity, Joshi, Simeonidou. Submitted 2026-07-16.*
-- **status:** UNREAD (abstract read 2026-07-25; the paper itself is the debt)
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
 - **touches:** Q1, Q5, Q6 — and *possibly* Q7
 - **would change:** A deployed, reconfigurable q-ROADM distributing entanglement
   to six users over metro fibre, supporting programmable full-mesh, partial-mesh
@@ -297,6 +393,54 @@ entry — see note.*
   to link condition" implies varying link quality is acted on, but that is an
   inference, not a claim. Q7 retained as *possible*; Q1/Q5/Q6 added as the
   better-evidenced targets. Whoever pays this debt should check Q1 first.
+- **disposition:** **Fence stands (memoryless; photons consumed in
+  flight). Q1 unanswered. Q5 and Q6 get real but memoryless data; Q7 weak.**
+  The q-ROADM is a 30-slice 100 GHz DEMUX → per-channel fibre polarisation
+  controllers → a 192×192 Polatis optical fibre switch → 1×16 MUXs (Alice,
+  Bob) and 4×16 WaveShaper WSSs (C/D, F/G). **Q1:** no reconfiguration
+  timing of any kind is reported; configurations are compared over
+  20–40 min windows. Unanswered. **Q5:** reconfiguration granularity is per
+  100 GHz wavelength channel per user port; in full mesh each of six users
+  holds 5 simultaneous links on the same two SNSPDs — links-per-endpoint > 1,
+  with the concurrency living in the spectrum, as the sweep suspected. The
+  finding that matters: concurrency has a *cost*, because all channels share
+  the user's detector pair and accidentals rise with channel count, so under
+  poor source/detector conditions (3% HE, 300–350 ps jitter) time-shared
+  partial meshes out-key the full mesh on many links (Fig. 6b), while under
+  good conditions full mesh wins (Fig. 5d). The optimum "depends strongly on
+  source brightness, heralding efficiency, detector timing jitter and link
+  loss" — a hardware demonstration that an offer's delivered quality depends
+  on what else is co-scheduled through the same endpoint, i.e. quality is
+  contextual, not intrinsic to the offer. Directly usable for the HotOS
+  "typed offers" argument as a memoryless neighbour. **Q6:** polarisation
+  neutralisation flips the source out (flip mirror) and injects reference
+  light per channel per path — network-wide quantum downtime — but it was
+  needed once at 18.4 h and the mesh then ran > 140 h; the other two
+  interruptions were SNSPD cycling. A maintenance actuation with a
+  hours-to-days cadence, no budget figure. **Q7:** > 140 h of stable SKR on
+  campus/metro fibre after one neutralisation is consistent with the
+  hours-scale persistence of 2609.11359; weak because SKR, not path rank,
+  is what was tracked. **Fence:** no memory, no held good, no admission; the
+  "allocation according to link condition" is experimental comparison of
+  topologies, and the storable good is *classical key* ("accumulate secret
+  keys… and consume them later"), which is exactly not perishable. Note for
+  the related-work map: "quantum network slicing" and "temporary service
+  federation" via an added interconnection link (Sec. 3.3) is a federation
+  vocabulary neighbour for the HotOS hostile-federation section — occupied
+  at the topology level, unoccupied at the custody level.
+
+---
+
+## Open (UNREAD)
+
+*Sweep of 2026-07-25 (first run, fired manually to validate the routine). The
+sweep found these two and correctly excluded arXiv 2607.16394 (condensed-matter
+"entanglement entropy" — the vocabulary trap the protocol names) and arXiv
+2607.05642 (metrics taxonomy, no data answering any threshold). Its own commit
+was stranded in an ephemeral cloud checkout with read-only credentials; these
+entries were rewritten locally from the arXiv abstracts read first-hand, not
+transcribed from the sweep's summary. Question mapping revised on the first
+entry — see note.*
 
 ### arXiv 2607.19849 — Distributed Entanglement Distribution Using Multiple Entanglement Sources in WDM-based Quantum Optical Networks
 *Agrawal, Dulta, Kanseri. Submitted 2026-07-22.*
@@ -531,29 +675,6 @@ failure-cost or blocking data against Q4's threshold.*
   Q2's premise that a calibration-published number needs an attached
   uncertainty (and age) before the OS can trust it.
 
-### arXiv 2608.07163 — Rate-Fidelity Control for Wide-Area Quantum Links
-*Clayton, Nunn, Carmack, McKenzie, Richards, Wu, Bhattacharjee. Submitted 2026-08-07.*
-- **status:** UNREAD (abstract read 2026-08-17; the paper itself is the debt)
-- **touches:** Q7 — and *possibly* Q6
-- **would change:** Q7 asks how long "the best path" stays best at
-  OS-actionable lead times. This paper reports a 24-hour trace-driven
-  evaluation on a 64 km deployed fibre link where polarization drift
-  "destabilizes end-to-end fidelity and forces periodic compensation," and a
-  software controller that re-adapts pump power and polarization
-  compensation to hold a 14% mean-rate improvement over static policy. If
-  the full paper's drift autocorrelation time is short relative to our
-  modeled scheduling lead times, it ratifies Q7's "chasing a ghost" failure
-  mode for comparative routing; if long, a comparative read stays durable
-  and Q7 resolves the other way. *Possibly* Q6: the abstract describes
-  continuous actuation (pump power, polarization compensation) against
-  "uncontrollable link drift," which could carry a duty-cycle or wear cost,
-  but no such figure is stated — this is inference from "active
-  stabilization with fixed control policies," not a claim.
-- **mapping note:** this is a single link's fidelity drifting over time, not
-  a cross-sectional spread across simultaneously available paths — it
-  answers Q7's temporal-persistence framing, not Q2's instantaneous-spread
-  framing, even though both quantities are "fidelity."
-
 ---
 
 *Sweep of 2026-09-07 (sixth scheduled run). Window: submissions 2026-08-31
@@ -666,32 +787,6 @@ in this window's searches but was already checked and rejected by the
   already draws for arXiv 2608.07163 between Q7's temporal-persistence
   framing and Q2's instantaneous-spread framing. Whoever pays this debt
   should check Q7 first.
-
-### arXiv 2609.09805 — Electrically tunable, two-photon interference from remote silicon-vacancy centers in industrial silicon carbide
-*Hrunski, Scheller, Hollendonner, Ullerich, Parthasarathy, Fu, Pointner, Knolle, Kaiser, Dasari, Nagy. Submitted 2026-09-09.*
-- **status:** UNREAD (abstract read 2026-09-14; the paper itself is the debt)
-- **touches:** Q7 — and *possibly* Q2, Q6
-- **would change:** Q7 asks how long comparative path/link quality stays
-  valid at OS-actionable lead times. This paper reports a 26-day continuous
-  measurement campaign on two-photon interference between remote SiV
-  centers, with raw visibilities of 82% sustained over that period, and
-  states that recalibrating the diode bias is needed "only every 8.4 hours"
-  to maintain spectral overlap. If the full paper's 8.4-hour figure is the
-  actual drift timescale forcing recalibration (not a conservative safety
-  margin), it gives Q7 a first real number for calibration-drift
-  persistence — long relative to plausible OS decision lead times, arguing
-  against the "chasing a ghost" failure mode for this platform, the opposite
-  direction from arXiv 2608.07163 already in this queue. *Possibly* Q2: the
-  paper demonstrates spectral overlap of 19 randomly selected SiV centers in
-  different diodes, a cross-sectional measurement across many emitters, but
-  the abstract reports that overlap was achieved, not the magnitude of any
-  residual spread — thin evidence for Q2's instantaneous-spread threshold.
-  *Possibly* Q6: the 8.4-hour rebias cadence is a maintenance-actuation duty
-  cycle on a quantum-network component, adjacent to Q6's constrained-resource
-  ask but not a switch actuation.
-- **mapping note:** whoever pays this debt should check Q7 first — the
-  8.4-hour figure and the 26-day stability claim are the paper's strongest,
-  most explicit data.
 
 ### arXiv 2604.21388 — Bayesian Phase Stabilization at the Shot-Noise Limit for Scalable Quantum Networks
 *Liu, Xue, Chen, Zheng, Yang, Li, Wang, Yang, Jiang, Wan, Wang, Chen, Zhang, Pan. Submitted 2026-04-23; revised (v2) 2026-09-09.*

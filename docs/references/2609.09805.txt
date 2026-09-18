@@ -1,0 +1,1434 @@
+Electrically tunable, two-photon interference from remote silicon-vacancy
+centers in industrial silicon carbide
+F.D. Hrunski 1, D. Scheller 1, M. Hollendonner 1, K. Ullerich 1, S.K. Parthasarathy 1,2,
+C. Fu 1, A. Pointner 1, W. Knolle 3, F. Kaiser 4,5, D.B.R. Dasari 6 and R. Nagy 1,*
+1
+
+Institute of Applied Quantum Technologies, Friedrich-Alexander-Universität
+Erlangen-Nürnberg, Erlangen, Germany
+2 Fraunhofer Institute of Integrated Systems and Device Technology (IISB), Erlangen,
+Germany
+3 Leibniz-Institut für Oberflächenmodifizierung e.V., Leipzig, Germany
+4 Quantum Materials, Luxembourg Institute of Science and Technology (LIST), 28
+Avenue des Hauts Fourneaux, Belval, 4362 Esch-sur-Alzette, Luxembourg
+5 Department of Physics and Materials Science, University of Luxembourg, 2 Avenue
+de
+l’Université,
+Belval,
+4365
+Esch-sur-Alzette,
+Luxembourg
+6 3. Physikalisches Institut, IQST and Centre for Applied Quantum Technologies,
+University of Stuttgart, Stuttgart, Germany
+* roland.nagy@fau.de
+
+Distributed quantum networks rely on spatially separated, independently operated
+quantum systems as network nodes, whose emitted photons must be interfered with
+high visibility to establish end-to-end entanglement. Crucially, for network-relevant
+applications, high visibilities must be achieved over prolonged timescales to reduce
+overheads for error correction, and to increase network rates. Here, we demonstrate
+experimentally that silicon vacancy (VSi) color centers in silicon carbide (SiC) achieve
+these requirements, notably in a mass-deployable fashion. We integrate VSi centers in
+different industrial-grade SiC p-i-n diodes, which are controlled via voltage biassing.
+This way, we demonstrate both, spectral overlapping of 19 randomly selected VSi
+centers in different diodes, as well as spectral narrowing close to the lifetime limit, i.e.,
+typically below 60 MHz. Notably, these performance parameters are long-term stable,
+e.g., readjusting the p-i-n diode bias is required only every 8.4 hours, which reduces
+significantly the overall experimental overhead. We then use these assets to
+demonstrate high-quality two-photon interference between VSi centers located in two
+different cryostat setups, which are spatially separated by two meters. Notably, we
+perform a 26-days long measurement campaign, demonstrating two-photon
+interference with state-of-the-art raw interference visibilities of 82%, which aligns with
+the current state-of-the-art. These results establish VSi centers in industry-grade SiC
+devices as a scalable, spectrally stable building block for distributed quantum
+networks.
+1
+
+Quantum networks create photon-mediated entanglement between separated
+quantum systems to enable new digital technologies, such as provably secure
+communication, distributed quantum computing, and enhanced sensing networks1,2.
+Color centers in solid-state hosts have emerged as promising candidates for a scalable
+deployment of such network nodes, combining a long-lived electron-spin memory with
+a network-compatible optical interface3,4. Today, color center experiments rival with
+traditional demonstrations based on atoms5 and ions6: heralded entanglement was
+shown between two independently operated nitrogen-vacancy (NV) centers in
+diamond7, extended to a three-node NV network enabling multipartite entanglement
+distribution and entanglement swapping8. Similarly, group-IV color centers in diamond
+have shown excellent progress. A recent work demonstrated a two-node network with
+silicon-vacancy (SiV) centers in diamond including photon distribution over a telecom
+fiber network9, and another work demonstrated two-photon interference from two
+separated tin-vacancy (SnV) centers in diamond10.
+Realizing the full potential of such networks requires nodes that combine two properties
+simultaneously: high photon indistinguishability and spectral stability sustained well
+beyond a single measurement session. Meeting these requirements for solid-state
+systems poses two distinct challenges. First, independently created color centers
+typically exhibit spectrally broadened lines due to local charge noise, as well as
+substantial inhomogeneous distributions in their optical transition frequencies. For NV
+centers in diamond several tens of GHz have been reported11,12. In diamond, this issue
+is addressed by pre-selecting suitable centers within narrow optical transition lines,
+and within a narrow frequency range, followed by frequency tuning via locally
+deposited Stark shift tuning electrodes13,14. The second challenge concerns the longterm reliable operation. Once two centers are spectrally matched, the related optical
+resonances must remain stable over different time scales. Short-term spectral stability
+needs to be substantially below optical linewidth under standard experimental
+conditions to fundamentally enable photon interference. This requirement has proven
+challenging, especially when high-power off-resonant laser pulses are required for the
+operation of a color center15. Long-term spectral stability is equally important since it
+directly correlates with the overall experimental performance. Improved long-term
+stability avoids time-consuming re-calibration and tuning instances, which improves
+the duty-cycle16.
+2
+
+Here, we demonstrate that all the above challenges can be simultaneously overcome
+using color centers in a standard industrial semiconductor material. Our platform uses
+silicon vacancy (VSi) color centers in 4H silicon carbide (4H-SiC), which has long been
+considered a promising candidate for quantum networks. Several experiments showed
+that VSi centers combine favorable electron-spin coherence and optical properties with
+the maturity of 4H-SiC as an industrially established semiconductor17–21. A remaining
+question to be addressed is whether VSi centers can indeed combine high interference
+visibility with long-term spectral stability. An initial experiment proved short-term
+stability of the optical transitions via a single-emitter Hong-Ou-Mandel interference
+experiment22. In this work, we address the remaining key questions to validate VSi
+centers for quantum networks: long-term stability, as well as optical interference
+between multiple separated VSi centers. To answer these questions, VSi centers were
+integrated into 4H-SiC p-i-n diode structures. This enables two complementary effects:
+a DC Stark shift that tunes the emission frequency, and a charge-depletion effect that
+suppresses fluctuations of the local electrostatic environment and thereby narrows the
+optical linewidth23–25. This separates two tasks otherwise coupled during fabrication:
+producing high-quality color centers and adjusting their optical transition frequencies,
+with the former set by the material platform and the latter performed electrically after
+fabrication. Building on this, we demonstrate reliable linewidth narrowing below 60 MHz
+across a set of 19 individually characterized centers without pre-selection. Two color
+centers were then chosen in different 4H-SiC p-i-n diodes for investigation in a HongOu-Mandel (HOM) experiment. To our knowledge, we present the first comprehensive
+investigation of two such VSi centers in separate 4H-SiC samples, held in separate
+cryostats two meters apart, in a free-space Hong-Ou-Mandel experiment, providing a
+conclusive result to qualify VSi centers for quantum network applications.
+
+Results
+
+Electrically programmable VSi centers
+The V2 VSi center in 4H-SiC is a point defect formed by a missing silicon atom, hosting
+a spin-3/2 ground state and acting as a single-photon emitter at its zero-phonon line
+(ZPL) near 916 nm, with spin-state-dependent optical contrast (Fig. 1a)17,26. Like most
+3
+
+solid-state color centers, however, VSi transitions are subject to the surrounding charge
+environment: static charge distributions around each defect shift its emission
+frequency, while charge fluctuations broaden its linewidth. As a consequence,
+independently created VSi centers generally differ both in emission frequency and in
+linewidth. To perform a meaningful HOM experiment with high-visibility two-photon
+interference between two such centers, it is therefore critical to control both the
+emission frequency and the linewidth of the used VSi centers. To achieve this control,
+we embed VSi centers into a p-i-n diode structure (Fig. 1b). For this purpose, we use
+an industrially available 4H-SiC wafer with an integrated lateral p⁺⁺–i–n⁺⁺ doping profile
+(see Supplementary note SI1), enclosing a 4.1 µm wide intrinsic region.
+For the two-photon interference experiment, we address the A2 transition, which shows
+a higher cyclicity than the A1 transition and thus emits more photons17. Fig. 1c shows
+a representative resonant PLE spectrum of the A2 transition, recorded on a single VSi
+center at a reverse bias of 12.5 V, yielding a linewidth of 27.3 ± 0.6 MHz. To identify
+suitable candidates for the interference experiment, we characterized 19 VSi centers
+across two separate samples at the common target frequency of 𝜈T = 327.23100 THz
+(916.15 nm) as shown in Fig. 1d. This indicates that every VSi center was characterized
+at a different reverse bias voltage. Evaluating the resulting linewidths (Fig. 1d), we find
+that the p-i-n diode structure narrows the optical transition below 60 MHz across all
+characterized centers. Furthermore, recording the A2 transition frequency as a function
+of reverse bias (Fig. 1e), each center follows a linear dependence of 4.33 ± 0.15
+GHz/(MV/m), with a slope determined by its position relative to the depletion zone 24.
+Hence, every characterized center can be electrically tuned into a common target
+resonance frequency, demonstrating that spectral matching between independently
+created VSi centers is achievable. In principle, any of these characterized centers could
+be selected for the HOM experiment. The VSi centers selected for the interference
+experiment on each sample were chosen based on the highest photon count rate
+among all characterized VSi centers, in order to keep the measurement duration of the
+interference experiment practical, rather than out of necessity. Based on this criterion,
+we selected VSi,1A with a linewidth of 34.26 MHz on sample A and VSi,2B with a linewidth
+of 58.83 MHz on sample B at reverse bias voltage of common emission frequency 𝜈T .
+Both VSi centers exhibited a Fabry-Pérot cavity filtered A2 emission of 65 cps, the
+highest observed among all characterized centers.
+4
+
+Two-photon interference between remote VSi centers
+Both VSi center samples have been integrated into a separate closed-cycle cryostat,
+each cooling the sample to 4 K (Fig. 2a). Resonant photoluminescence excitation
+(PLE) spectroscopy is performed using a 916 nm laser, which is amplitude-modulated
+by an acousto-optic modulator (AOM) and by a phase-electro-optic modulator (EOM)
+to switch the excitation on and off and to simultaneously drive the A 1 and A2 transitions
+in a dual-tone scheme.
+For faster data acquisition over the extended measurement campaign presented
+below, the HOM measurement is performed under off-resonant rather than resonant
+excitation. The resulting linewidths are characterized in the following. Each V Si center
+is excited using a 728 nm laser at an optical power of 1 mW and at a maximum count
+rate shortly above the saturation power. Under this excitation, the cavity-filtered A2
+transition exhibits an optical linewidth of 95.7 MHz for VSi,1A and 202 MHz for VSi,2B, as
+directly measured by scanning the cavity filter across the emission line (see
+Supplementary notes SI2 and SI3). Deconvolving the known filter response yields
+intrinsic linewidths of 29.62 MHz for VSi,1A and 126.75 MHz for VSi,2B. Notably, the
+deconvolved linewidth of VSi,1A remains comparable to that obtained under resonant
+excitation (34.3 ± 0.9 MHz, Fig. 1d), demonstrating that off-resonant excitation does not
+necessarily preclude near-resonant spectral purity for VSi centers, though this behavior
+is not uniform across all characterized centers. The resulting emission is spectrally
+separated into the zero-phonon line (ZPL) and the phonon sideband (PSB). Photons
+in the ZPL are further filtered using a Fabry-Pérot cavity filter to transmit only the A2
+photons of VSi,1A and VSi,2B, respectively, corresponding to signal-to-total count ratios
+of 𝑆₁/𝐼₁ = 0.99 and 𝑆₂/𝐼₂ = 0.99 (see Supplementary note SI3). The filtered A2
+photon streams from both nodes are then overlapped on a free-space 50: 50 beam
+splitter and detected by superconducting nanowire single-photon detectors, with
+detection events time-tagged for correlation analysis. Detailed information about the
+experimental setup is shown in the supplementary online information (see
+Supplementary notes SI4.1 and SI4.2).
+
+5
+
+To confirm single-photon emission and quantify the signal purity of both nodes, we
+performed Hanbury Brown–Twiss (HBT) measurements under off-resonant excitation
+at 1 mW, the same optical power used for the subsequent HOM measurement. For
+(2)
+
+VSi,1A, recorded on the PSB, we obtain background-corrected 𝑔11,PSB (0) = 0.0930(5).
+For the same VSi center, recorded on the cavity-filtered A2 ZPL emission, we obtain
+(2)
+
+𝑔11,𝐴2 (0) = 0.03(4) without background correction, since cavity filtering suppresses
+the background to below 1% (Fig. 2c). Both values lie well below the classical singlephoton threshold of 0.5, confirming single-photon emission for this node.
+Corresponding HBT measurement of the PSB emission of VSi,2B is provided in
+Supplementary note SI5.1. To model the measured HOM data, we follow the
+framework of ref.27–32 as applied to remote solid-state emitters:
+(2)
+
+(2)
+
+S S
+
+(2)
+
+(1)
+
+(1)
+
+G12 (τ) = c12 g11 (τ) + c22 g 22 (τ) + 2c1 c2 ⋅ {1 − η ⋅ 1 2 ⋅ g11 (𝜏) ∙ g 22 (𝜏) ⋅ cos(Δω0 τ) ⋅ exp (−
+I1 I2
+
+𝛤|τ|
+
+𝜎 2 ∙τ2
+
+2
+
+2
+
+) exp (−
+
+)}
+
+(1)
+
+(2)
+
+Here, 𝑔𝑖𝑖 (𝜏) denotes the intensity autocorrelation function (HBT) of source 𝑖, weighted
+(1)
+
+by its relative intensity 𝑐𝑖 . |𝑔𝑖𝑖 (𝜏)| of its first-order coherence with homogeneous
+linewidth 𝛾𝑖 . 𝑆𝑖 /𝐼𝑖 the signal-to-total count ratio; and 𝜂 a phenomenological factor for
+residual interferometric imperfections. To account for the finite spectral width of the
+Fabry-Pérot cavity filter used to isolate the A2 transition, we extend this framework by
+an additional damping term exp (−𝛤|𝜏|/2), where 𝛤 is the Lorentzian filtered linewidth
+(see Supplementary note SI6). Jitter in the instantaneous emission frequency (Δ𝜔0 =
+𝜔1 − 𝜔2 ) due to the independent spectral diffusion processes of both the defects was
+also included. This is determined by the mean spectral displacement (Δ𝜔0) and their
+linewidths (𝜎). The resulting HOM interference is shown in Fig. 3a. With both emitters
+held at 𝜈T and their polarizations aligned in parallel, the normalized cross-correlation
+(2)
+
+between the beam splitter outputs drops to 𝐺12,∥ (0) = 0.091(3) at zero delay, well
+below the classical limit of 0.5, thus showing direct evidence of two-photon interference
+between indistinguishable photons originating from two spatially separated V Si centers.
+As a control, rotating the polarization of one input arm by 90° renders the photons
+distinguishable while leaving all other experimental conditions unchanged. The
+(2)
+
+normalized correlation returns then to 𝐺12,⊥ (0) = 0.506 (Fig. 3b), in agreement with the
+classical expectation. Both datasets are fitted with Equation (1), yielding a raw
+interference visibility of 𝑉HOM,raw = 0.820(6).
+6
+
+Sustained spectral matching
+To maintain the A2 transition frequency of both nodes within the target spectral window,
+the emission frequency of each VSi center was checked every 2 hours via a resonant
+PLE scan, implementing a threshold-triggered proportional feedback on the reverse
+bias voltage of the respective p-i-n diode (see Supplementary note SI7). Fig. 4a and
+4b show the resulting A2 emission frequency traces of VSi,1A and VSi,2B, respectively,
+remaining bounded around the common target frequency 𝜈T throughout the full 628hour measurement campaign as a result of this active stabilization. Without correction,
+the emission frequency of either VSi center was found to drift by up to ±40 MHz on a
+timescale of hours. The feedback loop was therefore configured to compensate the
+reverse bias voltage whenever the A2 transition frequency deviated by more than
+±20 MHz from 𝜈T . A more detailed analysis of the resulting frequency stability is shown
+in Fig. 4c, which shows the mutual detuning between both centers, 𝛿𝜈 = 𝜈A2,1A −
+𝜈A2,2B , over the full campaign. This distribution is centered at a mean detuning of 1.9 ±
+1.5 MHz, which fixes Δ𝜔₀ in Equation (1), with a standard deviation of 15.5 ± 1.5 MHz,
+which fixes σ in Equation (1). The mean detuning indicates that during the HOM
+measurement both VSi centers were detuned by a fixed value which leads to an
+oscillation with a period of 526.3 ns. Given our measurement window of ±100 ns, this
+oscillation is not resolved in the data. Furthermore, even under 728 nm excitation the
+VSi center shows only a mean spectral drift of 15.5 ± 1.5 MHz which is negligible in
+comparison to other solid-state systems12.
+To independently assess the spectral contribution to the measured visibility, we
+evaluate the expected two-photon interference visibility directly from the measured
+detuning distribution shown in Fig. 4c, following
+4𝛾 𝛾
+
+2
+𝑉′HOM = ∫ 𝑑𝛿𝜈 𝑃(𝛿𝜈) (𝛾 +𝛾 )12+4𝛿𝜈
+2
+1
+
+2
+
+(2)
+
+Here, 𝛾₁ and 𝛾₂ denote the homogeneous linewidths of VSi,1A and VSi,2B, respectively
+𝛾₁ = 34.26 MHz, 𝛾₂ = 58.83 MHz, 𝛿𝜈 the instantaneous detuning between both
+transitions, and 𝑃(𝛿𝜈) denotes the measured probability density of this detuning, taken
+as the Gaussian distribution characterized in Fig. 4c (𝜇 = 1.9 MHz, 𝜎 = 15.5 MHz).
+Evaluating Equation (2) yields a mean visibility of 𝑉HOM ′ = 0.848, representing the
+interference visibility expected from spectral mismatch alone, in the absence of any
+7
+
+further experimental imperfections. Multiplying this spectral contribution with the
+residual interferometric factor 𝜂 = 0.963 (Fig. 3), yields a combined visibility of
+0.848 × 0.963 ≈ 0.817, in good agreement with the measured raw visibility of
+0.820(6).
+Having established that the residual visibility gap is well accounted by the measured
+spectral mismatch between the two nodes, we now turn to the practical stability of the
+electrical tuning itself. The frequency of active corrections further quantifies how stable
+each node remains on its own between interventions. V Si,1A required correction at a
+mean interval of 19.4 h (Fig. 4d), remaining considerably longer within tolerance than
+VSi,2B with a mean interval of 8.4 h (Fig. 4e). We attribute this discrepancy to differing
+thermal fluctuations and mechanical vibrations between the two independently
+operated cryostats.
+
+Discussion
+These results answer the question raised at the outset of this work: silicon-vacancy
+centers in industrial 4H-SiC can combine high two-photon interference visibility with
+spectral stability sustained over practically relevant timescales, when embedded in
+electrically controlled p-i-n diode structures. The raw visibility of 0.820(6), obtained
+between two independently operated, remotely located VSi centers, compares
+favorably with the state of the art for remote solid-state emitters: it matches the visibility
+reported for remote tin-vacancy centers in diamond10, exceeds recent results for
+remote semiconductor quantum dots33, and was sustained here not over a single
+measurement session but across a 628-hour campaign, with both centers remaining
+spectrally stable for 8.4 and 19.4 hours on average between successive interventions,
+a regime in which comparable systems typically have not been characterized.
+The origin of the residual visibility drop can be traced quantitatively. Removing the
+cavity filter used to isolate the A2 transition thereby exposing the interference to the
+full, unfiltered spectral diffusion of 126.8 MHz of VSi,2B rather than the effective linewidth
+transmitted by the 75.25 MHz filter is estimated to reduce the visibility by approximately
+8 %. Due to a linewidth of 29.6 MHz for VSi,1A this effect is negligible. In contrast, the
+8
+
+mean detuning of 1.9 MHz between the two nodes contributes negligibly to the
+measured visibility as < 0.01 %, as simulated with Eq. 1. The dominant contribution to
+the residual visibility gap is instead the session-to-session spectral diffusion,
+characterized by a standard deviation of 𝜎 = 15.5 MHz in the long-term detuning
+distribution (Fig. 4c); evaluating Eq. 2 under idealized conditions further quantifies the
+individual contributions to this gap: even in the absence of spectral diffusion 𝜎 = 0,
+the non-Fourier-limited linewidths of both centers alone limit the achievable visibility to
+93.03 %, a reduction of approximately 7 % relative to the ideal case of fully transformlimited emitters. Assuming instead fully Fourier-transform-limited linewidths and
+vanishing spectral diffusion 𝜎 = 0, Eq. 2 would result in unity visibility.
+Taken together, these results demonstrate that embedding VSi centers into p-i-n diode
+structures provides a significant, simultaneous advantage across the three properties
+required for network-relevant nodes: long-term optical stability, high achievable twophoton interference visibility, and scalability across many independently fabricated
+emitters for the realization of a distributed quantum network.
+
+Methods
+Experimental setup
+All experiments were performed at cryogenic temperatures < 10 K in two different
+attodry800 cryostats. Two self-build confocal microscopes were used to excite the V2
+centers optically and detect their zero-phonon line emission as well as the redshifted
+phonon side band. Initialization and continuous as well as pulsed repumping was
+performed via two distinct 728 nm diode laser (Toptica iBeam Smart CD-728-A0). A
+cavity tunable diode laser (TOPAS PLC pro) was used for resonant excitation in
+combination with an acousto-optic modulator (Gooch-Housego AOMO 3200-1113) and
+a frequency modulative phase-EOM to excite both optical transitions simultaneously.
+The cavity tunable diode laser’s frequency was tracked and locked by a wavemeter
+(High Finesse WS7). For additional spin contrast, a microwave AC voltage at 70 MHz
+was applied through the copper wire in the vicinity of the color centers (Fig. 1b).
+Excitation and emission photons were filtered on both confocal microscopes by a
+tunable long-pass filter (Semrock TLP01-995). Confocal scanning was performed with
+9
+
+a scanning mirror (Mad City Labs, Nano-MTA2X10). Excitation was focused on the
+sample in the cryostat (Attocube attoDry 800) with a high NA objective (Zeiss EpiplanNeofluar 100x, NA 0.9). At off resonant CW operation the according energy density in
+the focal spot corresponds then to 1.6 x 10−5 J/cm3. Phonon side band and zerophonon line emission were separated through an additional tunable long-pass filter
+(Semrock FF925-Di01). The polarization state of the zero-phonon line photons was
+aligned through waveplates (λ/2 and λ/4), filtered out subsequently through GlanThompson polarizers (916 nm AR coated from Bernhard-Halle Nachfl. Optische
+Werkstätten) and guided through polarization-maintaining fibers. For both ZPL
+emissions from different setups, two separate free-space, voltage-controlled FabryPérot cavities (Thorlabs FPQFA-8) were used to filter out the photons originating from
+A1 or A2 lines. Single A2-line photons were interfering on a balanced free-space beam
+splitter (Edmund Optics, AR coated). Interference the A2-line photons and photons
+from the phonon side band were detected by a superconducting single-photon
+nanowire detector (Single Quantum Eos CS SQ201). Corresponding electrical pulses
+from the detector were examined via time-tagging electronics (Quantum Machines
+OPX & Swabian Time Tagger Ultra). For remote voltage control of the samples’ reverse
+bias voltages and the cavities’ scanning voltages a four-channel-SMU was used
+(Rohde & Schwarz HMP4040). Voltage signals for a stabilized cavity-transmission
+operation were aligned through a self-programmed, intervened and on single-photoncount based PID controlling loop. Voltage control of scanning mirrors was performed
+via two distinct data acquisition and analog output devices (National Instruments NIUSB6343). Additional lifetime measurements (SI5.2) were performed through a
+combination of the upper mentioned acousto-optic modulator and an amplitude-EOM
+(Jenoptik AM905b). The RF-voltage modulation for creating < 1 ns pulses was realized
+with a programmable pulse generator (PicoQuant PPG 512).
+Sample fabrication and device structure
+Both samples were prepared from industrially available, industrially grown c-plane 4HSiC p-i-n structured wafers (Epitaxially grown wafer: semi-insulating / n-type; supplier;
+wafer diameter of 6 inch; polytype orientation (0001), off-axis angle of 4 ± 0.5°) from
+JXT Technology Co. Ltd. According to the manufacturer, the dopant concentrations
+are
+
+𝑁Al+ = 2 ⋅ 1019 cm−3,
+
+𝑁N− = 2 ⋅ 1014 cm−3
+
+and
+
+𝑁N− = 1 ⋅ 1018 cm−3
+
+for
+
+corresponding p, i and n layers with thicknesses of 𝑑𝑝 = 2.0 μm ± 8 %, 𝑑𝑖 = 4.1μm ±
+10
+
+8 % and 𝑑𝑛 = 350 μm. Ohmic contacts at the p++ and n++ sides were fabricated by Ni/Al
+deposition and subsequent annealing at 800 °C for 3 min at the p++ side and at
+1000 °C for 5 min at the n++ side. Additionally, for the p++ contact, a composition of
+53 nm Ni and 43 nm Al was used, while a 50 nm layer of Ni was applied for the n++
+contact. To create single color centers, the sample was electron-irradiated with an
+energy of 4 MeV at a flux of 1 x 1012 cm−2 , followed by annealing at 600 °C for 30 min.
+To ensure a higher yield of emitted photons, a 158 nm thick SiO2 anti-reflective coating
+was deposited onto the samples surface via atomic layer deposition. The obtained VSi
+centers were located directly in the samples’ crystal bulk without use of any
+nanophotonic structures.
+Data availability
+The data sets that support the findings of the work presented in the article and its
+supplementary information are available from the corresponding author upon request.
+
+11
+
+References
+1. Kimble, H. J. The Quantum Internet. Nature 453, 1023–1030 (2008).
+2. Wehner, S., Elkouss, D. & Hanson, R. Quantum internet: A vision for the road ahead.
+Science 362, eaam9288 (2018).
+3. Abobeih, M. H. et al. Fault-tolerant operation of a logical qubit in a diamond quantum
+processor. Nature 606, 884–889 (2022).
+4. Miao, K. C. et al. Universal coherence protection in a solid-state spin qubit. Science 369,
+1493–1497 (2020).
+5. Seubert, M. et al. Efficient entanglement of three remote single-atom quantum-network
+nodes. Preprint at https://doi.org/10.48550/arXiv.2606.32006 (2026).
+6. Krutyanskiy, V. et al. Entanglement of Trapped-Ion Qubits Separated by 230 Meters.
+Phys. Rev. Lett. 130, 050803 (2023).
+7. Bernien, H. et al. Heralded entanglement between solid-state qubits separated by three
+metres. Nature 497, 86–90 (2013).
+8. Pompili, M. et al. Realization of a multinode quantum network of remote solid-state
+qubits. Science 372, 259–264 (2021).
+9. Knaut, C. M. et al. Entanglement of nanophotonic quantum memory nodes in a telecom
+network. Nature 629, 573–578 (2024).
+10. Bushmakin, V. et al. Two-Photon Interference of Photons from Remote Tin-Vacancy
+Centers in Diamond. Preprint at https://doi.org/10.48550/arXiv.2412.17539 (2025).
+11. Bassett, L. C., Heremans, F. J., Yale, C. G., Buckley, B. B. & Awschalom, D. D.
+Electrical Tuning of Single Nitrogen-Vacancy Center Optical Transitions Enhanced by
+Photoinduced Fields. Phys. Rev. Lett. 107, 266403 (2011).
+12. Orphal-Kobin, L. et al. Optically Coherent Nitrogen-Vacancy Defect Centers in Diamond
+Nanostructures. Phys. Rev. X 13, 011042 (2023).
+
+12
+
+13. Aghaeimeibodi, S. Electrical Tuning of Tin-Vacancy Centers in Diamond. Phys. Rev.
+Appl. 15, (2021).
+14. De Santis, L., Trusheim, M. E., Chen, K. C. & Englund, D. R. Investigation of the Stark
+Effect on a Centrosymmetric Quantum Emitter in Diamond. Phys. Rev. Lett. 127, 147402
+(2021).
+15. Ikeda, K. et al. Charge State Transition of Spectrally Stabilized Tin-Vacancy Centers in
+Diamond. ACS Photonics 12, 2972–2981 (2025).
+16. Javadzade, J., Zahedian, M., Kaiser, F., Vorobyov, V. & Wrachtrup, J. Efficient nuclear
+spin--photon entanglement with optical routing. Phys. Rev. Appl. 24, 024059 (2025).
+17. Nagy, R. et al. High-fidelity spin and optical control of single silicon-vacancy centres in
+silicon carbide. Nature Communications 10, 1954 (2019).
+18. Babin, C. et al. Fabrication and nanophotonic waveguide integration of silicon carbide
+colour centres with preserved spin-optical coherence. Nat. Mater. 21, 67–73 (2022).
+19. Hesselmeier, E. et al. High-Fidelity Optical Readout of a Nuclear-Spin Qubit in Silicon
+Carbide. Phys. Rev. Lett. 132, 180804 (2024).
+20. Lai, X.-Y. et al. Single-Shot Readout of a Nuclear Spin in Silicon Carbide. Phys. Rev.
+Lett. 132, 180803 (2024).
+21. Parthasarathy, S. K. et al. Scalable Quantum Memory Nodes Using Nuclear Spins in
+Silicon Carbide. Phys. Rev. Appl. 19, 034026 (2023).
+22. Morioka, N. et al. Spin-controlled generation of indistinguishable and distinguishable
+photons from silicon vacancy centres in silicon carbide. Nat Commun 11, 2516 (2020).
+23. Anderson, C. P. et al. Electrical and optical control of single spins integrated in scalable
+semiconductor devices. Science 366, 1225–1230 (2019).
+24. Scheller, D. et al. Quantum-enhanced electric field mapping within semiconductor
+devices. Phys. Rev. Appl. 24, 014036 (2025).
+
+13
+
+25. Steidl, T. et al. Single V2 defect in 4H silicon carbide Schottky diode at low temperature.
+Nat Commun 16, 4669 (2025).
+26. Banks, H. B. et al. Resonant Optical Spin Initialization and Readout of Single Silicon
+Vacancies in 4H-SiC. Phys. Rev. Appl. 11, 024013 (2019).
+27. Kambs, B. & Becher, C. Limitations on the indistinguishability of photons from remote
+solid state sources. New J. Phys. 20, 115003 (2018).
+28. Weber, J. H. et al. Two-photon interference in the telecom C-band after frequency
+conversion of photons from remote quantum emitters. Nature Nanotech 14, 23–26 (2019).
+29. Legero, T., Wilk, T., Kuhn, A. & Rempe, G. Time-resolved two-photon quantum
+interference. Appl. Phys. B 77, 797–802 (2003).
+30. Lettow, R. et al. Quantum Interference of Tunably Indistinguishable Photons from
+Remote Organic Molecules. Phys. Rev. Lett. 104, 123605 (2010).
+31. Sipahigil, A. et al. Quantum Interference of Single Photons from Remote NitrogenVacancy Centers in Diamond. Phys. Rev. Lett. 108, 143601 (2012).
+32. Sipahigil, A. et al. Indistinguishable Photons from Separated Silicon-Vacancy Centers in
+Diamond. Phys. Rev. Lett. 113, 113602 (2014).
+33. Pont, M. et al. Indistinguishability of Remote Quantum-Dot-Cavity Single-Photon
+Sources. Nano Lett. 25, 13979–13987 (2025).
+
+14
+
+Acknowledgements
+
+F.D.H. and R.N. acknowledge support for the research of this work from European
+Union under the Key Digital Technologies Joint Undertaking (KDT JU); now Chips Joint
+Undertaking (Chips JU), in the projects ARCHIMEDES (grant nos. 16MEE0329 and
+101112295) and MOSAIC (grant nos. 16MEE0494 and 101081238), and from the
+German Federal Ministry of Education and Research (BMBF, now BMFTR) in the
+projects INNOBAT (grant no. 03XP0492D) and QuaLiProM (grant no. 03XP0573C).
+F.K. acknowledges support by the Luxembourg National Research Fund (FNR)
+through both, the PEARL chair "AQuaTSiC" under grant agreement 17792569, as well
+as the project "SiCqurTech" under the national grant agreement 18253399. The
+“SiCqurTech” project is additionally funded within the European Union’s Horizon 2020
+Research and Innovation Programme under grant agreement 101017733. F.K.
+received further support via the European Research Council for the project "Q-Chip”
+under grant agreement 101171067, as well as the Horizon Europe Programme for the
+Flagship project "QIA Phase 1" under grant agreement 101102140. Additionally, F.D.H
+and R.N. would like to thank F. Gannott and A. Gumann from the Max Planck Institute
+for the Science of Light for their support in sample preparation. Furthermore, we thank
+J. Freitag, E. Renner and M. Gloßner from the Institute of Microwaves and Photonics,
+H. Weber from the Chair of Applied Physics, C. Becher from the Quantum Optics
+Group at Saarland University, and S. Götzinger from the Max Planck Institute for the
+Science of Light for fruitful discussions.
+
+Author Contributions
+
+Methodology: F.D.H., R.N.; Measurements: F.D.H.; Help with experimental apparatus:
+F.D.H., M.H., S.K.P., A.P.; Fabrication: D.S., W.K.; Sample preparation: D.S., F.D.H.;
+Writing, reviewing & editing: F.D.H., D.S., M.H., K.U., S.K.P., C.F., A.P., F.K., D.B.R.D.,
+R.N.; Data analysis: F.D.H., D.B.R.D., R.N.; Theoretical support & analysis: F.D.H.,
+D.S., M.H., K.U., S.K.P., C.F., A.P., F.K., D.B.R.D., R.N.
+
+Competing interests
+
+The authors declare no competing interests.
+15
+
+Fig. 1| Single VSi centers in industrial 4H SiC p-i-n diode structures and their electrical tuning.
+a Level structure of the V2 VSi center. Ground and excited state are each split into ±3/2 and ±1/2 spin sublevels
+by zero-field splittings 𝐷𝑔 and 𝐷𝑒 . The red and blue arrows denote the spin-conserving optical transitions A1 and A2,
+respectively. The green-dashed box marks the excited-state manifold, which is shifted by the applied electric field
+𝐸 via the DC Stark effect. CB denotes the conduction band and VB the valence band. b Sample structure. Single
+silicon vacancy VSi centers are located in a 4.1 µ𝑚 wide intrinsic region of an industrially available lateral p++- i - n++
+diode in industrially grown 4H-SiC and are addressed confocally. A reverse bias voltage 𝑈𝐵𝑖𝑎𝑠 is applied across the
+junction, and the resulting static electric field 𝐸 is oriented along the crystallographic 𝑐⃗ axis. A microwave (MW)
+wire enables MW-driven spin-state mixing. The inset shows a confocal photoluminescence scan of single V Si
+centers. c Dual-tone resonant photoluminescence excitation (PLE) spectrum of the 𝐴2 transition of a representative
+center at a reverse bias of 12.5 𝑉. Blue circles are the measured data and the red solid line is a Lorentzian fit, which
+yields a full width at half maximum (FWHM) of 27.3 ± 0.6 𝑀𝐻𝑧. d Optical linewidths (FWHM) of the same VSi centers
+characterized in sample A (yellow circles) and sample B (green circles), extracted from Lorentzian fits to PLE
+spectra recorded at 𝜈𝑇 . Error bars denote the standard error of the Lorentzian fit and are in part smaller than the
+marker size. e A2 transition frequency as a function of reverse bias for nine V2-centers in sample A (yellowish
+circles) and ten centers in sample B (greenish triangles). Solid lines are linear fits. The red dashed line marks the
+common target frequency 𝜈𝑇 = 327.23100 𝑇𝐻𝑧.
+
+16
+
+Fig. 2| Setup for two-photon interference between two spatially separated VSi centers and single photon
+purity of the two emitters.
+a Experimental setup. Each VSi center is embedded in a p-i-n diode structure and hosted in one of two independently
+operated cryostats separated by two meters. Both centers are addressed in a confocal architecture, the zerophonon-line (ZPL) emission is separated from the phonon sideband (PSB) by dichroic elements, and a single
+emission line (A2) is selected from each ZPL by an individual Fabry-Pérot cavity before the two photon streams are
+interfered on a free-space 50: 50 beam splitter. Photons are detected by superconducting nanowire single-photon
+detectors and time-tagged for correlation analysis. Yellow lines indicate single-mode fibers and blue lines
+polarization-maintaining fibers. AOM, acousto-optic modulator; BP, optical bandpass filter; DM, dichroic mirror;
+EOM, electro-optic modulator; FPC, voltage-controlled Fabry-Pérot cavity; HWP, half-wave plate; LP, dichroic
+longpass; p/s Glan-Thompson-polarizers; PSM, piezoelectric fast scanning mirror; QWP, quarter-wave plate; SMU,
+remotely controlled voltage source; SNSPD, superconducting nanowire single-photon detector. b Backgroundcorrected second-order autocorrelation of the PSB emission of VSi,1A, measured in Hanbury Brown–Twiss (HBT)
+configuration. Blue squares are the normalized data and the red solid line is a fit to a three-level rate-equation
+(2)
+
+(2)
+
+model, which yields 𝑔11,PSB (0) = 0.0930(5). c Corresponding autocorrelation function 𝑔11,A2 (τ) of VSi,1A recorded
+(2)
+
+on cavity-filtered A2 photons alone and without background correction, which yields 𝑔11,A2 (0) = 0.03(4). Blue
+circles are the normalized data and the red solid line is a fit to the same model. Error bars denote Poissonian
+statistics.
+
+17
+
+Fig.3| Two-photon interference between remote VSi centers in two separate 4H-SiC samples.
+(2)
+
+a Normalized cross-correlation 𝐺12,∥ (τ) of photons emitted by the two VSi centers with parallel photon polarizations.
+Blue circles are the measured data and the blue dashed line is a fit to the two-photon interference model in Equation
+(2)
+
+(1). The green dashed line marks the classical two-photon limit of 0.5. The fit yields 𝐺12,∥ (0) = 0.091(3). b
+(2)
+
+Normalized cross-correlation 𝐺12,⊥ (τ) of the same two VSi centers with the polarization of one input arm before
+(2)
+
+interference rotated by 90°, giving 𝐺12,⊥ (0) = 0.506. Red circles are the measured data and the red dashed line is
+a fit to the two-photon interference model in Equation (1). Error bars denote Poissonian counting statistics. Data
+were accumulated over 628 h per configuration in 1 ns bins.
+
+18
+
+Fig.4| Long-term spectral stability of interfered VSi centers and distribution of deduced two-photon
+interference visibility.
+
+a 𝐴2 transition frequency of VSi,1A in sample A plotted relative to the common target frequency vT = 327.23100 THz
+over 628 h of cumulative measurement time. Each yellow circle is the center frequency obtained from a Lorentzian
+fit to one PLE scan. b Corresponding data for VSi,2B in sample B, shown as green circles. c Histogram of emission
+frequency detuning Δ𝜈 between the A2 transitions of the two centers over the same period, obtained from the data
+in (a) and (b). The histogram has a bin width of 3.75 MHz; the orange line is a Gaussian fit with mean μ = 1.9 ±
+1.5 MHz and standard deviation σ = 15.5 ± 1.5 MHz. d Distribution of the time elapsed between successive
+feedback interventions on the diode bias voltage for VSi,1A. Bin width is 2h. The dark red dash-dotted line marks the
+mean time elapsed between interventions, 19.4 h. The longest interval without correction is 50 h. e Corresponding
+distribution for VSi,2B, with a mean interval between necessary interventions of 8.4 h. The longest interval without
+correction is 32 h.
+
+19
+
+- Supplementary Information –
+Electrically tunable, two-photon interference from remote silicon-vacancy
+centers in industrial silicon carbide
+
+F.D. Hrunski 1, D. Scheller 1, M. Hollendonner 1, K. Ullerich 1, S.K. Parthasarathy 1,2, C. Fu 1,
+A. Pointner 1, W. Knolle 3, F. Kaiser 4,5, D.B.R. Dasari 6 and R. Nagy 1
+1
+
+Institute of Applied Quantum Technologies, Friedrich-Alexander-Universität
+Nürnberg, Erlangen, Germany
+
+Erlangen-
+
+2
+
+Fraunhofer Institute of Integrated Systems and Device Technology (IISB), Erlangen,
+Germany
+3
+
+Leibniz-Institut für Oberflächenmodifizierung e.V., Leipzig, Germany
+
+4
+
+Quantum Materials, Luxembourg Institute of Science and Technology (LIST), 28 Avenue des
+Hauts
+Fourneaux,
+Belval,
+4362
+Esch-sur-Alzette,
+Luxembourg
+5
+Department of Physics and Materials Science, University of Luxembourg, 2 Avenue de
+l’Université,
+Belval,
+4365
+Esch-sur-Alzette,
+Luxembourg
+6
+3. Physikalisches Institut, IQST and Centre for Applied Quantum Technologies, University of
+Stuttgart, Stuttgart, Germany
+
+Contents
+SI1
+
+Sample structure
+
+SI2
+
+Fabry-Pérot cavities for spectral narrow-band filtration
+
+SI3
+
+Off-resonant excited photoluminescence spectra
+
+SI4
+
+Automated operation and stabilization of experimental setup
+SI4.1 Automated long-term operation
+SI4.2 Fast stabilization loop: interleaved PID regulation of Fabry-Pérot
+cavities
+
+SI5
+
+Single photon emission characteristics
+SI5.1 Second-order autocorrelation of the phonon sideband emission
+SI5.2 Resonant optical linewidths and lifetime limit
+
+SI6
+
+Cross-correlation function of two-photon interference
+
+SI7
+
+Slow stabilization loop: remote control of emission frequency
+
+1
+
+SI1 Sample structure
+Both samples were prepared from commercially available, industrially grown c-plane
+4H-SiC p-i-n structured wafers (Epitaxially grown wafer: semi-insulating / n-type;
+supplier; wafer diameter of 6 inch; polytype orientation (0001), off-axis angle of 4 ±
+0.5°) from JXT Technology Co. Ltd. According to the manufacturer, the dopant
+concentrations are 𝑁Al+ = 2 ⋅ 1019 cm−3 , 𝑁N− = 2 ⋅ 1014 cm−3 and 𝑁N− = 1 ⋅ 1018 cm−3
+for corresponding p, i and n layers with thicknesses of 𝑑𝑝 = 2.0 μm ± 8 %, 𝑑𝑖 =
+4.1 μm ± 8 % and 𝑑𝑛 = 350 μm (Fig.SI1a). According to previous publication, we
+measured a dopant concentration of 𝑁N− = 9 ⋅ 1014 cm−3 in the intrinsic area1. Ohmic
+contacts at the p++ and n++ sides were made by Ni/Al deposition and subsequent
+annealing at 800 °C for 3 min at the p++ side and at 1000 °C for 5 min at the n++ side.
+Additionally, for the p++ contact, a composition of 53 nm Ni and 43 nm Al was used,
+while a 50 nm layer of Ni was applied for the n++ contact. To create single color centers,
+the sample was electron-irradiated with an energy of 4 MeV at a flux of 1 x 1012 cm−2 ,
+followed by annealing at 600 °C for 30 min. To ensure a higher yield of emitted photons
+(SI3), a 158 nm thick SiO2 anti-reflective coating optimized for 916 nm was deposited
+onto the samples surface via atomic layer deposition at 70 °C. The obtained VSi centers
+were located directly in the samples’ crystal bulk without use of any nanophotonic
+structures. During electrical operation, the p-side was grounded and the n-side was
+connected to a remote controllable voltage source, applying therefore the reverse bias
+voltage 𝑈Bias (Fig. SI1b). The diode characteristics were verified at a cryogenic
+operating temperature of 5.2 K (Fig. SI1c).
+
+Fig. SI1 Sample geometry, exemplary wiring and corresponding IV-characteristic.
+a Geometric structure and doping layers of manufactured p-i-n structured samples. Dopant concentrations are given
+in text. 𝑐 denotes the crystallographic axis. The scheme is not in scale. b Exemplary wiring scheme used to apply
+a reverse bias voltage 𝑈Bias for tuning the VSi emission frequency via the DC Stark shift. c IV-characteristics of the
+sample at cryogenic temperature of 5.2 K. For this measurement the bias was applied on the p-side, so the diode
+was operated in forward direction as is conventional for IV-characterization.
+
+2
+
+SI2 Fabry-Pérot cavities for spectral narrow-band filtration
+All off-resonantly excited spectroscopic measurements in this work were performed
+through the Fabry-Pérot filter cavities described in this section. The zero-phonon line
+(ZPL) of the V2 VSi center comprises two spin-conserving transitions, A1 and A2,
+separated by less than 1 GHz (Fig. 1a). Only A2 photons were used for the two-photon
+interference experiment. The A1 emission and the residual broadband background
+transmitted by the dichroic elements are therefore not sufficiently suppressed by these
+dichroics alone and must be filtered separately at each node. For this purpose, the ZPL
+emission of each node was passed through an individual free-space, piezo-tunable
+Fabry-Pérot cavity (Thorlabs FPQFA-8), resulting in two independently operated filter
+cavities for the two nodes A and B.
+Both cavities were characterized individually before the interference experiment. This
+characterization serves two purposes. First, each cavity is used throughout this work
+as a scanning spectrometer. The spectra are recorded by sweeping the piezo voltage
+across the ZPL emission, which requires converting the applied voltage into an
+absolute optical frequency. Second, a measured spectrum is the convolution of the
+true emission line with the cavity transmission profile, recovering the intrinsic emitter
+linewidth (Eq. SI3) and modeling the coherence of the transmitted photons (SI6)
+therefore both require independent knowledge of the cavity's transmission bandwidth.
+Both quantities the voltage-to-frequency conversion and the transmission bandwidth
+were obtained from the same measurement. A resonant, narrow-linewidth (<
+100 kHz) tunable diode laser (TOPAS PLC pro), referenced to a wavemeter (High
+Finesse WS7), was used to probe each cavity. The piezo voltage was scanned four
+times in succession, with the laser fixed at a different frequency for each scan, the four
+reference frequencies were spaced by 5 GHz. No modulation was applied. Each scan
+yields a single transmission maximum, whose position shifts linearly with the applied
+cavity voltage (Fig. SI2a, b). This linear relation gives voltage-to-frequency translation
+factors of −1.8745 GHz/V for the cavity of node A and −1.7380 GHz/V for the cavity of
+node B. The negative sign reflects the inverted response of the piezo actuators. Using
+these factors, the transmission profiles recorded in the same measurements were
+converted from volts to frequency and fitted with Lorentzian functions (Fig. SI2c, d).
+This yields transmission bandwidths (FWHM) of 𝛤A = 66.08 MHz for node A and 𝛤B =
+3
+
+75.25 MHz for node B, corresponding to finesse values of 454 and 399, respectively,
+and consistent with the manufacturer's specification.
+
+Fig. SI2 Fabry-Pérot cavity characterization.
+a Voltage-to-frequency translation measurement of node’s A filter cavity. Laser frequencies were fixed at values of
+327.124000 THz, 327.129000 THz, 327.134000 THz and 327.139000 THz. For these values the transmission
+maximum was detected at different applied cavity voltages. Linear fit derives a translation factor of −1.8745 GHz / V
+for filter cavity of node A. b Corresponding measurement for node B cavity. Laser frequencies were 327.119000 THz,
+327.124000 THz, 327.129000 THz and 327.134000 THz. Linear fit derives a translation factor of −1.7380 GHz / V for
+filter cavity of node B. c Transmission bandwidth characterization of the filter cavity of node A, obtained from
+Lorentzian fits to the transmission profiles of (a) after conversion to frequency using the translation factor from (a).
+Mean value of the cavity’s transmission bandwidth was measured to be 66.08 MHz. d Corresponding data for node
+B filter cavity, using the translation factor from (b). The mean value of the cavity’s transmission bandwidth for node
+B cavity was measured to be 75.25 MHz.
+
+4
+
+SI3 Off-resonant excited photoluminescence spectra
+
+The spectral properties of both emitters under off-resonant excitation were
+characterized using the calibrated filter cavities of SI2 as scanning spectrometers.
+Each VSi center was illuminated with continuous-wave off-resonant light at 728 nm
+while the voltage of its filter cavity in the zero-phonon line path was scanned, so that
+the transmitted single-photon counts trace the emission spectrum (Fig. SI3a, c). The
+reverse bias voltage of each node was set to the operating point of common emission
+frequency 𝜈T . The voltage axis was converted to relative detuning using the translation
+factors of SI2. The resulting double-peak transmission signal of the A1 and A2
+transitions was fitted with a double Lorentzian. The measured profiles are the
+convolution of the emission lines with the cavity transmission. For two convolved
+Lorentzian profiles the full widths at half maximum add, so that the actual emission
+linewidth 𝛾emitter follows as
+𝛾emitter = 𝛾measured − 𝛤cavity .
+
+(Eq. SI3)
+
+Here, 𝛾measured denotes the raw, measured Lorentzian fullwidth at half maximum, while
+𝛤cavity stands for the bandwidth of the used cavity. With measured A2 linewidths of
+95.7 MHz for VSi,1A and 202 MHz for VSi,2B, and the individual cavity bandwidths 𝛤A =
+66.08 MHz and 𝛤 B = 75.25 MHz determined in SI2, this yields actual linewidths of
+29.62 MHz for VSi,1A and 126.75 MHz for VSi,2B, respectively.
+To increase the fraction of emitted photons that can be collected, a 158 nm thick SiO2
+antireflective coating optimized for 916 nm was deposited on the sample surface (SI1).
+The saturation measurements were performed before and after the deposition. The
+same VSi centers were relocated after the coating step, so that the comparison refers
+to identical emitters rather than to a statistical ensemble. The dependence of the
+transmitted A2 count rate on the off-resonant excitation power was measured for both
+emitters in both configurations (Fig. SI3b, d). The count rate follows a saturation
+behavior, with a saturation power 𝑃sat . Without the coating, the saturation powers are
+𝑃sat = 0.28 mW for VSi,1A and 0.40 mW for VSi,2B. With the anti-reflective coating, the
+detected A2 count rate at saturation increases by approximately a factor of 2 and the
+saturation power shifts to 0.51 mW and 0.74 mW, respectively. All subsequent
+measurements were performed on the coated sample. Based on these curves, a
+5
+
+common off-resonant excitation power of 1 mW was chosen for both nodes. This value
+deliberately lies above the saturation power of both emitters, which ensures maximum
+optical recycling of the color center. At the same time, the power was kept close to
+saturation rather than far above it, in order not to risk an increase of the optical linewidth
+at high off-resonant excitation. Operating on the plateau of the saturation curve
+additionally makes the emitted count rate insensitive to small drifts of the excitation
+power, which is essential over the 628 h campaign since the transmitted count rate
+serves as the error signal of the cavity locks (SI4.2).
+At this excitation power of 1 mW, the time-averaged transmitted A2 count rate over the
+full interference campaign was 65 cps for each node, against a time-averaged
+background of 0.5 cps recorded at a laterally displaced position in the confocal scan
+under identical conditions (grey points in Fig. SI3a, c). This corresponds to signal-tototal count ratios of 𝑆₁/𝐼₁ = 0.99 and 𝑆₂/𝐼₂ = 0.99, which enter the cross-correlation
+model of SI6.
+
+Fig. SI3 Off-resonant photoluminescence spectra and saturation of A2 emission of VSi,1A and VSi,2B.
+a Cavity transmission spectrum of VSi,1A at an off-resonant excitation power of 1 mW, recorded at the reverse bias
+voltage of common A2 emission frequency 𝜈T . Red points denote normalized single-photon transmission counts,
+grey points the background measured at a laterally displaced position in the confocal scan at same power. The red
+line is a double-Lorentzian fit to the data, the yellow line the deconvolved fit according to Eq. SI3. The upper axis
+denotes the applied cavity voltage. b A2 emission saturation curve of VSi,1A at different off-resonant excitation
+powers, measured before (light blue diamonds) and after (dark blue circles) deposition of the SiO 2 antireflective
+coating. Dashed vertical lines mark the respective saturation powers before (light green) and after (dark green) SiO2
+deposition. c, d Corresponding data for VSi,2B.
+
+6
+
+SI4 Automated operation and stabilization of experimental setup
+SI4.1 Automated long-term operation
+
+Maintaining two-photon interference over 628 h requires two conditions to hold
+simultaneously: the resonance of each Fabry-Pérot filter cavity must stay centered on
+the A2 emission of its node, and the A2 transition frequencies of the two nodes must
+stay equal at the common target frequency 𝜈T . Both drift independently. The cavity
+resonance drifts through thermal expansion and relaxation of the piezoelectric actuator
+and the emission frequency through changes in the local charge environment of the
+particular color center. Manual intervention would disturb the confocal alignment and
+the cavity locks, so the entire sequence was executed by a control script without user
+interaction.
+Both drifts appear in the same observable: a decrease of the transmitted single-photon
+count rate. The count rate alone therefore cannot reveal whether the cavity has moved
+away from the emitter or the emitter away from the target frequency 𝜈T and thus as
+well as from the cavity. The experiment consequently employs two control loops that
+differ both in timescale and in the quantity they measure. The fast loop, executed every
+10 s, keeps each cavity centred on the maximum of its transmission by regulating the
+piezo voltage, using the transmitted count rate as the error signal (SI4.2). It corrects
+cavity drift, but it is blind to the absolute optical frequency. Losing its stable operation
+and thus the transmitted A2 counts is referred further in this section as a cavity lock
+loss. The slow loop, executed every 2 h, records a resonant PLE spectrum at each
+node and thereby determines the absolute A2 emission frequency. Any deviation from
+𝜈T is corrected through the reverse bias voltage of the p-i-n diode (SI7). This is the only
+step in the sequence that yields an absolute frequency rather than a count rate. The
+remainder of this section describes how both loops are embedded into the automated
+measurement sequence. The corresponding control architecture is shown in Fig. SI4.1.
+The total measurement campaign of 628 h is composed of 29 measurement runs, each
+of which is subdivided into individual sessions. A session is the unit over which
+correlation data is accumulated without interruption. It is terminated either when a
+cavity lock is lost, in which case a full realignment follows, or when the timer of the slow
+frequency loop expires and the A2 emission frequency of both nodes is verified (SI7).
+7
+
+This timer counts active correlation time rather than wall-clock time, so that the 2 h
+interval refers to accumulated measurement and is not consumed by realignment,
+locking or frequency calibration. The correlation histograms of all runs are summed in
+post-processing, which allows the total measurement time to be built up cumulatively
+from individually verifiable runs. A run log is written separately for each session, so that
+a session can be inspected, stopped and restarted without affecting the others.
+A measurement run begins with hardware initialization. All four channels of the sourcemeasure unit (SMU) are set to their starting values: CH1 and CH4 supply the reverse
+bias voltages of the p-i-n samples at nodes A and B, while CH2 and CH3 drive the
+piezoelectric actuators of the Fabry-Pérot filter cavities individually. Both off-resonant
+728 nm lasers are initialized in standby. Two time-tagged channels DCH1 and DCH2
+are opened and ready for measurement. They are connected to the detectors at the
+two beam splitter outputs.
+The subsequent alignment and initial-lock sequences are executed for both setups
+subsequently. First, a three-dimensional confocal optimization maximizes the phononsideband count rate of each emitter, compensating any positional lateral or axial drift.
+Then, for each setup in turn, the off-resonant laser is switched to continuous-wave
+operation (CW) and the cavity piezo-voltage is swept across the emission signal of the
+observed VSi while the transmitted counts are recorded in sum on DCH1 and DCH2.
+The maximum of the scanned peak, if it exceeds a preset minimum threshold, defines
+the setpoint of the fast loop for that cavity. Once engaged, the loop holds the cavity at
+this setpoint for the remainder of the session, so that the filter cannot drift off the A2
+line while correlation data is being accumulated. Setup A is locked first, followed by
+setup B. During the peak scan of setup B, the laser of setup A is switched off, so that
+the detected counts originate from node B alone. The main measurement loop is
+multithreaded and runs three concurrent tasks: the interleaved PID lock of the two
+cavities (SI4.2), acquisition and periodic saving of the correlation data together with
+live plotting, and a continuous health check of all hardware connections and threads.
+With both lasers in CW operation and both cavity setpoints held in a preset window of
+(2)
+
+possible PID-error, the cross-correlation 𝐺12 (𝜏) between DCH1 and DCH2 is
+accumulated by the time-tagging electronics. Two decision nodes are evaluated
+continuously. The first monitors the summed count rate of both detector channels
+against its total setpoint of approximately 130 cps, corresponding to the summed
+8
+
+setpoint of the 65 cps contributed by each node. A deviation exceeding ±50 cps from
+the total setpoint triggers the lock-loss handler. This criterion is two-sided, as a
+decrease indicates that one of the cavities has lost transmission, while an increase
+indicates stray light entering the setup, for example when the enclosure is opened.
+This is a failure criterion rather than the regulation tolerance of the fast loop, which
+corrects far smaller deviations continuously (SI4.2). The second decision node verifies
+that both PID loops are still active and that all hardware components respond. If either
+condition fails, control passes to the lock-loss handler, which saves the current session
+data and triggers a full realignment, i.e. renewed confocal optimization for both setups
+followed by re-determination of both PID setpoints.
+Independently of the lock status, a timer triggers the periodic frequency calibration after
+every 2h of accumulated correlation time. The sequence measures a resonant PLE
+spectrum at each node, extracts the A2 transition frequency and, if required, adjusts
+the reverse bias voltage via CH1 for setup A or CH4 for setup B. The procedure is
+described in detail in SI7. Once, both nodes lie within the acceptance window, a full
+realignment is triggered, subsequently the correlation measurement resumes and the
+timer restarts. The implementation of the fast stabilization loop, which keeps each
+cavity on the transmission of its own node, is described in SI4.2. Correspondingly, the
+slow stabilization loop, which keeps the two emitters on the common target emission
+frequency 𝜈T , is described in SI7. Together they cover the two independent drifts
+identified above.
+
+9
+
+Fig. SI4.1 Operation flowchart and control architecture for automated two-photon-interference
+experiment.
+Measurement session starts with hardware initialization (voltage channels CH1–CH4, off-resonant lasers, and time
+tagger channels DCH1/DCH2). Voltage channels CH1 and CH4 are used for the reverse bias voltage of the nodes’
+A and B p-i-n samples. CH2 and CH3 are used for the piezo-electric Fabry-Pérot cavity control, individually. The
+alignment & initial locks sequence (blue) establishes spatial confocal 3D optimization and establishes PID lock
+setpoints (Setpoint 1 & 2) sequentially for Setup A and B. The main multithreaded measurement loop (green)
+concurrently handles data acquisition, plotting, hardware health monitoring, interleaved PID feedback stabilization
+(2)
+(via CH2 and CH3), and second-order photon correlation 𝐺12 (𝜏) acquisition. Active decision nodes (red)
+continuously verify PID lock status and error limits. A lock loss saves the current session and re-initiates full
+alignment. Upon expiration of the periodic PLE timer, the sequence executes an 𝐴2 resonance calibration (yellow)
+to adjust reverse bias voltages (CH1 for Setup A, CH4 for Setup B) before resuming measurement. Both the lockloss handler and the periodic calibration return to the confocal 3D optimization, so that each of the two termination
+conditions starts a new session. Boxes denote process blocks; diamonds denote decision nodes. CW, continuous
+wave regime; PID, proportional-integral-derivative control; PLE photoluminescence excitation emission spectra;
+PSB phonon sideband emission.
+
+10
+
+SI4.2 Fast stabilization loop: interleaved PID regulation of Fabry-Pérot cavities
+
+Each filter cavity must remain centered on the A2 transition of its node for the entire
+duration of a session. With transmission bandwidths of 66.08 MHz for node A and
+75.25 MHz for node B (SI2), the cavities are narrow compared with the drift of their
+piezoelectric actuators, so that even a small uncorrected change of the piezo voltage
+moves the cavity off resonance and reduces the transmitted count rate. This is
+apparent already during alignment: when a cavity is set to the transmission maximum
+of the stabilized narrow-band reference laser and the piezo voltage is subsequently
+held, the transmitted count rate begins to decrease within seconds. Both cavities were
+therefore regulated continuously throughout the campaign.
+The only signal available for this regulation during the interference measurement is the
+transmitted photon rate itself, registered as the sum of the two time-tagger channels
+DCH1 and DCH2. This creates a difficulty. Photons from both nodes are combined on
+the beam splitter before detection, so each detector receives light from both cavities
+and the summed count rate does not reveal which of the two has drifted. Operating
+both loops at the same time would mean that each loop responds to changes caused
+by the other. The two lock loops are therefore separated in time rather than in signal.
+At any moment only one cavity is actively regulated, while the piezo voltage of the other
+is held at its last value. Any change of the summed count rate during an active interval
+can then be attributed unambiguously to the cavity currently under regulation. Since
+the held cavity remains close to resonance over such a short time interval, both nodes
+continue to transmit photons throughout, and the accumulation of the cross-correlation
+(2)
+
+𝐺12 (𝜏) is never interrupted by the regulation. The scheme is shown in Fig. SI4.2.
+Regulation alternates between the two nodes in intervals of 10 s. During an active
+interval, the deviation of the measured count rate from the setpoint forms the error
+signal eᵢ, which is processed by the PID controller of node 𝑖 with proportional gain 𝐾P ,
+integral gain 𝐾I and derivative gain 𝐾D , updated at a rate of 0.5 Hz in order to suppress
+short-term shot noise. Its output cᵢ is converted into the piezo voltage uᵢ, applied through
+CH2 for the cavity of setup A and CH3 for that of setup B. At the end of the interval the
+controller output is frozen, the last applied voltage is held, and the loop of the other
+node is activated. The setpoints are determined once during the initial locking
+sequence and are not modified during a session (SI4.1). Rather than the transmission
+11
+
+maximum itself, a point at 95 % of the maximum of the cavity transmission scan on the
+A2 peak is chosen. At the maximum the derivative of the transmission with respect to
+the piezo voltage vanishes, so that a deviation in both directions reduces the count
+rate identically. Thus, the error signal carries no directional information at the
+transmitted peak’s maximum. On the flank the transmission varies monotonically with
+the piezo voltage, so that the sign of the deviation from the setpoint identifies the
+direction in which the cavity has drifted. This is what allows the count rate alone to
+serve as an error signal for the loop. The measurement is interrupted only if the
+summed count rate of both nodes (Setpoint A+B) deviates from its setpoint by more
+than ±50 cps, which may indicate that one of the cavities has lost transmission entirely.
+In this case the control script triggers a full realignment (SI4.1).
+The residual performance of the interleaved lock was quantified from the distributions
+of the PID control voltage residuals recorded over the whole campaign, comprising
+approximately 400,000 samples for each node. Converted to frequency using the cavity
+calibration of SI2, these correspond to root-mean-square residual detuning of 4.29 MHz
+for node A and 3.93 MHz for node B, i.e. below 10 % of the respective filter bandwidth.
+The resulting reduction of the interference contrast is evaluated in SI6. The gains 𝐾P ,
+𝐾I and 𝐾D were adjusted following the standard procedure for PID initialization 2, in
+which the proportional gain is set first, followed by the integral and finally the derivative
+gain.
+
+Fig. SI4.2 Principle of the interleaved PID regulation of Fabry-Pérot cavity voltages.
+Control scheme over time for nodes A and B. The regulation alternates between node A (top) and node
+B (bottom) in intervals of 10 s. In an active interval, the deviation of the transmitted count rate from the
+setpoint (A+B) forms the error signal 𝑒𝑖 , which the PID controller converts into the control output 𝑐𝑖 and
+hence the piezo voltage 𝑢𝑖 of the respective cavity. During the inactive interval the voltage of the other
+node is held at its last value (bluish HOLD), so that any change of the detected count rate can be
+attributed unambiguously to the cavity currently under regulation. The accumulation of the crosscorrelation between both nodes, marked in green, proceeds continuously throughout. Black arrows
+denote active operation, blue arrows show passively held operation.
+12
+
+SI5. Single photon emission characteristics
+SI5.1 Second-order autocorrelation of the phonon sideband emission
+The single-photon character of both emitters VSi,1A and VSi,2B was verified in a Hanbury
+Brown–Twiss (HBT) configuration prior to the interference campaign. The
+measurements were carried out on the phonon sideband (PSB) rather than on the
+zero-phonon line, because the PSB carries the larger fraction of the total emission. A
+commercially available 50: 50 single mode 1x2 fiber-coupler (Thorlabs, custom made
+for 916nm) was used therefore for a standard HBT arrangement, in which the PSB
+emission of a single node is split onto the two superconducting nanowire single-photon
+detectors. Detection events were time-tagged and plotted in a time-difference
+histogram between counting events with a bin width of 200 ps on a total measurement
+window of ±400 ns (Fig. SI5.1). Both nodes were excited off-resonantly at 728 nm with
+an optical power of 1 mW, under identical conditions of the subsequent two-photon
+interference measurement, so that the resulting values quantify the single-photon
+purity in the regime actually used for the HOM experiment. Based on the framework of
+ref.3, to remove influence of background noise, the measured autocorrelation data
+(2)
+
+(2)
+
+(2)
+
+𝑔𝑖𝑖,PSB (𝜏) of each node 𝑖 is was corrected to background using 𝑔𝑖𝑖 (𝜏) = (𝑔𝑖𝑖,PSB (𝜏) −
+(1 − 𝜌2 )) /𝜌2 , where denotes 𝜌 = 𝑆/(𝑆 + 𝐵) with 𝑆 as the total signal counts and 𝐵 as
+|τ|
+
+background counts. Using the expression 𝑔𝑖𝑖(2) (𝜏) = 1 − (1 + 𝑎𝑖 ) exp (− 𝜏 ) + 𝑎𝑖 exp (−|τ|/
+1,𝑖
+
+𝜏2,𝑖 ) for the ideal autocorrelation function, the data was fit to the following formula:
+(2)
+
+𝑔𝑖𝑖,PSB (𝜏) = 1 − 𝜌𝑖2 {(1 + 𝑎𝑖 )e
+
+|τ|
+)
+𝜏1𝑖
+
+(−
+
+− 𝑎𝑖 e
+
+|τ|
+)
+𝜏2𝑖
+
+(−
+
+}
+
+(SI5.1)
+
+Here, 𝜏1 denotes the antibunching time constant governed by the excitation rate and
+the excited-state lifetime, 𝜏2 the bunching time constant associated with shelving into
+the metastable state, and 𝑎 the bunching amplitude.
+The parameter 𝜌𝑖 was measured independently for each observer VSi on a timeaveraged CW measurement. For VSi,1A this factor was 𝜌1 = 0.95 and for VSi,2B 𝜌2 =
+(2)
+
+(2)
+
+0.93. For VSi,1A this yields 𝑔11,PSB (0) = 0.0930(5) (Fig. 2b), and for VSi,2B 𝑔22,PSB (0) =
+0.1293(5) (Fig. SI5.1). Both values lie well below the classical two-photon threshold of
+0.5, confirming that each node emits single photons.
+
+13
+
+Fig. SI5.1 Second-order autocorrelation measurement in Hanbury Brown-Twiss configuration of VSi,2B.
+Background-corrected autocorrelation measurement of the phonon sideband (PSB) emission of VSi,2B in Hanbury
+Brown-Twiss configuration under off-resonant excitation at 728 nm and 1mW. Fit of normalized data yields
+(2)
+𝑔22,PSB (0) = 0.1293(5). Blue squares are the background-corrected data; red solid lines represent the fit of the
+three-level rate-equation model of Eq. SI5.1. Value at zero delay derived from the fit. Corresponding measurement
+for VSi,1A in main text Fig. 2b.
+
+14
+
+SI5.2 Resonant optical linewidths and lifetime limit
+The optical linewidths quoted in the main text refer to the reverse bias voltages at which
+both emitters share the common target emission frequency 𝜈T = 327.231000 𝑇𝐻𝑧, i.e.
+to the operating point of the interference experiment. At this operating point, resonant
+photoluminescence excitation yields Lorentzian full widths at half maximum for the A2
+emission of 𝛾1A = 34.26 ± 0.92 MHz for VSi,1A and 𝛾2B = 58.83 ± 3.11 MHz for VSi,2B
+(Fig. SI5.2a,b). Each spectrum was recorded in a dual-tone scheme with a carrierexcitation power of 5 nW. While sweeping the applied reverse bias voltage of the p-i-n
+diode, a reduction of the linewidths is observed. This effect refers to the reduction of
+free charges, due to an increasing local electric field in the vicinity of the observed V Si
+centers. For VSi,1A the linewidth narrows from 96.54 ± 5.20 MHz at zero bias to 32.31 ±
+1.11 MHz at 30 V reverse bias. For the operation point of common emission frequency
+𝜈T a reverse bias voltage of 18.632 V was applied. Correspondingly for VSi,2B, the
+linewidth narrows down from 134.68 ± 10.63MHz at zero bias to 46.91 ± 2.34 MHz.
+Reverse bias voltage for common A2 emission frequency was set to 18.623 V. To
+determine the Fourier-limit of these emitters, the excited-state lifetime of each emitter
+was measured independently. Each VSi was excited resonantly at A2 resonance with
+< 1 ns pulses, generated by the combination of an acousto-optic modulator and an
+amplitude electro-optic modulator driven by a programmable pulse generator. The
+arrival times of the emitted photons relative to the excitation pulse were measured (Fig.
+SI5.2c) accordingly. Linear fits to the logarithmically normalized decay yield 𝜏1,1A =
+11.06 ± 0.09 ns for VSi,1A and 𝜏1,2B = 11.17 ± 0.20 ns for VSi,2B. These values are
+consistent with the A2 excited-state lifetime of 11.3 ns reported for V2 centers in bulk
+4H-SiC4,5.
+A radiative lifetime 𝜏 sets a lower bound on the optical linewidth of 𝛾 = 1/(2π𝜏). The
+measured lifetimes therefore correspond to Fourier limits of
+
+𝛾1A,FL = 14.39 ±
+
+0.12 MHz and 𝛾2B,FL = 14.25 ± 0.26 MHz. Comparing these with the resonant
+linewidths at the operating point, VSi,1A exceeds its lifetime limit by a factor of 2.4 and
+VSi,2B by a factor of 4.1.
+
+15
+
+Fig. SI5.2 Linewidth reduction and excited-state lifetimes of VSi,1A and VSi,2B on the A2 transition.
+a Optical linewidth (FWHM) of VSi,1A as a function of applied reverse bias voltage, extracted from Lorentzian fits to
+dual-tone resonant photoluminescence excitation spectra of the A2 transition recorded at a carrier excitation power
+of 5 nW. Reverse bias operation point for common emission frequency is marked with a grey dashed vertical line.
+b Corresponding measurement for VSi,2B. Error bars in (a) and (b) denote the standard error of Lorentzian fit. c
+Excited-state lifetime of VSi,1A and VSi,2B at operation point for common target emission frequency, under pulsed
+resonant excitation of the A2 transition with pulses shorter than 1 ns. Photon arrival times relative to the excitation
+pulse are shown on logarithmic intensity scale for VSi,1A (yellow) and VSi,2B (green), together with detuned measured
+background signal (grey).
+
+16
+
+SI6 Cross-correlation function of two-photon interference
+The measured cross-correlation data is modelled and fit with the following function of
+the two-photon interference:
+S S
+
+2(τ)
+
+(1)
+
+(1)
+
+2 (τ)
+G12 = c12 g11
++ c22 g 222 (τ) + 2c1 c2 ⋅ {1 − η ⋅ 1 2 ⋅ |g11 (𝜏)| ∙ |g 22 (𝜏)| ⋅ cos(Δω0 τ) ⋅ exp (−
+I1 I2
+
+𝛤∙τ
+
+𝜎 2 ∙τ2
+
+2
+
+2
+
+) exp (−
+
+)} (SI6.1)
+
+This function is based on previous performed experiments of this kind6–10. The first two
+summand terms describe the autocorrelation contribution of each emitter, weighted by
+the relative count rates 𝑐𝑖 = 𝐼𝑖 / (𝐼1 + 𝐼2 ), where 𝐼𝑖 denotes the total emitter’s 𝑖 emission
+intensity, thus pure signal 𝑆𝑖 counts and background counts 𝐵𝑖 together as 𝐼𝑖 = 𝑆𝑖 + 𝐵𝑖 .
+The
+
+autocorrelation
+
+terms
+
+are
+
+modeled
+
+as
+
+ideal
+
+terms
+
+(2)
+
+g 𝑖𝑖 (𝜏) = 1 − (1 +
+
+|τ|
+
+𝑎𝑖 ) exp (− 𝜏 ) + 𝑎𝑖 exp (−|τ|/𝜏2), with 𝜏1,𝑖 being the coherence time of the emitter 𝑖
+1,𝑖
+
+governed by the excited-state lifetime, 𝜏2 the common bunching time constant and 𝑎 the
+common bunching amplitude. The third summand implies the interference. Within it, the
+spectral properties of the emitters enter through their first-order coherence functions (field
+(1)
+
+autocorrelation) |g 𝑖𝑖 (𝜏)| = exp (−|τ|/2𝜏1,𝑖 ), the mutual, mean detuning through
+
+cos (Δω0 𝜏) with Δ𝜔0 = 𝜔1 − 𝜔2 , and the session-to-session long term spectral diffusion
+through a Gaussian kernel as exp (−
+
+𝜎2 𝜏2
+2
+
+) with its scattering pregiven by the parameter
+
+𝜎. The finite spectral bandwidth transmitted by the Fabry-Pérot filter stage is accounted
+for by the Lorentzian term exp (−𝛤τ/2), with 𝛤 given as an angular frequency. The two
+cavities differ slightly in their measured transmission bandwidths, 66.08 MHz for node
+A and 75.25 MHz for node B (SI2). Since a single common value enters Eq. SI6.1, 𝛤
+was not treated as a free fit parameter but fixed to the larger of the two, 𝛤 = 2π ·
+75.25 MHz. This maximizes the damping term and therefore yields the narrowest
+coherence envelope compatible with the measured filter characteristics, so that the
+resulting interference contrast is a conservative estimate: any smaller bandwidth would
+widen the envelope and increase the modelled contrast. With this choice, the fit of Eq.
+SI6.1 to the measured cross-correlation yields a reduced chi-square of 1.465 and a
+(2)
+
+cross-correlation minimum of 𝐺12,∥ (0) = 0.0914 ± 0.0030 for the indistinguishable
+cross-correlation measurement.
+The phenomenological prefactor 𝜂 collects all remaining technical imperfections of the
+interferometric setup i.e., every effect that reduces the interference contrast but is not
+already contained in the spectral properties of the two emitters. This parameter was
+17
+
+not treated as a free fit parameter. Each contribution was determined independently
+and 𝜂 is their product,
+𝜂 = 𝜂BS ⋅ 𝜂POL ⋅ 𝜂SMO ⋅ 𝜂 CAV.
+
+(Eq. SI6.2)
+
+Taking the contributions of beam splitter imbalance (BS), polarization mismatch (POL),
+spatial mode overlap (SMO) and residual detuning of filter cavities (CAV) into account,
+the total product of 𝜂 yields 𝜂 = 0.9991 x 0.9773 x 0.9968 x 0.9891 = 0.9627 ≅ 0.963.
+The detailed calculation of these factors is explained further in the following
+paragraphs.
+Beam splitter imbalance 𝜼𝐁𝐒 .
+A splitting ratio deviating from unity reduces the interference contrast, because both
+interfering paths do not contribute with equal amplitude in such a case. Following the
+correction procedure established for two-photon interference experiments11, the
+contrast reduction can be expressed by
+2𝑅𝑇
+
+2𝑅(1−𝑅)
+
+𝜂BS = (𝑅2 +𝑇 2) = 1−2𝑅+2𝑅2,
+
+(Eq. SI6.3)
+
+where 𝑅 is the reflectivity and 𝑇 = 1 − 𝑅 the transmissivity of the beam splitter. The
+splitting ratio of the free-space beam splitter was determined from the collected counts
+on each detector channel of the cross-correlation measurement itself, yielding timeaveraged values of 〈𝑅∥ 〉 = 0.5108 for the co-polarized configuration (indistinguishable)
+in which the photons interfere, and 〈𝑅⊥ 〉 = 0.5136 for the orthogonally polarized
+reference configuration. Since 𝜂 enters Eq. SI6.1 only for the indistinguishable case,
+the co-polarized value applies and gives 𝜂BS = 0.9991.
+Polarization mismatch 𝜼𝐏𝐎𝐋 .
+Two photons in different polarization states are partially distinguishable. For two single
+photons described by density matrices 𝝆1 and 𝝆2 , the Hong-Ou-Mandel interference
+visibility is given by their overlap 𝑉 = Tr{𝛒1 𝛒2 }12, a relation that holds for a two-level
+system and is therefore directly applicable to the polarization degree of freedom.
+Writing each polarization state in the Bloch representation 𝝆𝑖 = 1/2 ⋅ (𝟙 + 𝐬i ⋅ 𝝈) with
+Stokes vectors 𝒔𝑖 and the vector of Pauli matrices 𝝈, this evaluates to
+1
+
+𝜂POL = Tr{ρ1 ρ2 } = 2 (1 + 𝒔1 ⋅ 𝒔2 ).
+18
+
+(Eq. SI6.4)
+
+The Stokes vectors are normalized such that |𝒔𝑖 | equals the degree of polarization of
+node 𝑖, so that Eq. SI6.4 reduces to 1/2 for a fully unpolarized state and to unity for
+identical, fully polarized states. Both arms in the interferometric setup were
+characterized with a polarimeter (Thorlabs PAX1000IR2), using the resonant laser at
+common emission frequency 𝜈T as a reference. Arm 1 gave an azimuth of 0.02°,
+ellipticity of 0.13° and a degree of polarization of 98.18% at 10 μW illumination power.
+Arm 2 had an azimuth of −0.01°, an ellipticity of 0.11° and a degree of polarization of
+97.23%
+
+at
+
+same
+
+illumination
+
+(0.981790, 0.000685, 0.004455)
+
+power.
+and
+
+These
+
+values
+
+correspond
+
+to
+
+𝒔1 =
+
+𝒔2 = (0.972293, −0.000339, 0.003733). This
+
+yields in total a reduction of interference contrast induced by polarization mismatch of
+𝜂POL = 0.9773.
+Spatial mode overlap 𝜼𝑺𝑴𝑶 .
+Since the two photons are overlapped on a free-space beam splitter, an imperfect
+match of their mode profiles reduces the interference contrast. The intensity profiles of
+both beams were recorded and fitted with two-dimensional Gaussian profiles (Fig.
+SI6a,b), giving a spatial mode overlap of 𝜂SMO = 0.9968.
+Residual detuning of filter cavities 𝜼𝐂𝐀𝐕 .
+Both Fabry-Pérot filter cavities are stabilized during operation (SI4.2), but the residual
+jitter of the PID controlled voltage translates into a fluctuating detuning between the
+two transmitted spectra. For two exponentially decaying wave packets with Lorentzian
+spectra of full-width half maxima 𝛤𝑖,𝑗 and a mutual detuning 𝛿𝜈, the spectral overlap
+evaluates to
+𝜂CAV =
+
+4𝛤𝑖 𝛤𝑗
+
+(Eq. SI6.5).
+
+2
+
+(𝛤𝑖 +𝛤𝑗 ) +4𝛿𝜈 2
+
+With the measured filter bandwidths 𝛤𝐴 = 66.08 MHz and 𝛤B = 75.25 MHz (SI2) and
+the
+
+root-mean-square
+
+residual
+
+detuning
+
+between
+
+the
+
+two
+
+cavities,
+
+𝛿𝜈 =
+
+√(𝛿𝜈12 + 𝛿𝜈22 ) = √(4.292 + 3.932 ) MHz = 5.82 MHz, Eq. SI6.5 gives 𝜂CAV = 0.9891.
+Note that the two cavities contribute a small reduction of 0.42 % even at zero detuning,
+since their bandwidths are not identical. The individual values 𝛿𝜈₁ = 4.29 MHz and
+𝛿𝜈₂ = 3.93 MHz were obtained from the voltage jitter distributions of the PID control
+voltage residuals over all interleaved PID sessions (Fig SI6c,d) for the indistinguishable
+measurement run, converted to frequency using the cavity calibration of SI2.
+19
+
+Fig SI6 Interferometric setup impurities: spatial modes and fast loop PID voltage jitter residues of zerophonon line path of VSi,1A and VSi,2B.
+a Normalized intensity beam profile of zero-phonon line path of node A. Beam profile recorder at a position
+equivalent to that of the 50: 50 beam splitter, where both signal paths interfere. Figure shows corresponding
+Gaussian fit of recorded intensity profile. b Corresponding measurement of beam profile of ZPL path of node B. c
+Distribution of residual voltage jitter of fast loop PID control for node A cavity. Voltage jitter distribution accumulated
+from the 10 s control windows over the whole measurement campaign of 628 h for the cross-correlation of
+indistinguishable photons. The root-mean-square (RMS) value of this distribution is 2.10 mV, corresponding to a
+residual detuning of 3.93 MHz at the voltage-to-frequency translation factor of −1.8745 GHz/V (SI2) d Corresponding
+distribution for the cavity of node B. RMS of voltage jitter is here 2.47 mV and equals to a residual detuning of
+4.29 MHz at −1.7380 GHz/V.
+
+20
+
+SI7 Slow stabilization loop: remote control of the emission frequency
+To keep the A₂ transition of both emitters at the common target frequency 𝜈T and to
+compensate its slow drift, the emission frequency of each node was verified
+periodically every 2 h of active accumulated correlation time (SI4.1). Without
+correction, the emission frequency of either VSi center was found to drift by up to ±40
+MHz /h (on a timescale of 2 hours), which sets the required checking interval. Each
+verification consists of a resonant PLE scan of the A2 transition over a range of 3 GHz
+sampled at 200 equally distanced points, at an excitation power below 10 nW. The scan
+is performed under simultaneous microwave driving, which mixes the ground-state
+spin populations and thereby increases the PLE contrast by preventing from optical
+pumping into a dark spin state. The absolute emission frequency is obtained from the
+center of a Lorentzian fit to the resulting spectrum, referenced to the laser frequency
+recorded by the wavemeter (HighFinesse WS7).
+An acceptance window of ±20 MHz from the target emission frequency of 𝜈T =
+327.231000 THz was preset. If the fitted 𝐴2 emission frequency exceeded this
+acceptance window, a corrective change of the reverse bias voltage was applied,
+calculated from the linear tuning coefficient 𝛿𝜈/𝛿𝑈Bias = 6.30 GHz / V. This value is
+the common slope of the linear DC Stark shift fits of the two selected VSi centers (Fig.
+1e). A second PLE scan then verifies that the corrected 𝐴2 emission frequency lies
+inside the acceptance window. If it did not, the correction is repeated for up to three
+attempts in total. Should all three attempts fail, the run is flagged and all subsequent
+data is excluded from the integrated correlation histogram. In post selective analysis
+these correlation measurement sequences were then excluded. The two nodes were
+stabilized consecutively, node A first, while the other node remained idle. The
+procedure was executed automatically by a programmed hardware control script
+without user intervention. Across the 244 verification sessions of the 628 h campaign,
+a corrective voltage change was required in 12.7% of the sessions for VSi,1A and in
+30.7% for VSi,2B, corresponding to the mean correction intervals of 19.4 h and 8.4 h
+reported in the main text. The stabilization sequence is shown in Fig. SI7.
+
+21
+
+Fig. SI7 Scheme of remote, automated control for common target emission frequency 𝝂𝐓 .
+Timeline of the stabilization sequence, interleaved within the two-photon interference measurement, shown
+separately for node A (top) and node B (bottom). After every 2 h of active, accumulated correlation time (green
+blocks) the correlation measurement block is interrupted and a resonant PLE spectrum of the A 2 transition is
+recorded at node A. If the emission frequency extracted from a Lorentzian fit lies outside the acceptance window of
+±20 MHz around the common target frequency 𝜈T = 327.231000 THz (red arrow), a corrective change of the reverse
+bias voltage is applied using the linear tuning coefficient 𝛿𝜈/𝛿𝑈Bias = 6.30 GHz / V, and the PLE measurement is
+repeated. Once the emission frequency lies within the acceptance window (green arrow), the same sequence is
+executed for node B while node A remains idle (dotted arrows). After both nodes have been stabilized, correlation
+measurement resumes.
+
+22
+
+References
+1. Scheller, D. et al. Quantum-enhanced electric field mapping within semiconductor devices. Phys.
+Rev. Appl. 24, 014036 (2025).
+2. Tietze, U. & Schenk, C. Halbleiter-Schaltungstechnik. (Springer, Berlin, Heidelberg, New York,
+1990).
+3. Wang, J. et al. Bright room temperature single photon source at telecom range in cubic silicon
+carbide. Nat Commun 9, 4106 (2018).
+4. Liu, D. et al. The silicon vacancy centers in SiC: determination of intrinsic spin dynamics for
+integrated quantum photonics. npj Quantum Inf 10, 72 (2024).
+5. Hollendonner, M. et al. Strain-induced modification of spin-optical dynamics in silicon vacancy
+centers for integrated quantum technologies. Preprint at
+https://doi.org/10.48550/arXiv.2604.16194 (2026).
+6. Lettow, R. et al. Quantum Interference of Tunably Indistinguishable Photons from Remote
+Organic Molecules. Phys. Rev. Lett. 104, 123605 (2010).
+7. Sipahigil, A. et al. Quantum Interference of Single Photons from Remote Nitrogen-Vacancy
+Centers in Diamond. Phys. Rev. Lett. 108, 143601 (2012).
+8. Sipahigil, A. et al. Indistinguishable Photons from Separated Silicon-Vacancy Centers in Diamond.
+Phys. Rev. Lett. 113, 113602 (2014).
+9. Kambs, B. & Becher, C. Limitations on the indistinguishability of photons from remote solid state
+sources. New J. Phys. 20, 115003 (2018).
+10. Weber, J. H. et al. Two-photon interference in the telecom C-band after frequency conversion of
+photons from remote quantum emitters. Nature Nanotech 14, 23–26 (2019).
+11. Morioka, N. et al. Spin-controlled generation of indistinguishable and distinguishable photons
+from silicon vacancy centres in silicon carbide. Nat Commun 11, 2516 (2020).
+12. Grayson, M. et al. High-performance source of indistinguishable polarization-entangled photons
+with a local oscillator reference for quantum networking. Preprint at
+https://doi.org/10.48550/arXiv.2602.10317 (2026).
+23
+
+

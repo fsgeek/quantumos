@@ -489,3 +489,131 @@ hit.*
   (those ask for measured distributions), so fence is the only question
   mapped. Whoever pays this debt should first determine whether EASR models
   contention for a held resource or only routes already-available links.
+
+---
+
+*Sweep of 2026-09-14 (seventh scheduled run). Window: submissions/revisions
+2026-09-07 through 2026-09-14 (last sweep was 2026-09-07). **Access note:**
+export.arxiv.org's API endpoint returned HTTP 429 (rate exceeded) for every
+attempt this run; arxiv.org's own advanced-search form (`/search/advanced`)
+also returned zero results for every query regardless of terms, which on
+inspection turned out to be caused by the classification-archive field name
+(`classification-quant_ph` does not exist; the working pair is
+`classification-physics=y` + `classification-physics_archives=quant-ph`) —
+even corrected, the advanced form kept returning the empty-query tips page
+rather than results, cause not fully isolated. Direct `arxiv.org/abs/<id>`
+pages and the plain `arxiv.org/search/?searchtype=all&query=...&order=-submitted_date`
+endpoint both worked reliably and were used for the whole sweep instead;
+results were sorted by submission date descending and manually filtered to
+the window. Query table run against quant-ph primarily, cs.NI/cs.OS/
+physics.optics secondary, using free-text term pairs per question (arXiv's
+plain search AND-matches all words across all fields, so field-qualified
+syntax like `cat:` or `abs:` is not supported there and was not used).
+Candidates checked and rejected as non-hits: arXiv 2609.09400 ("QPS-ToR: A
+Parallel Iterative Switching Algorithm for Reconfigurable Optical Datacenter
+Switching") is a classical datacenter optical-circuit-switch scheduling
+algorithm (cs.NI) reporting throughput and flow-completion-time gains, not a
+measured switch-reconfiguration latency distribution, and carries no
+quantum content — a scheduling-algorithm foil for Q1. arXiv 2605.04829
+("Traffic Chunk Sizing vs. Optical Switching Speed in Future All-Optical
+Satellite Networks") is a classical all-optical satellite traffic-engineering
+simulation study over MEMS and integrated-photonic switch technologies; it
+reports how chunk sizing drives switching-speed *requirements*, not a
+measured latency distribution, and has no quantum/entanglement content — a
+component-technology foil for Q1, the same shape as prior sweeps' rejected
+classical-networking candidates. arXiv 2609.11922 ("A Chip-scale Space-time
+Multiplexed Gaussian Boson Sampling Processor Beyond 10,000 Photons") is a
+single-chip GBS computational-advantage demonstration; its "space-time
+multiplexed" reconfiguration is programming one chip's own on-chip
+modulators for different sampling/world-model tasks, not a switch fabric
+routing entanglement between held resources across network nodes — too thin
+for Q5, no custody or admission content for the fence. arXiv 2604.20376
+("Interconnecting Regional QKD Networks: Hybrid Key Delivery Across Quantum
+Domains") relays QKD-generated classical secret keys across domains over
+PQC-secured classical WAN links; the quantum step (QKD key generation)
+completes and is measured out before any inter-domain routing or custody
+decision — the same demarcation-foil shape as the molten-salt entry in
+Discharged, no quantum state survives a scheduling decision. arXiv
+2609.02579 ("Long-lived telecom-heralded single-photon storage...") recurred
+in this window's searches but was already checked and rejected by the
+2026-09-07 sweep; not re-litigated.*
+
+### arXiv 2609.11359 — Engineering Quantum Links: Noise and Quantum-State-Degradation Metrics over Metropolitan Fiber Network
+*Caleffi, d'Avossa, Cacciapuoti. Submitted 2026-09-10.*
+- **status:** UNREAD (abstract read 2026-09-14; the paper itself is the debt)
+- **touches:** Q7 — and *possibly* Q2
+- **would change:** This paper builds quantum-network analogs of classical
+  link-budget metrics (a photon-counting SINR and a BER) on a 7.3 km deployed
+  metropolitan fiber loop, and explicitly quantifies, for each of
+  polarization/time/frequency encodings, "the channel-induced degradation
+  and its drift over time." If the full paper's drift measurements yield an
+  autocorrelation time or comparable timescale, that is a direct,
+  hardware-measured answer to Q7's persistence-vs-lead-time threshold — from
+  a deployed link rather than a lab bench. *Possibly* Q2: the paper's stated
+  goal is a small set of measurable parameters that "turn quantum networking
+  over deployed fiber... into an engineering design problem," adjacent to
+  Q2's calibration-published-vs-true-fidelity gap, but the abstract
+  characterizes one link over time, not a cross-sectional spread across
+  simultaneously available paths, so a Q2 reading is inference.
+- **mapping note:** this is a single deployed link measured over time, not
+  multiple simultaneously available paths — the same distinction the queue
+  already draws for arXiv 2608.07163 between Q7's temporal-persistence
+  framing and Q2's instantaneous-spread framing. Whoever pays this debt
+  should check Q7 first.
+
+### arXiv 2609.09805 — Electrically tunable, two-photon interference from remote silicon-vacancy centers in industrial silicon carbide
+*Hrunski, Scheller, Hollendonner, Ullerich, Parthasarathy, Fu, Pointner, Knolle, Kaiser, Dasari, Nagy. Submitted 2026-09-09.*
+- **status:** UNREAD (abstract read 2026-09-14; the paper itself is the debt)
+- **touches:** Q7 — and *possibly* Q2, Q6
+- **would change:** Q7 asks how long comparative path/link quality stays
+  valid at OS-actionable lead times. This paper reports a 26-day continuous
+  measurement campaign on two-photon interference between remote SiV
+  centers, with raw visibilities of 82% sustained over that period, and
+  states that recalibrating the diode bias is needed "only every 8.4 hours"
+  to maintain spectral overlap. If the full paper's 8.4-hour figure is the
+  actual drift timescale forcing recalibration (not a conservative safety
+  margin), it gives Q7 a first real number for calibration-drift
+  persistence — long relative to plausible OS decision lead times, arguing
+  against the "chasing a ghost" failure mode for this platform, the opposite
+  direction from arXiv 2608.07163 already in this queue. *Possibly* Q2: the
+  paper demonstrates spectral overlap of 19 randomly selected SiV centers in
+  different diodes, a cross-sectional measurement across many emitters, but
+  the abstract reports that overlap was achieved, not the magnitude of any
+  residual spread — thin evidence for Q2's instantaneous-spread threshold.
+  *Possibly* Q6: the 8.4-hour rebias cadence is a maintenance-actuation duty
+  cycle on a quantum-network component, adjacent to Q6's constrained-resource
+  ask but not a switch actuation.
+- **mapping note:** whoever pays this debt should check Q7 first — the
+  8.4-hour figure and the 26-day stability claim are the paper's strongest,
+  most explicit data.
+
+### arXiv 2604.21388 — Bayesian Phase Stabilization at the Shot-Noise Limit for Scalable Quantum Networks
+*Liu, Xue, Chen, Zheng, Yang, Li, Wang, Yang, Jiang, Wan, Wang, Chen, Zhang, Pan. Submitted 2026-04-23; revised (v2) 2026-09-09.*
+- **status:** UNREAD (abstract read 2026-09-14; the paper itself is the debt)
+- **touches:** Q6 — and *possibly* Q1
+- **would change:** Our Q6 threshold (does an actuation/reservation consume
+  ANY constrained resource at the relevant rate) is currently unanswered by
+  hardware data for any budgeted-resource class. This paper reports a
+  phase-stabilization protocol for trapped-ion memory nodes bounded to "a
+  duty cycle less than 6.5%" specifically "to avoid disturbing fragile
+  quantum states," and states the resulting memory-memory entanglement at
+  10 km "survives beyond the average time required to establish it." If the
+  full paper's duty-cycle bound is a hardware-imposed limit (not a chosen
+  operating point) that generalizes to other near-memory operations
+  including switch actuation, it would give Q6 its first real number for a
+  constrained-resource class of exactly the kind the question names
+  (duty-cycle limit tied to avoiding quantum-state disturbance). *Possibly*
+  Q1: the "survives beyond the average time required to establish it" claim
+  mirrors Q1's replenishment-vs-reserve-margin quantile ask — if the full
+  paper reports the actual generation-cadence distribution against memory
+  lifetime (not just one favorable comparison), it could supply a first
+  real number there too.
+- **mapping note:** the duty-cycle figure governs phase-stabilization probe
+  pulses on trapped-ion nodes, not photonic switch-fabric actuation — a
+  close analog to Q6's ask, not a verbatim answer, so Q6 is primary but not
+  yet a direct hit until the full paper is read for whether the constraint
+  generalizes. Q1 rests on one comparative sentence in the abstract, not a
+  reported cadence distribution, so it is marked possible. This is a v2
+  revision of an April 2026 submission (predating this project's question
+  list); it is queued now because the revision date falls in this sweep's
+  window and the paper was not previously discharged or queued.

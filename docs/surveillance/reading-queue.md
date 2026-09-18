@@ -41,6 +41,229 @@ entry is a debt and not a finding.
   rung of the keying-basis argument (problem structure → resource history →
   perishable-good state). Fence conclusion undisturbed.
 
+### arXiv 2608.24152 — A Dynamic-Kernel/QPacket Executable for Quantum Repeater Chains in Q2NS/ns-3
+*Pearson, Caleffi, Cacciapuoti. Submitted 2026-08-25; revised (v2) 2026-08-26.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** fence, Q6 — and *possibly* Q1, Q5
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission), not a component. This paper builds
+  a "Dynamic Kernel" — literally named as a kernel — organized as a
+  Planner-Executor-Engine pipeline processing "QPacket" meta-headers carrying
+  service intent and append-only action-commit stamps, managing entanglement
+  as "a non-local, non-copyable, stateful network resource," including
+  pre-distributed entanglement and forwarding/delegation across nodes with
+  uneven generation support. If the full paper's kernel adjudicates admission
+  among competing service requests over a held, decaying entanglement
+  resource — not just the single scoped linear-chain demonstration the
+  abstract describes — this would be the closest occupant of the fence's full
+  form seen in this project's surveillance to date, and the fence's
+  "unoccupied" conclusion would need re-examining. As abstracted ("deliberately
+  scoped to an analytically verifiable service and policy" on a "linear
+  quantum repeater chain"), it reads as a protocol-architecture demonstration
+  rather than a full multi-request scheduler — that narrowness is exactly what
+  the full read must check. For Q6: the abstract explicitly reports measuring
+  "signaling load, forwarding behavior, and QPacket meta-header growth" as a
+  function of policy choices and available network resources — controller/
+  signaling traffic is one of the constrained-resource classes Q6 names
+  directly. If the full paper shows signaling/controller load scaling with
+  reconfiguration or actuation decisions rather than only header encoding, it
+  could give Q6 a first real number for that resource class.
+- **mapping note:** *possibly* Q1 — the link-preparation policy accounting for
+  pre-distributed entanglement is adjacent to replenishment cadence, but no
+  cadence distribution is claimed, so this is inference. *Possibly* Q5 — the
+  linear-chain topology is a specific, non-switched topology and does not
+  address port-level multiplexing or reconfiguration granularity; also
+  inference. Whoever pays this debt should check the fence and Q6 first.
+- **disposition:** **Not the fence, and not Q6.** The executable is a
+  single-request, noiseless, linear-chain protocol demonstration. One QPacket
+  is injected at Alice (Algorithm 1, line 2); there is never a second request,
+  so nothing is admitted, deferred, or arbitrated. The physical model is
+  "noiseless operations" (Table 1) and Kernel/MP execution is instantaneous;
+  the authors defer decay to future work in so many words ("particularly
+  important in noisy scenarios where the quality of distributed entanglement
+  decreases over time"). The entanglement inventory (FTQ) is a presence set —
+  a node either holds an adjacent ebit half or it does not — with no age, no
+  fidelity, no exposure. So of the fence's three parts (perishable good,
+  custody, admission) the paper has none: it is the **inverse demarcation foil**
+  to the molten-salt entry — full control-plane machinery over a good that
+  never spoils, where molten-salt had a good that spoils and no control plane.
+  For Q6, the "signaling load" is a count of classical UDP messages per
+  request as a function of pre-distribution probability and generator
+  placement (Fig. 4, N=100, ~50–300 messages); there is no switch, no
+  actuation, no rationed resource — it measures how far a request progresses
+  before failing, not whether anything is budgeted. Q1/Q5: nothing (no
+  replenishment cadence; no switch; linear chain only). **What it does give
+  us, unlooked-for:** (i) the append-only stamp history is a *rhyme* for the
+  custody record — provenance carried in-band with the good, single-writer,
+  certified at commit boundaries — but it records actions, not exposure, and
+  carries no clock; (ii) it prices that record: stamps grow linearly with hops
+  and the accumulated forwarding cost quadratically (Sec. 3.3, fit degree
+  1.99), because the ledger rides the quantum channel. That is a citable
+  "custody records have a carrying cost" datum for the HotOS cost axis,
+  cited as a repeater-chain simulation result under their abstract encoding
+  model, never as a hardware number. Fence stands.
+
+### arXiv 2609.04920 — QUASAR: Quantum Satellite Architecture and Routing Simulator
+*Shi, Wang, Yuan, Wu, Zhao. Submitted 2026-09-04.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** fence — and *possibly* Q5
+- **would change:** The fence excludes work unless it occupies the full form
+  of perishable good + custody + admission, not a component of it. This
+  paper's abstract states the simulator "integrates dynamic orbital
+  topologies, time-varying optical transmittance, and quantum memory
+  decoherence into network-layer attributes," evaluates "concurrent
+  requests," and introduces an "Entanglement Distribution Rate (EDR)-Aware
+  Spatiotemporal Routing (EASR) heuristic" — decoherence (perishable good)
+  and routing under concurrency (admission-shaped) are both explicit claims
+  in the same system. If the full paper's EASR heuristic actually arbitrates
+  competing requests for memory/downlink resources against a decoherence
+  clock — custody, not just point-to-point link scheduling — this would be
+  another candidate (alongside PR #4's arXiv 2608.24152) that plausibly
+  occupies the fence's full form rather than a component of it, and the
+  position paper's novelty claim would need to be checked against it
+  directly. Whether the
+  abstract's "concurrent requests" language rises to genuine custody
+  (queued, competing holds) or is just parallel independent routing runs is
+  inference, not stated outright — that is the specific thing the full read
+  must settle. *Possibly* Q5: "dynamic orbital topologies" is a
+  reconfiguring topology envelope, but it reconfigures by satellite motion
+  (visibility windows), a different physical mechanism from the photonic
+  switch fabric Q5 asks about, so this mapping is thin and should be
+  checked, not assumed, on the full read.
+- **mapping note:** this is a simulation-platform paper, not a hardware
+  characterization — it cannot answer any of Q1-Q7's hardware thresholds
+  (those ask for measured distributions), so fence is the only question
+  mapped. Whoever pays this debt should first determine whether EASR models
+  contention for a held resource or only routes already-available links.
+- **disposition:** **Not the fence; ratifies the provocation.** EASR is
+  Dijkstra over time-varying edge weights (Algorithm 1; Listing 1.3 is
+  literally `graph.dijkstra(src, dst, weight_fn=easr_cost)`). The perishable
+  good is represented as one scalar, F(Δτ) = 1/4 + (F0 − 1/4)·exp(−Δτ/τc)
+  (eq. 4), against one clock (τc), and that clock is *summed into the route
+  cost* as −ln η − ln ζ + Δτ/τc (eq. 6); a fidelity floor F* acts as a hard
+  prune on path search. There is no application deadline anywhere — F* is a
+  physics threshold, not an appointment — so the second date does not exist
+  to be co-enforced. "Concurrent requests" means independent origin-
+  destination routing runs whose EDR is summed (Fig. 5b), and the authors say
+  so: "not intended as a standalone algorithmic benchmark or a full
+  resource-contention scheduling model" (Sec. 6.4). No held resource is
+  contended, no custody, no admission. Q5: orbital visibility windows
+  reconfigure the contact graph by satellite motion, not by a switch; nothing
+  about radix, per-port granularity, or simultaneous links per memory —
+  mapping withdrawn. **Value to us:** this is a clean 2026 instance of the
+  exact representation the HotOS paper argues against — decay as a scalar
+  folded into a path weight, one clock, no custody — from a routing-layer
+  simulator that positions itself between NetSquid/SeQUeNCe and optimization
+  studies. Citable (as a simulator design choice, not a claim about hardware)
+  in the "this is the current model" sentence the provocation needs. Fence
+  stands.
+
+### arXiv 2608.04093 — An optical-fibre-integrated buffer for packet-switched quantum networks
+*Spegel-Lexne, Argillander, Clason, Claesson, Hey Tow, Lima, Pereira, Xavier. Submitted 2026-08-04.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** fence — and *possibly* Q1
+- **would change:** The fence excludes work unless it occupies the full form
+  of perishable good + custody + admission, not a component of it. This
+  paper demonstrates a fibre-integrated recirculating-loop buffer that holds
+  a polarisation-encoded qubit payload in custody for storage times up to
+  47 μs, with a measured cost of that custody (1.8% average QBER) and
+  releases the payload on a routing decision read from an attached packet
+  header — a physical custody primitive gated by a header-triggered
+  admission signal, at packet granularity. As described, it holds and
+  releases a single payload rather than arbitrating among competing holds,
+  so this looks like a component (custody + a trigger), not an occupant of
+  the fence's full form; but if the full paper's header logic turns out to
+  arbitrate between multiple buffered payloads under contention, that would
+  push it toward occupying more of the form and the fence would need
+  re-examining — that check is the reason this entry exists. *Possibly* Q1:
+  the "ultra-low-loss poled fibre phase modulator" is described only as
+  providing "fast, polarisation-insensitive switching," with no latency
+  distribution reported, so a Q1 reading is inference, not a claim.
+- **disposition:** **Not the fence; Q1 mapping withdrawn; one unlooked-for
+  datum for the type argument.** This is a device paper: a recirculating
+  fibre loop (Sagnac switch + 100 m storage line + FBG mirror) driven by a
+  poled-fibre phase modulator, storing a 16-pulse weak-coherent-state
+  polarisation payload and retrieving it after a header-selected number of
+  ~6 µs cycles. The "central node decides the delay from the header" scenario
+  (Fig. 1) is described, but the demonstration stores one packet at a time;
+  no competing packets, no held-resource arbitration, no custody record — a
+  component, not the form. For Q1: the modulator's rise/fall times are single
+  measured values (22.4 ns / 26.4 ns, Fig. 2c), not a distribution, and the
+  device is a store/retrieve gate, not a fabric reconfiguration; nothing on
+  tails or state dependence. Q1 stays unanswered. **What it gives us:** a
+  clean hardware instance of the "decay law differs by kind" axis. The loop
+  buffer loses *presence*, not *quality*: per-cycle efficiency ≈ 56% (0.4 dB
+  modulator + 0.3 + 0.5 + 0.1 + 1.2 dB connectors/splices), so survival is
+  geometric in cycles (retrieval still seen after 10 cycles ≈ 60 µs), while
+  QBER stays flat-ish at 1.06–2.74% out to 47 µs. A matter memory with the
+  same retrieval fidelity decays the opposite way. Two offers of equal
+  fidelity, different terminal cause (erasure vs. depolarisation) — exactly
+  the claim the HotOS provocation makes, from a 2026 experiment, citable as
+  such. Also a *calibration-pause* datum, unrated: over 12 h the buffer
+  auto-recalibrates polarisation whenever QBER > 5%, taking "a few minutes"
+  each time (Fig. 6, text); the trigger rate is not reported, so it is a
+  Q7-shaped observation (drift forces maintenance downtime at the hours
+  scale) without the number Q7 asks for. Not a Q6 actuation-budget datum — the
+  pause is drift compensation, not switch rationing. Fence stands.
+
+### arXiv 2608.22766 — Spatio-temporal Path Optimization for Stabilizer-Code-Protected Quantum Networks
+*Zhang, Wang, Zhao, Chen, Guo. Submitted 2026-08-24; revised (v2) 2026-08-25.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** fence
+- **would change:** This paper jointly optimizes, for a logical qubit
+  traversing multiple hops, the path, the QEC-recovery locations, and the
+  protection scheme, under "logical-error and logical-lifetime constraints,"
+  with a multi-flow variant reducing "throughput-normalized congestion"
+  relative to greedy assignment. "Logical-lifetime constraints" is a
+  perishability model (the encoded state has decaying validity); the choice
+  of recovery location is a custody-like decision (where the state is held
+  and reconstituted along the route); multi-flow congestion reduction implies
+  resource contention resolved across competing flows — the three elements
+  the fence names (perishable good + custody + admission). If the full
+  paper's multi-flow algorithm is actually adjudicating admission among
+  contending requests for a shared, decaying network resource, rather than
+  optimizing a single flow's static route in isolation, it would occupy more
+  of the fence's full form than anything read so far in this project's
+  surveillance, and the fence's "unoccupied" conclusion would need
+  re-examining. As abstracted, it is framed as a routing-algorithm
+  contribution ("algorithmic building block for QEC-aware routing"), not as a
+  scheduler or OS — that framing is exactly what the full read must check.
+- **mapping note:** no fidelity-spread or path-persistence data is claimed
+  (Q2, Q7 not mapped — the abstract reports routing-cost and congestion
+  reductions, not fidelity measurements or temporal rank data), so this entry
+  is filed under the fence alone rather than padded with inferential question
+  mappings.
+- **disposition:** **Not the fence — wrong paradigm, wrong tense.** The
+  paper is QEC-protected *direct transmission* of encoded logical qubits and
+  says outright that "entanglement distribution is not used as a
+  network-level communication primitive in our model" (Sec. III-A). The
+  perishable object is a code block in flight, and its "logical lifetime" is
+  a per-scheme budget on inter-recovery propagation time (T_log = 50/100/200/
+  600 µs for surface d=3/5/7/9, Table I) — a segment-time constraint in an
+  offline path computation, not a decaying held good. The single-flow
+  algorithm is a label-correcting search over an auxiliary graph (cost,
+  discretised error, elapsed time; Pareto dominance); the multi-flow variant
+  builds ≤M candidate strategies per flow and solves a min-max-congestion ILP
+  over a *static* demand set. Nothing arrives at runtime, nothing is held,
+  nothing is admitted or refused against other work — "algorithmic building
+  block" is the paper's own description and it is accurate. Fence untouched.
+  **What it gives us, unlooked-for, two things.** (i) Its central formal
+  claim is that validity is "segment-dependent rather than channel-additive":
+  a recovery resets the clock, so a path's feasibility cannot be a sum of
+  fixed link weights, and the NP-hardness proof (App. C) locates the hardness
+  in the *time budget* constraint, not in the error model. That is the
+  physical-clock half of the two-dates argument, stated as a routing theorem
+  in a neighbouring paradigm — citable as such, with the caveat that there is
+  no second (institutional) date here: rθ is an error threshold, not an
+  appointment. (ii) The "scheme profile" φσ = (cost, lifetime budget,
+  error-map) is a *typed protection offer*, and letting the router choose the
+  type per segment cuts cost 55–75% versus always-strongest at equal
+  acceptance (Sec. VII-C, Fig. 2b/e). That is a "typed offers pay" result
+  from a simulator, in a paradigm without entanglement — usable as a
+  motivating neighbour for the HotOS provocation, never as evidence about our
+  object model. Q2/Q7: nothing (no measured spreads or persistence; parameters
+  are drawn from a 2 km-mean exponential and a 0.15 dB/km loss law).
+
 ---
 
 ## Open (UNREAD)
@@ -196,68 +419,6 @@ contraction coefficients and their applications to quantum networks") is an
 information-theoretic contraction-coefficient result, not scheduling or
 resource-management content.*
 
-### arXiv 2608.24152 — A Dynamic-Kernel/QPacket Executable for Quantum Repeater Chains in Q2NS/ns-3
-*Pearson, Caleffi, Cacciapuoti. Submitted 2026-08-25; revised (v2) 2026-08-26.*
-- **status:** UNREAD (abstract read 2026-08-31; the paper itself is the debt)
-- **touches:** fence, Q6 — and *possibly* Q1, Q5
-- **would change:** The fence excludes work unless it occupies the full form
-  (perishable good + custody + admission), not a component. This paper builds
-  a "Dynamic Kernel" — literally named as a kernel — organized as a
-  Planner-Executor-Engine pipeline processing "QPacket" meta-headers carrying
-  service intent and append-only action-commit stamps, managing entanglement
-  as "a non-local, non-copyable, stateful network resource," including
-  pre-distributed entanglement and forwarding/delegation across nodes with
-  uneven generation support. If the full paper's kernel adjudicates admission
-  among competing service requests over a held, decaying entanglement
-  resource — not just the single scoped linear-chain demonstration the
-  abstract describes — this would be the closest occupant of the fence's full
-  form seen in this project's surveillance to date, and the fence's
-  "unoccupied" conclusion would need re-examining. As abstracted ("deliberately
-  scoped to an analytically verifiable service and policy" on a "linear
-  quantum repeater chain"), it reads as a protocol-architecture demonstration
-  rather than a full multi-request scheduler — that narrowness is exactly what
-  the full read must check. For Q6: the abstract explicitly reports measuring
-  "signaling load, forwarding behavior, and QPacket meta-header growth" as a
-  function of policy choices and available network resources — controller/
-  signaling traffic is one of the constrained-resource classes Q6 names
-  directly. If the full paper shows signaling/controller load scaling with
-  reconfiguration or actuation decisions rather than only header encoding, it
-  could give Q6 a first real number for that resource class.
-- **mapping note:** *possibly* Q1 — the link-preparation policy accounting for
-  pre-distributed entanglement is adjacent to replenishment cadence, but no
-  cadence distribution is claimed, so this is inference. *Possibly* Q5 — the
-  linear-chain topology is a specific, non-switched topology and does not
-  address port-level multiplexing or reconfiguration granularity; also
-  inference. Whoever pays this debt should check the fence and Q6 first.
-
-### arXiv 2608.22766 — Spatio-temporal Path Optimization for Stabilizer-Code-Protected Quantum Networks
-*Zhang, Wang, Zhao, Chen, Guo. Submitted 2026-08-24; revised (v2) 2026-08-25.*
-- **status:** UNREAD (abstract read 2026-08-31; the paper itself is the debt)
-- **touches:** fence
-- **would change:** This paper jointly optimizes, for a logical qubit
-  traversing multiple hops, the path, the QEC-recovery locations, and the
-  protection scheme, under "logical-error and logical-lifetime constraints,"
-  with a multi-flow variant reducing "throughput-normalized congestion"
-  relative to greedy assignment. "Logical-lifetime constraints" is a
-  perishability model (the encoded state has decaying validity); the choice
-  of recovery location is a custody-like decision (where the state is held
-  and reconstituted along the route); multi-flow congestion reduction implies
-  resource contention resolved across competing flows — the three elements
-  the fence names (perishable good + custody + admission). If the full
-  paper's multi-flow algorithm is actually adjudicating admission among
-  contending requests for a shared, decaying network resource, rather than
-  optimizing a single flow's static route in isolation, it would occupy more
-  of the fence's full form than anything read so far in this project's
-  surveillance, and the fence's "unoccupied" conclusion would need
-  re-examining. As abstracted, it is framed as a routing-algorithm
-  contribution ("algorithmic building block for QEC-aware routing"), not as a
-  scheduler or OS — that framing is exactly what the full read must check.
-- **mapping note:** no fidelity-spread or path-persistence data is claimed
-  (Q2, Q7 not mapped — the abstract reports routing-cost and congestion
-  reductions, not fidelity measurements or temporal rank data), so this entry
-  is filed under the fence alone rather than padded with inferential question
-  mappings.
-
 ---
 
 *Sweep of 2026-08-24 (fourth scheduled run). Window: submissions 2026-08-17
@@ -393,28 +554,6 @@ failure-cost or blocking data against Q4's threshold.*
   answers Q7's temporal-persistence framing, not Q2's instantaneous-spread
   framing, even though both quantities are "fidelity."
 
-### arXiv 2608.04093 — An optical-fibre-integrated buffer for packet-switched quantum networks
-*Spegel-Lexne, Argillander, Clason, Claesson, Hey Tow, Lima, Pereira, Xavier. Submitted 2026-08-04.*
-- **status:** UNREAD (abstract read 2026-08-17; the paper itself is the debt)
-- **touches:** fence — and *possibly* Q1
-- **would change:** The fence excludes work unless it occupies the full form
-  of perishable good + custody + admission, not a component of it. This
-  paper demonstrates a fibre-integrated recirculating-loop buffer that holds
-  a polarisation-encoded qubit payload in custody for storage times up to
-  47 μs, with a measured cost of that custody (1.8% average QBER) and
-  releases the payload on a routing decision read from an attached packet
-  header — a physical custody primitive gated by a header-triggered
-  admission signal, at packet granularity. As described, it holds and
-  releases a single payload rather than arbitrating among competing holds,
-  so this looks like a component (custody + a trigger), not an occupant of
-  the fence's full form; but if the full paper's header logic turns out to
-  arbitrate between multiple buffered payloads under contention, that would
-  push it toward occupying more of the form and the fence would need
-  re-examining — that check is the reason this entry exists. *Possibly* Q1:
-  the "ultra-low-loss poled fibre phase modulator" is described only as
-  providing "fast, polarisation-insensitive switching," with no latency
-  distribution reported, so a Q1 reading is inference, not a claim.
-
 ---
 
 *Sweep of 2026-09-07 (sixth scheduled run). Window: submissions 2026-08-31
@@ -456,39 +595,6 @@ drift-autocorrelation-vs-lead-time comparison — the switches are a
 calibration-path-decomposition detail, not characterized as a
 scheduled/rationed resource, so it is a component-technology foil, not a
 hit.*
-
-### arXiv 2609.04920 — QUASAR: Quantum Satellite Architecture and Routing Simulator
-*Shi, Wang, Yuan, Wu, Zhao. Submitted 2026-09-04.*
-- **status:** UNREAD (abstract read 2026-09-07; the paper itself is the debt)
-- **touches:** fence — and *possibly* Q5
-- **would change:** The fence excludes work unless it occupies the full form
-  of perishable good + custody + admission, not a component of it. This
-  paper's abstract states the simulator "integrates dynamic orbital
-  topologies, time-varying optical transmittance, and quantum memory
-  decoherence into network-layer attributes," evaluates "concurrent
-  requests," and introduces an "Entanglement Distribution Rate (EDR)-Aware
-  Spatiotemporal Routing (EASR) heuristic" — decoherence (perishable good)
-  and routing under concurrency (admission-shaped) are both explicit claims
-  in the same system. If the full paper's EASR heuristic actually arbitrates
-  competing requests for memory/downlink resources against a decoherence
-  clock — custody, not just point-to-point link scheduling — this would be
-  another candidate (alongside PR #4's arXiv 2608.24152) that plausibly
-  occupies the fence's full form rather than a component of it, and the
-  position paper's novelty claim would need to be checked against it
-  directly. Whether the
-  abstract's "concurrent requests" language rises to genuine custody
-  (queued, competing holds) or is just parallel independent routing runs is
-  inference, not stated outright — that is the specific thing the full read
-  must settle. *Possibly* Q5: "dynamic orbital topologies" is a
-  reconfiguring topology envelope, but it reconfigures by satellite motion
-  (visibility windows), a different physical mechanism from the photonic
-  switch fabric Q5 asks about, so this mapping is thin and should be
-  checked, not assumed, on the full read.
-- **mapping note:** this is a simulation-platform paper, not a hardware
-  characterization — it cannot answer any of Q1-Q7's hardware thresholds
-  (those ask for measured distributions), so fence is the only question
-  mapped. Whoever pays this debt should first determine whether EASR models
-  contention for a held resource or only routes already-available links.
 
 ---
 

@@ -1,0 +1,2683 @@
+Spatio-temporal Path Optimization for
+Stabilizer-Code-Protected Quantum Networks
+Yuanbo Zhang∗ , Qianfan Wang† , Yangming Zhao‡ , Lin Chen§ , Deke Guo∗
+∗ School of Computer Science and Engineering, Sun Yat-sen University,
+
+zhangyb36@mail2.sysu.edu.cn, guodk@mail.sysu.edu.cn
+† Department of Computer Science, City University of Hong Kong, qwang742@cityu.edu.hk
+‡ State Key Laboratory of Novel Software Technology, Nanjing University, ymzhao@nju.edu.cn
+‡ School of Intelligent Software and Engineering, Nanjing University Suzhou Campus
+§ Engineering Research Centre of Applied Technology on Machine Translation and Artificial Intelligence,
+
+arXiv:2608.22766v2 [cs.NI] 25 Aug 2026
+
+Macao Polytechnic University, lchen@mpu.edu.mo
+
+Abstract—Quantum Error Correction (QEC)-protected direct
+transmission is a fundamental approach to preserve fragile
+quantum states while they are physically forwarded across noisy
+quantum networks. When a logical qubit traverses multiple hops,
+selected QEC-capable nodes may recover the encoded state before
+it continues along the route. The feasibility and cost of the final
+transmission strategy therefore depend on how we jointly choose
+the path, the recovery locations, and the protection schemes.
+In this paper, we formulate and analyze a cross-layer spatiotemporal path optimization problem for block-style stabilizercode-protected direct transmission. Our main results include
+fixed-scheme and flexible-scheme single-flow routing algorithms,
+as well as a multi-flow routing algorithm. The framework
+developed in this paper can serve as an algorithmic building
+block for QEC-aware routing under logical-error and logicallifetime constraints. Simulations show that it reduces single-flow
+average routing cost by approximately 25–30% over DecodeAlways and lowers multi-flow throughput-normalized congestion
+by approximately 28–31% over Greedy-Assignment.
+
+I. I NTRODUCTION
+Quantum networks aim to transmit and process quantum
+information across distributed nodes, enabling applications
+ranging from secure quantum communication and distributed
+quantum computing to networked quantum sensing [1], [2],
+[3]. Unlike classical information, quantum states cannot be
+copied directly and are vulnerable to channel noise, imperfect
+operations, and decoherence during multi-hop communication [4], [5]. Consequently, multi-hop quantum communication
+is not merely a connectivity problem: routing must specify
+what quantum object is carried across the network and how
+its state is protected while traversing noisy channels. This
+paper focuses on the direct-transmission paradigm, where
+The work of Lin Chen was supported by Science and Technology Development Fund of Macau SAR under Grant 0119/2025/RIA2. The work
+of Yangming Zhao was supported in part by the National Natural Science
+Foundation of China under Grants 62572233 and 62272428. Corresponding
+authors: Lin Chen and Deke Guo. Thanks Jifan Liang for assistance with
+the experimental data. This version is an extended version of the ICNP 2026
+paper.
+
+quantum information itself is physically forwarded through
+noisy channels as encoded logical qubits.1
+Direct transmission exposes a concrete protection problem.
+To protect quantum states, data qubits can be encoded into
+logical qubits using QEC codes [10]. In QEC-protected direct
+transmission, a logical qubit is carried by physical qubits and
+forwarded over multiple physical channels. Selected QECcapable nodes may perform a local recovery operation, namely
+decoding and re-encoding, to refresh the encoded state before
+it continues along the route. Such recovery choices, together
+with the choice of protection scheme, affect both feasibility
+and resource consumption. Therefore, computing a route for
+a logical qubit is not only a network-layer path-selection
+task, but also a joint decision on the physical path, recovery
+placement, and protection scheme.
+The key challenge is that QEC recovery makes path computation segment-dependent rather than channel-additive. In
+classical routing, a path is often evaluated by adding fixed
+link metrics such as cost or delay. In QEC-protected direct
+transmission, however, a channel cannot be evaluated independently because recovery operations define its current segment.
+Physical noise and propagation time accumulate until the next
+recovery operation, and recovery then resets the accumulated
+segment state at the price of additional QEC operation cost. 2
+Thus, path computation must jointly optimize forwarding decisions, recovery placement, and protection-scheme assignment.
+This joint optimization makes the problem segment-dependent
+rather than a shortest-path computation over additive channel
+metrics.
+Two concrete constraints arise. First, a recovery-delimited
+segment’s logical-error contribution cannot in general be represented by a sum of fixed channel weights. Instead, it applies
+a scheme-dependent nonlinear mapping to the physical noise
+1 Another mainstream paradigm is entanglement-based communication,
+which distributes entangled pairs and uses teleportation to transfer quantum
+states [6], [7], [8], [9].
+2 One may ask how this differs from wireless relaying. Decode-and-forward
+re-encodes classical messages, while amplify-and-forward forwards noisy
+signals [11]; QEC recovery refreshes encoded quantum states and sets path
+segments for logical-error and lifetime checks.
+
+accumulated since the last recovery. As a result, a locally
+cheap or reliable partial path may become suboptimal after
+considering where the next recovery operation is performed.
+Second, an encoded logical qubit remains reliable only for a
+limited lifetime. In this paper, the inter-recovery time refers
+to the elapsed propagation time between two consecutive
+recovery operations, and each such segment must stay within
+the logical-lifetime budget of the chosen QEC scheme. These
+two constraints interact directly: performing recovery more
+frequently shortens each segment and reduces accumulated
+noise and elapsed time, but increases QEC operation cost;
+performing recovery less frequently saves cost, but may violate
+the logical-error or lifetime constraints.
+Current routing models miss this interaction. Classical
+routing uses additive link metrics and constraints, whereas
+entanglement-based routing concerns the generation, choice,
+and purification of entanglement resources [12]. Existing
+studies of QEC-aware direct transmission often treat error
+correction as a coarse improvement in fidelity or resource
+allocation [13]. Thus, they model neither segment-dependent,
+non-additive logical error nor the joint placement of recovery
+operation, protection schemes, and the maximum travel time
+before the next recovery.
+Motivated by this gap, we make three contributions:
+We identify and formulate a QEC-aware spatio-temporal
+path optimization problem for block-style stabilizer-codeprotected direct transmission. Each encoded code block
+serves as a routing unit. We derive a routing-level model
+of logical-error evolution from the physical noise accumulated within each segment. The formulation enforces
+both end-to-end logical-error and inter-recovery logicallifetime constraints.
+• We analyze the computational structure of this problem and show that it is NP-hard even for a single
+request with a fixed protection scheme. We then develop a generic QEC-aware spatio-temporal state-space
+framework. It separates QEC-specific segment evaluation
+from graph-level label-correcting search. Its labels jointly
+track routing cost, accumulated logical error, and elapsed
+inter-recovery time under discretization and dominance
+pruning.
+• We instantiate the framework in three settings: fixedscheme routing, flexible protection-scheme assignment,
+and multi-flow load balancing. In the multi-flow setting,
+we generate feasible candidate strategies for each request
+and select among them using an ILP formulation.
+
+•
+
+More broadly, this work provides an algorithmic perspective
+for quantum path optimization under physical-layer protection constraints. Rather than treating QEC as a fixed linkquality improvement or a post-processing step, the proposed
+framework incorporates recovery operations, code-dependent
+logical-error behavior, and logical lifetime directly into path
+computation. This perspective can support more general
+QEC-aware routing designs for direct-transmission quantum
+networks, including networks with heterogeneous protection
+
+schemes, resource-aware recovery placement, and networkwide traffic engineering objectives.
+II. P RELIMINARIES
+In this section, we review the essential background of QEC
+that forms the basis of our network model.
+A. Quantum Error Correction with Stabilizer Codes
+Quantum Error Correction (QEC) combats physical noise
+and decoherence that threaten quantum information. It protects
+logical information by encoding it in redundant quantum
+degrees of freedom [10]. Unlike classical bits, qubits cannot
+be copied to create redundancy due to the no-cloning theorem.
+Instead, a QEC code encodes the state of one or more
+logical qubits into a block of n physical qubits, so that local
+physical errors can be detected and corrected without directly
+measuring the encoded logical state.
+We use block-style stabilizer-code-based schemes as the
+main QEC abstraction because a block of physical qubits can
+be treated as one routing unit, matching our segment-based
+decode-and-re-encode model. The framework only requires
+each scheme to expose a few routing-relevant quantities,
+including its logical-error behavior, decoding/re-encoding cost,
+and logical decoherence budget; these quantities will be formalized as a scheme profile in Section III. Non-block-style
+schemes with inter-block or non-local dependencies require an
+extended state model and are outside the present scope [14],
+[15]. A stabilizer code is specified by commuting Pauli stabilizer generators [16], whose measurements produce an error
+syndrome used for decoding and recovery.
+The error-correction capability of a stabilizer code is commonly characterized by its parameters [[n, k, dcode ]]:
+• n: the number of physical qubits in the code block;
+• k: the number of logical qubits protected by the code.
+In our direct-transmission setting, we focus on k = 1,
+i.e., each request carries one logical qubit. The extension
+to k > 1 is conceptually straightforward: the k logical
+qubits encoded in the same block can be treated as one
+routing unit, with the QoS and cost metrics defined at the
+block level.
+• dcode : the code distance. Under the standard adversarial
+error model, a code with distance dcode can correct up to
+⌊(dcode − 1)/2⌋ arbitrary physical errors.
+Stabilizer-code families offer different levels of protection capability, physical-qubit overhead, decoding complexity,
+and operational cost. Examples include surface codes [17]
+and Steane codes. For routing, we represent these tradeoffs through a profile for each candidate protection scheme.
+This profile specifies the decoding/re-encoding cost. It also
+records logical-error behavior and logical decoherence time.
+The routing algorithm can thus compare schemes without
+modeling the internal details of each code family.
+B. Logical Error Rate and Decoherence Time
+The quality of a QEC-protected channel is characterized by
+logical error rate and logical decoherence time derived from
+the underlying code and physical noise model.
+
+1) Logical Error Rate: For a given stabilizer code scheme
+σ, let n denote the number of physical qubits used to encode
+one logical qubit. Let pphys denote the total physical error
+probability of a physical qubit, and let pX , pY , and pZ denote
+the probabilities of Pauli X (bit-flip), Z (phase-flip), and
+Y (both) errors, respectively, where pphys = pX + pY + pZ .
+The logical error rate, plog , is the probability that an uncorrectable error occurs on the logical qubit after a full QEC
+cycle (i.e., syndrome measurement, decoding, and correction).
+For a given physical error rate pphys , the logical error rate is
+well-approximated by [18]:
+n  
+X
+n
+phys
+plog
+(p
+)
+=
+(1 − pphys )n−j
+σ
+j
+j=0
+
+j−i 
+j  
+X
+j i X j − i ℓ j−i−ℓ
+pX pY
+fσ,j (i, ℓ),
+·
+pZ
+ℓ
+i
+i=0
+ℓ=0
+(1)
+where j denotes the total number of erroneous physical qubits
+in the code block. Among these j errors, i are Z errors, ℓ
+are X errors, and the remaining j − i − ℓ are Y errors. The
+coefficient fσ,j (i, ℓ) is a code- and decoder-specific parameter,
+representing the fraction of uncorrectable error patterns with i
+Z errors, ℓ X errors, and j − i − ℓ Y errors under scheme σ.
+2) Logical Decoherence Time: In a multi-hop quantum
+network, the state of a physical qubit is susceptible to errors
+induced by decoherence [19]. These errors are typically modeled by the Pauli operators X, Z, and Y. The rate at which
+these physical errors occur is characterized by the physical
+decoherence time, as well as the logical decoherence time. If
+the time between two decoding operations exceeds the logical
+decoherence time, the logical qubits suffer an uncorrectable
+logical error, which cannot be corrected via QEC codes [19].
+To protect logical qubits, it is necessary to decode logical
+qubits within logical decoherence time [20].
+III. S YSTEM M ODEL AND P ROBLEM F ORMULATION
+In this section, we develop a novel spatio-temporal network
+model for QEC-protected quantum networks.
+A. Network Model
+We model a quantum network as an undirected graph
+G = (V, E).3 Here, V is the set of quantum nodes, and E is
+the set of physical channels. The network transmits encoded
+qubits directly through physical channels. It does not first
+distribute entangled pairs and then teleport quantum states.
+Thus, while encoded logical qubits may contain intra-block
+quantum correlations, entanglement distribution is not used as
+a network-level communication primitive in our model.
+1) Node Model: The network consists of three types of
+nodes, distinguished by their QEC capabilities:
+• Ordinary Switches: These nodes can only forward
+encoded qubits to the next hop but perform no QEC
+operations. Hereafter, we refer to them as switches;
+3 We focus on undirected graphs mainly to keep the analysis concise; our
+results can be extended to directed graphs with straightforward adaptation.
+
+Super Switches: These are QEC-capable nodes, at which
+the routing strategy may perform a decoding-and-reencoding operation. A decoding node v ∈ V can perform
+a full decoding-and-re-encoding operation on a logical
+qubit;
+• User: These nodes are request endpoints and are equipped
+with super switches. We treat user nodes as super
+switches in our analysis.
+This heterogeneous model of switches, super switches and
+users is motivated by the significant resource imbalance
+between quantum forwarding and quantum error correction.
+Forwarding a logical qubit can be a relatively lightweight
+operation, while performing a full QEC cycle is an extremely
+demanding task. However, to obtain higher QoS, users are
+highly likely to be equipped with super switches. Given this
+consideration, we model the network as heterogeneous.
+2) Channel Model: Each physical channel e = (u, v) ∈ E
+is characterized by three parameters:
+• An additive traversal cost ce over channel e, which
+can be instantiated as monetary cost or other resource
+consumption.
+• A channel physical error probability pe , which abstracts
+the probability that a single physical qubit experiences a
+non-identity physical error during one traversal of channel
+e. For Pauli noise, pe = pe,X + pe,Y + pe,Z , where pe,X ,
+pe,Y , and pe,Z are the probabilities of X, Y, and Z errors
+over channel e, respectively.
+• A propagation time te , the physical time-of-flight for a
+qubit traversing the channel.
+•
+
+B. Strategy and State Evolution
+1) Routing and protection strategy formulation: A routing
+strategy for a given source-destination pair (s, d) is formally
+defined as a triplet π = (P, D, Σ), where:
+• P = (v0 , e1 , v1 , . . . , eL , vL ) is a simple physical path
+in the graph G, where v0 = s, vL = d, L is the path
+length, V (P ) = {v0 , . . . , vL } is its node set, and E(P ) =
+{e1 , . . . , eL } is its channel set;
+• D ⊆ {v ∈ V (P ) | v is a super switch} is the set of
+chosen decoding locations along the path P . Nodes in
+V (P ) \ D are designated as forwarding-only;
+• Σ = {σv | v ∈ D} is the protection-scheme allocation,
+where σv ∈ Sv denotes the protection scheme instance
+assigned for the (re-)encoding operation at node v, and
+Sv is the set of candidate schemes available at node v.
+For routing purposes, each candidate scheme σ ∈ Sv is
+characterized by a routing-relevant scheme profile
+ϕσ = (cσ , Tσlog , Fσ ),
+where cσ is the decoding/re-encoding cost, Tσlog is the logical
+decoherence budget, and Fσ maps the accumulated physical
+noise on a segment to its logical-error probability. Its Paulinoise instantiation and the segment-level simplification used in
+our evaluation are given by Eqs. (3)–(4). The routing algorithm
+does not directly model the internal operation of the code or
+
+decoder. Their effect is represented by Fσ , so the abstraction
+is only as accurate as this mapping.
+The profile above uses an idealized recovery model. It
+accounts for the operational cost of decoding and re-encoding
+but omits recovery faults and latency. In practice, gates,
+measurements, and decoding may introduce errors, while the
+recovery process itself takes time. The implementation also
+determines whether the logical state remains protected during
+recovery. These effects do not alter the structure of our routing
+framework. They can be incorporated by augmenting ϕσ with
+a scheme-specific recovery error and duration, which are
+then included in the error and time updates in the algorithm
+proposed later.
+This profile-based recovery abstraction also defines the
+scope of the current model. It covers block-style stabilizer
+codes that protect one logical qubit and support node-local
+recovery. Our model does not directly cover entanglementassisted stabilizer codes, convolutional stabilizer codes, or
+other stabilizer-based schemes whose operation fundamentally
+departs from this block-segment abstraction.
+In this paper, we instantiate Sv using surface-code-based
+schemes. However, the model itself is not restricted to surface
+codes. Any protection scheme that can provide the above
+routing-relevant profile can be incorporated into the same optimization framework by replacing the corresponding schemespecific parameters. If |Sv | = 1 for all v, we refer to this
+scenario as the fixed-scheme case; otherwise, we refer to it as
+the flexible-scheme case.
+The total cost of a given strategy π = (P, D, Σ) is the sum
+of link traversal costs and the operational costs of the assigned
+protection schemes:
+X
+X
+C(π) =
+ce +
+cσv .
+(2)
+e∈E(P )
+
+v∈D
+
+2) Segment-Level Error Modeling: A path segment q is
+defined as the subsequence of physical channels traversed by
+a logical qubit between two consecutive decoding/re-encoding
+operations. Let E(q) denote the set of physical channels contained in segment q. We summarize the accumulated segmentlevel physical noise by the composite physical error probability
+Y
+pcomp
+=1−
+(1 − pe ).
+(3)
+q
+e∈E(q)
+
+Under independent channel errors, this quantity exactly gives
+the probability that at least onePphysical error occurs along
+the segment. Only when Sq = e∈E(q) pe ≪ 1 do we use it
+as a first-order surrogate for the net non-identity Pauli-error
+probability of the composed segment. The omitted multi-error
+cancellations, e.g., X · X = I, contribute O(Sq2 ), as shown in
+Appendix A. The approximation is not justified when Sq is
+large.
+To obtain a compact logical-error expression, we use an i.i.d.
+depolarizing-channel instantiation for the segment-level noise
+model. Specifically, for a composite physical error probability
+pcomp
+, a physical qubit remains unchanged with probability
+q
+
+1 − pcomp
+; conditioned on an error, it suffers an X, Y , or Z
+q
+error with equal probability. Equivalently,
+pX = pY = pZ = pcomp
+/3.
+q
+This instantiation yields a simpler expression based on error
+weight. It is a reduced form of Eq. (1). Let nσ be the number of
+physical qubits used by scheme σ. For weight j, f¯σ,j denotes
+the fraction of Pauli error patterns that remain uncorrectable
+after decoding. This fraction covers all error locations and
+Pauli error types. The coefficient f¯σ,j can be obtained through
+decoder-level simulation, experimental characterization, or numerical lookup tables. Then the logical error rate can be
+written as
+ 
+nσ
+X
+nσ
+log
+comp
+¯
+fσ,j
+(1 − pcomp
+)nσ −j (pcomp
+)j . (4)
+pq,σ (pq ) =
+q
+q
+j
+j=0
+Our simulations instantiate Fσ using Eq. (4) for low-error
+recovery-delimited segments under i.i.d. depolarizing Pauli
+noise. This instantiation depends only on the Pauli error
+weight and averages over error locations and Pauli types. It
+therefore treats all error patterns of the same weight identically
+and cannot capture distribution-dependent logical behavior. Its
+i.i.d. assumption also excludes spatial and temporal correlations in practical surface-code channels. Independent nondepolarizing Pauli noise can use Eq. (1); loss, erasure, nonPauli, or correlated noise requires a scheme-specific mapping
+plog
+q,σ (·) calibrated to the channel and decoder. Thus, longdistance repeater links dominated by loss or erasure need a
+different segment model. If the new mapping depends only
+on the accumulated segment noise represented in the current
+model, only Fσ needs to be replaced. Otherwise, the required
+noise variables can be added to the labels in the generic statespace framework of Section IV.
+Before traversing segment q, suppose that a logical qubit
+has a cumulative logical error rate rprev . let plog
+q,σ denote the
+segment-level logical error rate induced by this segment under
+protection scheme σ after the QEC cycle at the segment
+endpoint. Under the segment-level independence assumption,
+the cumulative logical error rate rnew after traversing the
+segment and completing the QEC cycle is
+rnew = rprev + (1 − rprev ) · plog
+q,σ .
+
+(5)
+
+Equation (5) counts two disjoint cases: a logical error exists
+before the segment, or the segment introduces one when there
+is no prior error. The update assumes independent segment
+errors and ignores cross-segment logical-Pauli cancellations.
+Under R = − log(1 − r), Eq. (5) becomes Rnew = Rprev −
+log(1 − plog
+Let
+q,σ ) and is additive across
+P recovery segments.
+comp
+ae = − log(1 − pe ) and Aq =
+a
+,
+so
+p
+=
+q
+e∈E(q) e
+−Aq
+1−e
+. Writing Eq. (4) as Fσ , a segment contributes
+Ψσ (Aq ) = − log(1 − Fσ (1 − e−Aq )) to R. In general,
+Ψσ (A1 + A2 ) ̸= Ψσ (A1 ) + Ψσ (A2 ), so this contribution
+is not a sum of fixed physical-channel weights. A detailed
+analysis in Appendix B bounds this recurrence error using the
+net segment-error input plog,net
+, which accounts for Pauli-error
+q,σ
+
+cancellations within the segment. It also analyzes the upstream
+error from Eqs. (3)–(4) and gives the low-error conditions
+for the full approximation chain. Here, r0 is the initial postencoding logical error rate, set to 0 unless specified.
+C. Single-Flow Problem Formulation
+The objective is to compute a minimum-cost strategy
+(P ∗ , D∗ , Σ∗ ) among all feasible strategies. A strategy is
+feasible if it satisfies the following two constraints:
+1) End-to-End Error Rate Constraint: The final logical
+error rate at the destination node, denoted by r, must not
+exceed the application-specific threshold rθ , i.e., r ≤ rθ .
+2) Logical Decoherence Time Constraint: For every segment q, the segment travel time tseg
+q must not exceed the
+logical decoherence budget of the protection scheme σ
+used at the segment start:
+log
+tseg
+q < Tσ .
+
+(6)
+
+Additional channel-level decoherence or storage-loss
+constraints can be incorporated by refining the segmenttime budget, but are not explicitly modeled in this paper.
+This formulation defines the single-flow Spatio-Temporal Constrained Path Problem, a state-dependent extension of the
+classical Multi-Constrained Path Problem (MCPP).
+Classical MCPP assigns each edge fixed additive weights for
+cost and constrained resources [21], [22]. Our problem can
+be cast as MCPP by treating each recovery-delimited segment
+and protection scheme as one edge in an expanded graph
+and omitting combinations that violate the lifetime bound. On
+the physical graph, however, a segment’s accumulated noise
+is transformed into logical error through a scheme-dependent
+nonlinear mapping. Consequently, its logical-error contribution
+cannot generally be expressed as a sum of fixed weights
+assigned to individual physical channels. Our framework
+avoids enumerating all such segments and scheme choices by
+retaining the segment state in QEC-aware label transitions to
+be introduced in the next section.
+The following sections instantiate the framework for one
+fixed scheme (Section IV), flexible schemes (Section V), and
+multi-flow candidate generation (Section VI).
+IV. G ENERIC S TATE -S PACE F RAMEWORK FOR
+S INGLE -F LOW C OMPUTATION
+In this section, we first develop the generic state-space
+framework for the fixed-scheme single-flow setting. In this
+base case, the protection scheme is fixed for all recovery nodes,
+so the index σ denoting the encoding instance will be omitted,
+log
+and we use plog
+instead. To characterize the intrinsic
+q ,T
+difficulty of our problem, we first study its decision version.
+The following theorem shows that even deciding whether a
+feasible strategy exists is computationally intractable.
+Theorem 1. The corresponding optimization problem of finding a minimum-cost feasible strategy is NP-hard.
+The proof of Theorem 1, given in Appendix C, sets all
+physical error rates to zero. Thus, provided that zero physical
+
+noise yields zero logical error, the NP-hardness result is
+independent of the first-order approximation. The reduction
+from the Shortest Weight-Constrained Path Problem (SWCPP)
+therefore locates the source of NP-hardness in constrained
+path selection rather than in logical-error evolution. This result
+of worst case leaves open pseudo-polynomial approaches for
+suitably bounded instances.
+Framework Overview. The framework consists of three
+parts. First, state expansion maps node-local forwarding and
+recovery choices into an auxiliary graph H = (VH , EH ).
+Second, a QEC-aware label-transition procedure extends a
+partial label across one auxiliary channel by updating traversal
+cost, segment noise, elapsed time, and, at recovery nodes,
+the cumulative logical error. Third, a dominance-based labelcorrecting search keeps only Pareto-efficient labels in the
+dimensions of cost, logical error, and elapsed inter-recovery
+time. The fixed-scheme case below uses H = G′ , while the
+flexible-scheme instantiation in Section V uses H = G′′ .
+Construction of the Auxiliary Graph. We construct the
+auxiliary graph G′ from the original graph G via state-space
+expansion. The key idea is to convert the node-local operation
+choice, i.e., forwarding or decoding, into a path choice in the
+auxiliary graph. In this way, routing and decoding-placement
+decisions can be handled in a unified manner.
+For each original node v, let A(v) denote its corresponding
+auxiliary node set:
+
+
+if v is an ordinary switch,
+{vfo },
+A(v) = {vfo , vde }, if v is an intermediate super switch,
+
+
+{dde },
+if v = d.
+Here, vfo represents forwarding the logical qubit without
+decoding, while vde represents decoding and re-encoding at
+super switch v. For each original channel (u, v) ∈ E, we add
+an auxiliary channel (u′ , v ′ ) for every u′ ∈ A(u) and every
+v ′ ∈ A(v), with the same traversal cost cu,v .
+An example of the auxiliary graph G′ is shown in Fig. 1(b).
+The path (sfo , ufo , vde , dde ) represents a strategy that forwards
+the logical qubit at super switch u, and performs decoding at
+v and d.
+Data structure. For each node v ∈ VH in the auxiliary
+graph, we maintain a label set Lv . Each label l ∈ Lv represents
+a partial strategy from the source s to node v. Specifically, a
+label is a quintuple l ≜ (c, r̂, t̂, q, v1 ), where:
+c is the cost accumulated along the partial strategy
+represented by l;
+• r̂ is the discretized cumulative logical error rate of the
+logical qubit at node
+k Given the actual logical error rate
+j v.
+r
+r, we define r̂ ≜ ∆r ∆r , where ∆r is the discretization
+step size for the error-rate dimension;
+• t̂ is the discretized elapsed time since the last decoding
+operation.
+Given the actual elapsed time t, we define t̂ ≜
+j k
+t
+∆
+,
+where
+∆t is the time discretization step size;
+t
+∆t
+• q is the current segment-noise accumulator. It records the
+physical error probabilities of the channels traversed since
+•
+
+Algorithm 2 E XTEND L ABEL(l, e, v)
+s
+
+u
+
+v
+
+d
+
+(a) Original graph G.
+
+sfo
+
+ufo
+
+vfo
+
+ude
+
+vde
+
+dde
+
+(b) Auxiliary graph for single-scheme assignment (G′ ).
+
+ufo
+
+vfo
+
+1: Input: label l = (c, r̂, t̂, q, pred), channel e = (u, v)
+2: q ′ ← q ∪ {pe }
+
+3: t̂′ ← (t̂ + te )/∆t ∆t
+4: if v is a forwarding node or an ordinary switch then
+5:
+return (c + ce , r̂, t̂′ , q ′ , u)
+6: end if
+7: if v is a decoding node using scheme σ then
+8:
+if t̂′ ≥ Tσlog then
+9:
+return infeasible
+10:
+end if
+11:
+compute pcomp
+by Eq. (3)
+q′
+
+compute plog
+q ′ ,σ by Eq. (4)
+13:
+rnew ← r̂ + (1 − r̂)plog
+q ′ ,σ
+14:
+r̂′ ← ⌊rnew /∆r ⌋ ∆r
+15:
+if r̂′ > rθ then
+16:
+return infeasible
+17:
+end if
+18:
+return (c + ce + cσ , r̂′ , 0, ∅, u)
+19: end if
+12:
+
+sfo
+
+u1de
+
+1
+vde
+
+d1de
+
+u2de
+
+2
+vde
+
+d2de
+
+(c) Further auxiliary graph for multi-scheme assignment
+(G′′ ).
+Fig. 1. An example of transforming the original graph G into the auxiliary
+graphs G′ and G′′ . White nodes represent forwarding-only switches, and
+orange nodes represent decoding-capable super switches.
+
+Algorithm 1 Generic Framework for QEC-Aware Label Correction
+1: Input:auxiliary state-space graph H = (VH , EH ), source
+s, destination d, and discretization steps ∆r , ∆t
+2: Output: a minimum-cost feasible strategy, if one exists
+3: for each node v ∈ VH do
+4:
+Lv ← ∅
+5: end for
+6: Ls ← {(0, ⌊r0 /∆r ⌋∆r , 0, ∅, ∅)}
+7: Q ← {s}
+8: while Q ̸= ∅ do
+9:
+u ← D EQUEUE(Q)
+10:
+for each channel e = (u, v) ∈ EH do
+11:
+for each label l ∈ Lu do
+12:
+lnew ← E XTEND L ABEL(l, e, v)
+13:
+if lnew is feasible then
+14:
+if I NSERTA ND P RUNE(lnew , Lv ) then
+15:
+E NQUEUE(Q, v) if v ∈
+/Q
+16:
+end if
+17:
+end if
+18:
+end for
+19:
+end for
+20: end while
+21: if Ld = ∅ then
+22:
+return no feasible strategy
+23: else
+24:
+choose the minimum-cost label in Ld
+25:
+reconstruct the path and operations by backtracking
+predecessors
+26:
+return the corresponding strategy (P̂ , D̂, Σ̂)
+27: end if
+
+Algorithm 3 I NSERTA ND P RUNE(l, Lv )
+1: if l is dominated by some label in Lv then
+2:
+return false
+3: end if
+4: remove all labels in Lv dominated by l
+5: add l to Lv
+6: return true
+
+the last decoding operation. It is used to compute the
+composite physical error probability pcomp
+;
+q
+• v1 is the predecessor of v in the auxiliary graph and is
+used for path reconstruction.
+Given two labels li = (ci , r̂i , t̂i , ∗, ∗), i = 1, 2, we say that l1
+dominates l2 if c1 ≤ c2 , r̂1 ≤ r̂2 , and t̂1 ≤ t̂2 . The dominance
+is strict if at least one inequality holds strictly. Intuitively, a
+dominated label cannot lead to a better feasible continuation
+than the label dominating it. Therefore, dominated labels can
+be safely removed from Lv .
+Algorithm. Algorithm 1 follows a label-correcting search
+over the auxiliary graph H. For each node v ∈ VH , the
+algorithm maintains a set of non-dominated labels Lv , where
+each label represents a partial strategy from the source s to
+v. Starting from the initial label at s, the algorithm repeatedly dequeues a node u and relaxes each outgoing channel
+e = (u, v) using all labels in Lu .
+Each channel relaxation invokes the QEC-aware labeltransition procedure E XTEND L ABEL in Algorithm 2. If v is
+a forwarding node, the label is extended by accumulating the
+traversal cost, segment time, and model-specific noise state.
+If v is a decoding node, the procedure evaluates plog
+q,σ from
+the segment-noise state and updates the cumulative logical
+error by Eq. (5). The label is retained only if both the endto-end error-rate constraint and the logical decoherence-time
+
+constraint are satisfied; after decoding, the segment time and
+segment-noise accumulator are reset.
+Algorithm 3 uses I NSERTA ND P RUNE to maintain each label
+set under the dominance rule. It first rejects any feasible label
+that is already dominated by an existing label at the same
+auxiliary node. Otherwise, it inserts the new label and removes
+all existing labels dominated by it. In this way, each label set
+stores only Pareto-efficient partial strategies in terms of cost,
+logical error rate, and elapsed time since the last decoding
+operation. When the search terminates, Algorithm 1 returns the
+minimum-cost label in Ld and reconstructs the corresponding
+strategy by backtracking predecessors.
+Since the logical error rate and the elapsed segment time are
+discretized with step sizes ∆r and ∆t , respectively, the number
+of non-dominated labels stored at each node is bounded by the
+number of discretized error-time states. Therefore, each label
+−1
+set has size at most O(∆−1
+r ∆t ) within the feasible range.
+Hereafter, c(P ) is the auxiliary-path cost and r(P ) is the
+routing-layer error computed by Eqs. (3)–(5). The guarantee
+below bounds discretization error relative to this model, not
+physical-model mismatch.
+Definition 1. For a segment q, let Tqlog be the logical decoherence time of its assigned protection scheme. An s-d path
+P is called an (ϵr , ϵt )-optimal feasible path if c(P ) ≤ c(P ∗ ),
+log
+for every
+r(P ) ≤ (1 + ϵr )rθ , and tseg
+q (P ) ≤ (1 + ϵt )Tq
+segment q of P .
+Theorem 2. Let T log be the logical decoherence time of a
+path traversing all nodes in VH . If ∆r ≤ ϵr |VrHθ | and ∆t ≤
+log
+
+T
+ϵt |V
+, where ∆r and ∆t are asymptotically O(ϵr /|VH |) and
+H|
+O(ϵt /|VH |), respectively, then with input H = (VH , EH ),
+Algorithm 1 outputs an (ϵr , ϵt )-optimal feasible path.
+
+The proof is in Appendix D. The output of our framework
+allows for relaxed constraints and does not yield an exact costapproximation ratio. The same theoretical guarantees apply to
+a higher-order or exact error model if it uses the existing label
+state, supports incremental updates, preserves dominance, and
+has the same asymptotic extension cost. If additional state is
+required, the label bound and complexity must be re-derived.
+log
+Space and time complexity of Algorithm 1. Let Tmax
+=
+log
+maxσ Tσ and let NL be the maximum number of labels
+stored at one node. Labels are indexed by discretized logical
+error rate and
+time. After dominance pruning,
+ elapsedlogsegment
+
+−1
+rθ −r0 Tmax
+NL = O ∆ r · ∆ t
+= O(|VH |2 ϵ−1
+r ϵt ). Here, ∆r =
+O(ϵr /|VH |) and ∆t = O(ϵt /|VH |). Hence, the space com−1
+plexity of generic framework is O(|VH |3 ϵ−1
+r ϵt ). The running
+3
+−1 −1
+time is O(|VH | |EH |ϵr ϵt ). For the fixed-scheme instantiation H = G′ , where |V ′ | = O(|V |) and |E ′ | = O(|E|), these
+−1
+3
+−1 −1
+become O(|V |3 ϵ−1
+r ϵt ) and O(|V | |E|ϵr ϵt ), respectively.
+V. F LEXIBLE -S CHEME S INGLE -F LOW I NSTANTIATION
+We next instantiate the generic framework for the flexiblescheme single-flow variant of the base problem formulated
+in Section III-C. In this variant, each decoding-capable super
+switch can choose one protection scheme from its candidate
+
+set. Therefore, the algorithm must jointly optimize the path
+P , the decoding placement D, and the scheme assignment
+Σ. Compared with the fixed-scheme instantiation, the labelcorrecting core and QEC-aware label-transition procedure remain unchanged; only the state expansion is refined to encode
+scheme choices.
+For clarity of presentation, we first assume that all super
+switches are equipped with the same set of b candidate
+protection schemes. The framework naturally extends to the
+heterogeneous case where different super switches have different candidate sets, by adapting the graph transformation
+locally for each node.
+To solve this problem, we extend the auxiliary-graph construction from G′ to a scheme-expanded graph G′′ . For each
+super switch v, we create one forwarding node vfo and b
+1
+b
+i
+decoding nodes vde
+, . . . , vde
+, where vde
+represents decoding
+and re-encoding under protection scheme σi . For each ordinary
+switch v, we create one forwarding node vfo .
+For channel reconstruction, let A(v) denote the set of
+auxiliary nodes corresponding to an original node v:
+
+
+if v is an ordinary switch,
+{vfo },
+1
+b
+A(v) = {vfo , vde , . . . , vde }, if v is a super switch,
+
+ 1
+{dde , . . . , dbde },
+if v = d.
+For each original channel (u, v) ∈ E, we add an auxiliary
+channel (u′ , v ′ ) for every u′ ∈ A(u) and v ′ ∈ A(v), with the
+same traversal cost cu,v .
+An example of G′′ is shown in Fig. 1(c), where each super
+switch has two candidate schemes. For example, the path
+1
+(sfo , ufo , vde
+, d2de ) represents a strategy that forwards the logical
+qubit at u, decodes and re-encodes it at v using scheme σ1 ,
+and finally decodes it at d using scheme σ2 .
+The joint optimization over routing, decoding placement,
+and scheme assignment is then obtained by running Algorithm 1 with H = G′′ .
+Space and time complexity. The complexity follows directly from the generic framework with H = G′′ . If each
+super switch has b candidate schemes, then |V ′′ | = O(b|V |)
+and |E ′′ | = O(b2 |E|) in the worst case. Therefore, the total
+−1
+space complexity is O(b3 |V |3 ϵ−1
+r ϵt ), and the running time
+−1
+is O(b5 |V |3 |E|ϵ−1
+r ϵt ).
+VI. M ULTI -F LOW N ETWORK -W IDE I NSTANTIATION
+The formulation in Section III-C focuses on a single
+communication request. We now use the generic framework
+for candidate generation in the multi-flow setting. Multiple
+requests share the same physical network and may compete
+for channel resources. Let K denote the set of flows, and let
+(si , di ) be the source-destination pair of flow i ∈ K. Unlike
+the single-flow case, where the objective is to minimize the
+cost of one feasible strategy, the multi-flow setting must also
+account for network-wide congestion.
+We adopt a two-stage approach:
+• First, we invoke Algorithm 1 with a relaxed dominance
+rule to generate a pool of candidate feasible strategies for
+each flow.
+
+Second, we select one candidate strategy for each flow
+so as to minimize the maximum congestion level over all
+channels.
+To generate candidate strategies, we modify the dominance
+rule in Algorithm 3. Instead of keeping only non-dominated
+labels, we allow a new label to be inserted if it is dominated
+by fewer than M existing labels in Lv . This maintains up
+to M representative candidates for each discretized state. At
+the destination, the algorithm returns up to M minimum-cost
+feasible strategies for each flow; if fewer than M feasible
+strategies exist, all of them are returned.
+Let Πi denote the candidate strategy pool of flow i, and let
+ai denote its throughput demand. For a strategy π ∈ Πi , let
+E(π) denote the set of physical channels used by its path. We
+formulate the following path-allocation ILP:
+•
+
+min
+s.t.
+
+y
+X
+
+∀i ∈ K,
+
+xi,π = 1,
+
+π∈Πi
+
+X
+
+X
+
+ai xi,π ≤ y,
+
+∀e ∈ E,
+
+i∈K π∈Πi : e∈E(π)
+
+xi,π ∈ {0, 1},
+
+∀i ∈ K, π ∈ Πi .
+
+The first constraint ensures that each flow selects exactly
+one candidate strategy. The second constraint upper-bounds
+the total throughput routed over each physical channel by
+the maximum congestion variable y. The objective therefore
+minimizes bottleneck congestion.
+We solve the LP relaxation and independently select π ∈
+Π
+Πi for each flow with probability x∗i,π . Let yOPT
+denote the
+optimal integral congestion of the above allocation problem
+for the fixed candidate pools {Πi }.
+Theorem 3. Assume that throughput demands are normalized
+so that 0 ≤ ai ≤ 1, and let n = |V |. There exists a constant
+κ > 0 such that, with probability at least 1 − 1/n, randomized
+rounding achieves an O(log n/ log log n) approximation to
+Π
+.
+yOPT
+The theorem guarantees only allocation over the generated
+candidate pools. The standard randomized-rounding proof is
+given in Appendix E. It does not compare with the global
+optimum over routing, decoding decisions and so on. Overall
+quality therefore depends on whether each Πi contains diverse
+feasible strategies, particularly alternatives that use different
+channels. This is affected by M and the relaxed dominance
+rule.
+VII. P ERFORMANCE E VALUATION
+In this section, we evaluate four aspects of the proposed
+framework: single-flow routing against static recovery policies, adaptive scheme assignment, multi-flow congestion, and
+running-time scalability.
+A. Simulation Setup
+1) Simulator: We implement the evaluation in Python using
+NetworkX [23] for graph operations and PuLP with CBC
+
+TABLE I
+PARAMETERS OF E NCODING S CHEMES U SED IN S IMULATIONS
+Scheme Name
+Surface (d=3)
+Surface (d=5)
+Surface (d=7)
+Surface (d=9)
+
+[[n,k,dcode ]]
+[[13,1,3]]
+[[41,1,5]]
+[[85,1,7]]
+[[145,1,9]]
+
+Cost
+5
+8
+10
+50
+
+Decoherence Time(µs)
+50
+100
+200
+600
+
+solver for the ILP [24], [25]. It targets the routing abstraction
+rather than hardware and protocol events, which are the focus
+of NetSquid, SeQUeNCe, and QuISP.
+2) Network Topology: We use the Barabási-Albert (BA)
+model to generate reproducible and scalable topologies with
+heterogeneous connectivity for controlled evaluation. These
+topologies are not replicas of a specific deployment, and the
+results may vary for different topologies. Unless otherwise
+specified, the four experiments use networks with 100, 100,
+50, and 500 nodes, respectively. The average degree is set to 2,
+and a fraction psuper = 0.4 of nodes are randomly designated
+as QEC-capable super switches.
+3) Physical Parameters: We model a metro-scale quantum
+network. For each channel e, its length Le is drawn from an
+exponential distribution with mean 2 km. The physical error
+rate pe is computed from photon loss under fiber attenuation
+α = 0.15 dB/km [26]:
+
+αLe
+3
+1 − 10− 10 .
+(7)
+pe (Le ) =
+4
+The propagation time is calculated as te = Le /vfiber , where
+vfiber ≈ 3.3 × 105 m/s.
+4) Protection Schemes: We use surface-code schemes with
+dcode = 3, 5, 7, 9; Table I lists their qubit counts, costs, and
+decoherence times. We estimate f¯σ,j via Monte Carlo decoder
+simulations with minimum-weight perfect matching (MWPM).
+For each (σ, j), we sample and decode weight-j Pauli patterns,
+marking a failure if the residual error induces a nontrivial
+logical operation.
+5) Compared Algorithms: Decode-Always and ForwardAlways are recovery-placement ablations. Greedy-Assignment
+is an allocation-stage ablation, whereas SPF is an independent
+multi-flow baseline:
+• Decode-Always: A QEC-aware baseline that performs
+decoding at every super switch. It uses a simplified
+label-correcting algorithm that only explores paths with
+decoding at all available super switches.
+• Forward-Always: Performs no intermediate recovery
+and treats intermediate super switches as forwarding-only
+nodes.
+• Greedy-Assignment: Selects the lowest-cost strategy for
+each flow from the same candidate pool, without global
+congestion optimization.
+• Shortest-Path-First (SPF): An independent, cost-aware
+classical baseline. It computes each flow’s minimum-cost
+physical path under the same link-cost metric, without
+our QEC-aware candidate generation or global congestion
+optimization, and then applies the same feasibility check.
+
+80%
+
+60%
+
+40%
+
+0%
+0.00
+
+Proposed
+Decode-Always
+Forward-Always
+0.05
+
+0.10
+
+0.15
+
+0.20
+
+End-to-End Error Rate Threshold (rθ)
+
+Proposed (Multi-Scheme d=3,7,9)
+Single-Scheme (d=3)
+Single-Scheme (d=7)
+Single-Scheme (d=9)
+
+20%
+
+0.00
+
+60
+40
+20
+
+0.15
+
+0.20
+
+0.15
+
+0.20
+
+0.25
+
+40
+
+20
+
+0.05
+
+0.10
+
+0.15
+
+0.20
+
+End-to-End Error Rate Threshold (rθ)
+
+10
+8
+6
+4
+2
+0
+
+10
+
+20
+
+30
+
+40
+
+50
+
+(c) Multi-Flow: Maximum Link Congestion
+
+6 × 10
+
+4 × 10
+3 × 10
+
+2 × 10
+
+10
+
+0.25
+
+−1
+
+Proposed (LP)
+Greedy-Assignment
+Shortest-Path-First
+
+−1
+
+−1
+
+−1
+
+−1
+
+10
+
+20
+
+30
+
+40
+
+50
+
+Number of Concurrent Flow Requests
+
+(e) Adaptive Scheme Assignment: Avg Cost
+
+Execution Time
+
+Proposed (LP)
+Greedy-Assignment
+Shortest-Path-First
+
+12
+
+Number of Concurrent Flow Requests
+
+Proposed (Multi-Scheme d=3,7,9)
+Single-Scheme (d=3)
+Single-Scheme (d=7)
+Single-Scheme (d=9)
+
+(f) Multi-Flow: Normalized Congestion
+
+Execution Time
+
+Average Running Time (s)
+
+Average Execution Time (s)
+
+60
+
+0
+0.00
+
+0.25
+
+(d) Core Algorithm Validation: Avg Cost
+
+40
+
+0.10
+
+80
+
+80
+
+End-to-End Error Rate Threshold (rθ)
+
+0.05
+
+End-to-End Error Rate Threshold (rθ)
+
+(b) Adaptive Scheme Assignment: Accept Ratio
+
+Average Path Cost
+
+Average Path Cost
+
+100
+
+0.10
+
+40%
+
+0.25
+
+Proposed
+Decode-Always
+Forward-Always
+
+120
+
+0.05
+
+60%
+
+0%
+
+(a) Core Algorithm Validation: Accept Ratio
+
+0
+0.00
+
+80%
+
+Congestion per Unit of Throughput
+
+20%
+
+Average Maximum Link Congestion
+
+100%
+
+Path Acceptance Ratio
+
+Path Acceptance Ratio
+
+100%
+
+30
+
+20
+
+10
+
+0
+
+4
+
+3
+
+2
+
+1
+
+0
+50
+
+100
+
+150
+
+200
+
+250
+
+300
+
+Number of Nodes in Network
+
+350
+
+400
+
+(g) Running Time vs. Number of Nodes
+
+1
+
+2
+
+3
+
+4
+
+Number of Encoding Schemes per Super Switch
+
+(h) Running Time vs. Number of Schemes
+
+Fig. 2. Performance evaluation: (a) and (d) validate the core algorithm; (b) and (e) evaluate adaptive scheme assignment; (c) and (f) report multi-flow
+performance; and (g) and (h) report running time.
+
+Together, these baselines isolate the effects of recovery
+placement, per-flow path selection, and global allocation. Classical MCPP solvers and the QEC approaches to be introduced
+in Section VIII lack the same segment logical-error and
+inter-recovery lifetime constraints. Comparing them requires
+surrogate metrics and recovery policies, which we leave to
+future cross-model evaluation.
+
+6) Performance Metrics: We report five primary metrics:
+path acceptance ratio, average accepted-path cost, maximum
+channel congestion, congestion per unit throughput, and multischeme running time. The four experiments (Fig. 2) average
+500, 500, 100, and 500 independent runs, respectively. The
+multi-flow experiment uses M = 3, allowing up to three
+candidates per flow. A larger M increases both candidate
+diversity and computation.
+
+B. Core Algorithm Validation
+This experiment validates the fixed-scheme instantiation of
+the proposed framework in a single-flow setting using the
+dcode = 9 surface code. Fig. 2a shows that the framework
+achieves an acceptance ratio comparable to Decode-Always
+and clearly higher than Forward-Always. Under strict errorrate thresholds, Proposed and Decode-Always accept about
+85% of requests, whereas Forward-Always accepts only about
+43%. This confirms the necessity of intermediate QEC operations.
+The cost advantage is shown in Fig. 2d. Compared with
+Decode-Always, the proposed framework reduces the average
+path cost by approximately 25–30%, e.g., from about 125 to
+94 under the strictest threshold and from about 87–89 to 62
+when rθ = 0.25. This is because it performs decoding only
+when necessary, achieving a better cost-feasibility trade-off.
+
+C. Advantage of Adaptive Scheme Assignment
+This experiment evaluates the benefit of adaptive scheme
+assignment in a single-flow, multi-scheme setting. We compare
+the proposed multi-scheme algorithm with fixed single-scheme
+strategies using dcode = 3, 7, or 9.
+As shown in Fig. 2b, the weak dcode = 3 scheme is
+inexpensive but unreliable under strict thresholds, accepting
+only about 8% of requests, while Proposed and the robust
+dcode = 9 scheme accept about 85%. Fig. 2e further shows that
+Proposed achieves this high feasibility at much lower cost: its
+average cost decreases from about 40 to 15 as rθ increases,
+whereas the fixed dcode = 9 strategy remains around 93 to 62.
+Thus, adaptive scheme assignment reduces cost by roughly
+55–75% compared with always using the strongest scheme,
+while preserving a similar acceptance ratio.
+D. Network-Level Performance (Multi-Flow)
+We next evaluate the network-level performance of the
+proposed framework in a multi-flow setting. Fig. 2c shows that
+raw maximum congestion rises with the number of concurrent
+flows for all methods. Since they accept different traffic
+volumes, Fig. 2f normalizes congestion by throughput.
+At 50 concurrent flows, Proposed reaches about 0.18–0.19,
+versus about 0.26 for Greedy-Assignment and 0.24–0.25 for
+Shortest-Path-First. These values represent reductions of approximately 28–31% and 23–25%, respectively. The GreedyAssignment gap quantifies the benefit of global allocation.
+E. Running Time
+Finally, we evaluate the computational scalability of the
+proposed framework. As shown in Fig. 2g and Fig. 2h, the
+running time grows with both the network size |V | and the
+number of available schemes b. It remains below 1 second for
+networks with about 40 nodes and grows to about 43 seconds
+for 400 nodes. The dependence on b is sharper: the running
+time increases from about 0.05 seconds for b = 1 to about 1.2
+seconds for b = 3 and about 4.7 seconds for b = 4, consistent
+with the O(b2 ) growth of auxiliary channels in the schemeexpanded graph.
+VIII. R ELATED W ORK
+Classical MCPP handles fixed additive edge weights using
+multi-label Bellman–Ford or Dijkstra variants [21], [22]. Our
+formulation retains this search structure. However, it uses segment states and QEC-aware label transitions rather than fixed
+physical-channel logical-error weights, to adapt to quantumnetwork constraints [1].
+Quantum routing either distributes entangled pairs or sends
+encoded qubits directly. The first paradigm creates end-to-end
+entanglement through generation, swapping, and purification.
+Prior work studies redundancy, fidelity-aware purification,
+multi-flow distribution, and opportunistic routing [27], [8],
+[7], [28]. Other studies address end-to-end fidelity, delay,
+distillation, latency, memory-limited repeaters, and purification
+scheduling [29], [30], [31], [32], [9]. Surveys further highlight
+quantum-specific constraints such as swapping probability,
+
+fidelity, optical loss, and short entangled-state lifetimes [12].
+These studies emphasize state quality and time but distribute
+entanglement rather than route encoded data qubits.
+The second paradigm, which is the focus of this paper, sends
+quantum information through physical channels and protects it
+with quantum error correction (QEC). Fowler et al. introduced
+surface-code-based quantum communication [33]. Later work
+studied physical-qubit transmission, including fidelity-based
+multicast [34]. More recently, SurfaceNet proposed a faulttolerant architecture that uses surface codes to preserve and
+transfer quantum messages [35]. Hu et al. showed that surfacecode-aware routing improves communication fidelity and network throughput [13]. Follow-up work optimizes surfacecode structures for quantum-network error correction [36].
+These works are closely related to our setting because they
+consider QEC-protected communication and heterogeneous
+quantum-network resources. However, they use coarser fidelity
+or resource abstractions. They also do not jointly enforce
+segment logical error, recovery placement, scheme selection,
+and inter-recovery lifetime.
+Recent work also studies routing beyond entanglement
+distribution. Circuit switching and packet switching have
+been considered for quantum secure direct communication
+networks [37]. These studies broaden quantum-network design
+but do not address stabilizer-code-protected decode-and-reencode routing.
+In summary, prior work has laid important foundations
+for both paradigms of quantum networking. Nevertheless,
+the literature remains weighted toward entanglement distribution and repeater-based routing. Existing work on QECprotected direct transmission has yet to capture how routing
+and recovery interact with accumulated physical noise, decoding placement, logical errors, and finite logical lifetime.
+This paper addresses this gap. We formulate a joint spatiotemporal path optimization problem for block-style stabilizercode-protected direct transmission. Our framework uses a
+generic state space to jointly optimize path selection, decoding
+placement, and protection-scheme assignment under logicalerror and decoherence-time constraints.
+IX. C ONCLUSION
+In this paper, we studied direct transmission of encoded
+qubits over noisy quantum networks. Unlike entanglementbased teleportation, direct transmission requires joint selection
+of paths, recovery locations, and protection schemes. We
+formulated this spatio-temporal problem with non-additive
+segment logical error and lifetime constraints, and developed
+a framework for fixed and flexible schemes and multi-flow
+routing. Simulations show a better cost-feasibility trade-off and
+lower normalized congestion. The model assumes block-style
+node-local recovery. Future work will include recovery faults
+and latency, realistic correlated noise, other QEC architectures,
+and multi-path routing. A broader evaluation will cover additional topology models, statistical error bars, sensitivity to size
+of multi-flow pool, and stronger multi-flow baselines.
+
+R EFERENCES
+[1] Z. Zhang, C. Papagianni, F. Speelman, and P. Grosso, “Toward complete
+quantum network stacks: A survey,” IEEE Network, vol. 38, no. 5, pp.
+153–159, 2024.
+[2] D. Main, P. Drmota, D. P. Nadlinger, E. M. Ainley, A. Agrawal, B. C.
+Nichol, R. Srinivas, G. Araneda, and D. M. Lucas, “Distributed quantum
+computing across an optical network link,” Nature, vol. 638, pp. 383–
+388, 2025.
+[3] D.-H. Kim, S. Hong, Y.-S. Kim, Y. Kim, S.-W. Lee, R. C. Pooser, K. Oh,
+S.-Y. Lee, C. Lee, and H.-T. Lim, “Distributed quantum sensing of
+multiple phases with fewer photons,” Nature Communications, vol. 15,
+no. 1, p. 266, 2024.
+[4] W. Kozlowski and S. Wehner, “Towards Large-Scale Quantum
+Networks,” in Proceedings of the Sixth Annual ACM International
+Conference on Nanoscale Computing and Communication. Dublin
+Ireland: ACM, Sep. 2019, pp. 1–7. [Online]. Available: https:
+//dl.acm.org/doi/10.1145/3345312.3345497
+[5] A. S. Cacciapuoti, J. Illiano, S. Koudia, K. Simonov, and M. Caleffi,
+“The Quantum Internet: Enhancing Classical Internet Services One
+Qubit at A Time,” IEEE Network, vol. 36, no. 5, pp. 6–12,
+Sep. 2022, conference Name: IEEE Network. [Online]. Available:
+https://ieeexplore.ieee.org/document/9964024
+[6] D. Bouwmeester, J.-W. Pan, K. Mattle, M. Eibl, H. Weinfurter, and
+A. Zeilinger, “Experimental quantum teleportation,” Nature, vol. 390,
+no. 6660, pp. 575–579, 1997.
+[7] K. Chakraborty, D. Elkouss, B. Rijsman, and S. Wehner, “Entanglement
+distribution in a quantum network, a multi-commodity flow-based approach,” IEEE Transactions on Quantum Engineering, vol. 1, pp. 1–21,
+2020.
+[8] Y. Zhao, G. Zhao, and C. Qiao, “E2E fidelity aware routing and
+purification for throughput maximization in quantum networks,” in IEEE
+INFOCOM 2022 - IEEE Conference on Computer Communications,
+2022, pp. 480–489.
+[9] L. Chen and Z. Jia, “On Optimum Entanglement Purification
+Scheduling in Quantum Networks,” IEEE Journal on Selected Areas in
+Communications, vol. 42, no. 7, pp. 1779–1792, Jul. 2024, conference
+Name: IEEE Journal on Selected Areas in Communications. [Online].
+Available: https://ieeexplore.ieee.org/abstract/document/10477477
+[10] M. A. Nielsen and I. L. Chuang, Quantum computation and quantum
+information, 10th ed. Cambridge ; New York: Cambridge University
+Press, 2010.
+[11] J. N. Laneman, D. N. C. Tse, and G. W. Wornell, “Cooperative diversity
+in wireless networks: Efficient protocols and outage behavior,” IEEE
+Transactions on Information Theory, vol. 50, no. 12, pp. 3062–3080,
+2004.
+[12] A. Abane, M. Cubeddu, V. S. Mai, and A. Battou, “Entanglement
+routing in quantum networks: A comprehensive survey,” arXiv preprint
+arXiv:2408.01234, 2024.
+[13] T. Hu, J. Wu, and Q. Li, “Quantum network routing based on surface
+code error correction,” in Proceedings of the IEEE International Conference on Distributed Computing Systems (ICDCS), 2024, pp. 1236–1247.
+[14] M. Grassl and M. Rötteler, “Constructions of quantum convolutional
+codes,” in 2007 IEEE International Symposium on Information Theory.
+IEEE, 2007, pp. 816–820.
+[15] M. M. Wilde and T. A. Brun, “Entanglement-assisted quantum convolutional coding,” Physical Review A, vol. 81, no. 4, p. 042333, 2010.
+[16] D. Gottesman, “Stabilizer codes and quantum error correction,” 1997.
+[17] A. G. Fowler, M. Mariantoni, J. M. Martinis, and A. N. Cleland,
+“Surface codes: Towards practical large-scale quantum computation,”
+Physical Review A, vol. 86, no. 3, p. 032324, Sep. 2012. [Online].
+Available: https://link.aps.org/doi/10.1103/PhysRevA.86.032324
+[18] D. Forlivesi, L. Valentini, and M. Chiani, “Logical Error Rates
+of XZZX and Rotated Quantum Surface Codes,” IEEE Journal on
+Selected Areas in Communications, pp. 1–1, 2024. [Online]. Available:
+https://ieeexplore.ieee.org/document/10477919/
+[19] M. Schlosshauer, “Quantum decoherence,” Physics Reports, vol. 831,
+pp. 1–57, Oct. 2019. [Online]. Available: https://linkinghub.elsevier.
+com/retrieve/pii/S0370157319303084
+[20] C. Ryan-Anderson, J. Bohnet, K. Lee, D. Gresh, A. Hankin,
+J. Gaebler, D. Francois, A. Chernoguzov, D. Lucchetti, N. Brown,
+T. Gatterman, S. Halit, K. Gilmore, J. Gerber, B. Neyenhuis, D. Hayes,
+and R. Stutz, “Realization of Real-Time Fault-Tolerant Quantum
+Error Correction,” Physical Review X, vol. 11, no. 4, Dec. 2021,
+
+publisher: American Physical Society (APS). [Online]. Available:
+https://link.aps.org/doi/10.1103/PhysRevX.11.041058
+[21] Z. Wang and J. Crowcroft, “Bandwidth-delay based routing algorithms,” in Proceedings of IEEE Global Telecommunications Conference
+(GLOBECOM ’95), vol. 3, 1995, pp. 2129–2133.
+[22] E. Q. V. Martins, “On a multicriteria shortest path problem,” European
+Journal of Operational Research, vol. 16, no. 2, pp. 236–245, 1984.
+[23] A. A. Hagberg, D. A. Schult, and P. J. Swart, “Exploring network
+structure, dynamics, and function using NetworkX,” in Proceedings of
+the 7th Python in Science Conference, G. Varoquaux, T. Vaught, and
+J. Millman, Eds., Pasadena, CA, USA, 2008, pp. 11–15.
+[24] S. Mitchell, M. O’Sullivan, and I. Dunning, “PuLP: A linear
+programming toolkit for python,” Department of Engineering Science,
+The University of Auckland, Tech. Rep., 2011. [Online]. Available:
+https://optimization-online.org/2011/09/3178/
+[25] J. Forrest and R. Lougee-Heimer, “CBC user guide,” in Emerging Theory, Methods, and Applications, ser. INFORMS Tutorials in Operations
+Research. INFORMS, 2005, pp. 257–277.
+[26] G. P. Agrawal, Fiber-optic communication systems. John Wiley & Sons,
+2012.
+[27] Y. Zhao and C. Qiao, “Redundant entanglement provisioning and
+selection for throughput maximization in quantum networks,” in IEEE
+INFOCOM 2021 - IEEE Conference on Computer Communications,
+2021, pp. 1–10.
+[28] A. Farahbakhsh and C. Feng, “Opportunistic routing in quantum networks,” in IEEE INFOCOM 2022 - IEEE Conference on Computer
+Communications, 2022, pp. 490–499.
+[29] V. Kumar, C. Cicconetti, M. Conti, and A. Passarella, “Routing in
+quantum networks with end-to-end knowledge,” IET Quantum Communication, 2025.
+[30] M. Chehimi, K. Goodenough, W. Saad, D. Towsley, and T. X. Zhou,
+“Entanglement distribution delay optimization in quantum networks
+with distillation,” IEEE Journal on Selected Areas in Communications,
+vol. 43, no. 5, pp. 1871–1886, 2025.
+[31] J. Liu and Y. Wang, “Statistical modeling and latency optimization for
+entanglement routing in quantum networks,” in Proceedings of the IEEE
+International Conference on Quantum Computing and Engineering
+(QCE), 2025.
+[32] E. A. Van Milligen, E. Jacobson, A. Patil, G. Vardoyan, D. Towsley, and
+S. Guha, “Entanglement routing over networks with time multiplexed
+repeaters,” in Proceedings of the IEEE International Conference on
+Quantum Computing and Engineering (QCE), 2025.
+[33] A. G. Fowler, D. S. Wang, C. D. Hill, T. D. Ladd, R. Van Meter, and
+L. C. L. Hollenberg, “Surface code quantum communication,” Physical
+Review Letters, vol. 104, no. 18, p. 180503, 2010.
+[34] X.-J. Wang, L.-X. An, F.-X. Meng, X.-T. Yu, and Z.-C. Zhang, “A
+multicast scheme based on fidelity metrics in quantum networks,” IEEE
+Access, vol. 7, pp. 65 703–65 713, 2019.
+[35] T. Hu, J. Wu, and Q. Li, “SurfaceNet: Fault-tolerant quantum networks
+with surface codes,” IEEE Network, vol. 38, no. 1, pp. 155–162, 2024.
+[36] ——, “Disparity surface code: Optimizing error correction in quantum
+networks,” in Proceedings of the IEEE International Conference on
+Quantum Computing and Engineering (QCE), 2025, pp. 2493–2504.
+[37] Z.-Z. Sun, Y.-B. Cheng et al., “Quantum communication network routing
+with circuit and packet switching strategies,” IEEE Journal on Selected
+Areas in Communications, vol. 43, no. 5, pp. 1887–1900, 2025.
+[38] M. R. Garey and D. S. Johnson, Computers and intractability: a guide
+to the theory of NP-completeness, 27th ed., ser. A series of books in the
+mathematical sciences. New York [u.a]: Freeman, 2009.
+
+A PPENDIX A
+F IRST-O RDER A PPROXIMATION OF S EGMENT-L EVEL
+PAULI E RRORS
+We justify the first-order approximation in our composite
+channel model. Consider a path segment q, and let E(q) denote
+its set of physical channels. For each channel e ∈ E(q), let Pe
+denote the Pauli error that it introduces on a physical qubit,
+where
+Pe ∈ {I, X, Y, Z}.
+
+Let
+Pr(Pe ̸= I) = pe .
+Equivalently, if the error is represented in the Pauli basis, then
+
+physical error occurs, then Pq ∈ {X, Y, Z} and hence Pq ̸= I.
+Therefore, cancellation to the identity is possible only when
+at least two physical errors occur. Let
+Nq =
+
+pe = pe,X + pe,Y + pe,Z ,
+where pe,X , pe,Y , and pe,Z are the probabilities of X, Y, and
+Z errors on channel e, respectively. We assume that errors
+introduced by different channels are independent.
+The exact Pauli operator accumulated over segment q is the
+product
+Y
+Pq =
+Pe ,
+e∈E(q)
+
+be the number of non-identity physical errors in segment q.
+Then
+net
+pocc
+≤ Pr(Nq ≥ 2).
+q − pq
+
+By the union bound over all unordered pairs of channels,
+
+e∈E(q)
+
+Proposition 1 (Pauli-cancellation error is second order). Let
+X
+Sq =
+pe .
+
+Pr(Pe ̸= I, Pe′ ̸= I) = pe pe′ .
+Thus,
+pe pe′ .
+
+{e,e′ }⊆E(q)
+
+Finally,
+
+X
+
+Then
+
+{e,e′ }⊆E(q)
+
+
+2
+Sq2
+1 X
+pe  =
+.
+pe pe′ ≤
+2
+2
+e∈E(q)
+
+
+X
+
+net
+
+0 ≤ pocc
+q − pq ≤ Pr
+
+1{Pe ̸=I} ≥ 2
+
+Therefore,
+
+e∈E(q)
+
+X
+
+net
+0 ≤ pocc
+≤
+q − pq
+
+pe pe′
+
+{e,e′ }⊆E(q)
+Sq2
+
+2
+
+X
+
+Pr(Nq ≥ 2) ≤
+
+e∈E(q)
+
+≤
+
+Pr(Pe ̸= I, Pe′ ̸= I).
+
+{e,e′ }⊆E(q)
+
+may overestimate pnet
+Clearly, pocc
+q , because multiple nonq
+identity Pauli errors can compose to the identity.
+
+≤
+
+X
+
+Pr(Nq ≥ 2) ≤
+
+Under the independent channel-error assumption,
+
+In contrast, the probability that at least one physical error
+occurs in the segment is
+Y
+pocc
+= Pr (∃e ∈ E(q) : Pe ̸= I) = 1 −
+(1 − pe ).
+q
+
+
+
+1{Pe ̸=I}
+
+e∈E(q)
+
+where multiplication is taken modulo global phase. The exact
+net Pauli error probability of the segment is
+pnet
+= Pr(Pq ̸= I).
+q
+
+X
+
+Sq2
+.
+2
+
+It remains to relate these quantities to the first-order term.
+Since
+Y
+pocc
+=1−
+(1 − pe ),
+q
+
+.
+
+Consequently,
+
+e∈E(q)
+
+2
+pnet
+= pocc
+q
+q + O(Sq ) =
+
+X
+
+pe + O(Sq2 ).
+
+e∈E(q)
+
+its inclusion-exclusion expansion gives
+
+Thus, the approximation error caused by Pauli cancellation is
+O(Sq2 ).
+Proof. The event {Pq ̸= I} implies that at least one nonidentity Pauli error has occurred, but the converse is not always
+true because multiple Pauli errors may compose to the identity.
+Therefore,
+pnet
+≤ pocc
+q
+q ,
+which gives
+net
+pocc
+≥ 0.
+q − pq
+net
+Next, observe that pocc
+q and pq can differ only when at least
+two non-identity Pauli errors occur in the segment. Indeed,
+if no physical error occurs, then Pq = I; if exactly one
+
+pocc
+=
+q
+
+X
+
+pe + O(Sq2 ).
+
+e∈E(q)
+
+Combining this with
+2
+pnet
+= pocc
+q
+q + O(Sq )
+
+yields
+pnet
+=
+q
+
+X
+
+pe + O(Sq2 ).
+
+e∈E(q)
+
+This proves that Pauli cancellation contributes an O(Sq2 )
+approximation error in the low-error regime.
+
+A PPENDIX B
+E XACT L OGICAL -E RROR C OMPOSITION AND
+A PPROXIMATION C HAIN
+
+where
+µprev
++ µprev
++ µprev
++ µprev
+= 1.
+I
+X̄
+Ȳ
+Z̄
+Let
+
+This appendix separates the two approximations underlying
+Eq. (5). The complete approximation chain compares the
+exact-input logical-Pauli model
+F
+
+σ
+exact
+−−→
+plog,net
+pnet
+−→ rnew
+q
+q,σ
+
+with the routing model
+
+rprev = µprev
++ µprev
++ µprev
+= 1 − µprev
+I
+X̄
+Ȳ
+Z̄
+be the pre-segment logical failure probability.
+For a fixed segment q and decoding scheme σ, let
+(q,σ)
+(q,σ)
+(q,σ)
+(q,σ) 
+λ(q,σ) = λI , λX̄ , λȲ , λZ̄
+be the logical Pauli distribution induced by the segment and
+subsequent decoding/re-encoding operation when the exact net
+segment input is used, where
+
+Fσ
+model
+−−→
+plog
+pcomp
+q
+q,σ −→ rnew .
+
+The first difference arises from using pcomp
+as a surroq
+gate for the net segment-level Pauli error probability pnet
+q .
+The second replaces exact logical-Pauli composition with the
+scalar recurrence in Eq. (5). We first propagate the upstream
+segment-model error and then combine it with the recurrencecomposition bound. The additive transformation of Eq. (5)
+applies to the routing-level scalar recurrence; the exact logicalPauli composition below also depends on the error-type distributions through the cancellation term.
+For scheme σ, define the logical-error mapping
+ 
+nσ
+X
+nσ
+¯
+fσ,j
+Fσ (x) =
+(1 − x)nσ −j xj .
+(8)
+j
+j=0
+The output of Eq. (4) remains
+comp
+plog
+).
+q,σ = Fσ (pq
+
+and Sq defined
+Using the exact net Pauli error probability pnet
+q
+in Appendix A, introduce the accurate-input quantity
+plog,net
+= Fσ (pnet
+q,σ
+q ).
+Let
+Lσ = max |Fσ′ (x)|.
+x∈[0,1]
+
+The derivative of the Bernstein polynomial in Eq. (8) is
+
+
+nX
+σ −1
+nσ − 1
+Fσ′ (x) = nσ
+(f¯σ,j+1 − f¯σ,j )
+(1 − x)nσ −1−j xj .
+j
+j=0
+
+(q,σ)
+
+λI
+
+(q,σ)
+
+(q,σ)
+
++ λX̄
+
++ λȲ
+
+(q,σ)
+
+(q,σ)
+
+plog,net
+= λX̄
+q,σ
+
++ λȲ
+
+= 1 − λI
+
+(q,σ)
+
+where the multiplication is taken modulo global phase. In
+particular, the exact post-segment logical failure probability
+satisfies
+X
+(q,σ)
+exact
+rnew
+= rprev + (1 − rprev )plog,net
+−
+µprev
+.
+q,σ
+L λL
+L∈{X̄,Ȳ ,Z̄}
+
+Proof. The exact post-segment logical Pauli operator is obtained by composing the pre-existing logical Pauli error with
+the residual logical Pauli error induced by the new segment.
+Therefore, the post-segment distribution is the convolution of
+µprev and λ(q,σ) over the logical Pauli group.
+To derive the exact logical failure probability, it suffices to
+compute the probability that the post-segment logical operator
+equals the identity. Since for Pauli operators modulo global
+phase we have AB = I if and only if A = B,
+(q,σ)
+
+µnew
+= µprev
+λI
+I
+I
+
+(q,σ)
+
++ µprev
+λX̄
+X̄
+
++ µprev
+λȲ
+Ȳ
+
+(q,σ)
+
++ µprev
+λZ̄
+Z̄
+
+.
+
+Hence
+exact
+rnew
+= 1 − µnew
+I
+(q,σ)
+(q,σ)
+= 1 − µprev
+λI
++ µprev
+λX̄
+I
+X̄
+
+(q,σ)
+prev (q,σ)
++ µprev
+λ
++
+µ
+λ
+.
+Ȳ
+Ȳ
+Z̄
+Z̄
+
+(10)
+Using
+
+Let
+L = {I, X̄, Ȳ , Z̄}
+denote the logical Pauli operators modulo global phase. Suppose that before traversing a path segment q, the residual
+logical error on the logical qubit is described by a distribution
+
+µprev = µprev
+, µprev
+, µprev
+, µprev
+,
+I
+X̄
+Ȳ
+Z̄
+
+.
+
+A,B∈L:
+AB=L
+
+Proposition 1 and the mean-value theorem then give
+Lσ Sq2
+.
+2
+
+(q,σ)
+
++ λZ̄
+
+Proposition 2 (Exact logical-error composition). Under the
+logical-Pauli abstraction above, the exact post-segment logical
+Pauli distribution is given by the Pauli-group convolution
+X prev (q,σ)
+µnew
+=
+µA λB ,
+∀L ∈ L,
+L
+
+0≤j<nσ
+
+log,net
+|plog
+| ≤ Lσ |pcomp
+− pnet
+q,σ − pq,σ
+q
+q |≤
+
+= 1,
+
+and
+
+(q,σ)
+
+Because the Bernstein basis is nonnegative and sums to one
+on [0, 1],
+Lσ ≤ nσ max |f¯σ,j+1 − f¯σ,j |.
+(9)
+
+(q,σ)
+
++ λZ̄
+
+µprev
+= 1 − rprev ,
+I
+
+(q,σ)
+
+λI
+
+= 1 − plog,net
+,
+q,σ
+
+we obtain
+exact
+rnew
+= rprev + (1 − rprev )plog,net
+q,σ
+X
+prev (q,σ)
+−
+µL λL .
+L∈{X̄,Ȳ ,Z̄}
+
+This proves the claim.
+Proposition 3 (Recurrence-composition bound). Let
+approx
+rnew
+= rprev + (1 − rprev )plog,net
+q,σ
+
+denote the scalar recurrence with the accurate segment
+logical-error input. Then
+approx
+exact
+0 ≤ rnew
+− rnew
+≤ rprev plog,net
+.
+q,σ
+
+Consequently, if
+rprev ≤ ε
+
+plog,net
+≤ ε,
+q,σ
+
+and
+
+then
+approx
+exact
+rnew
+≤ ε2 ,
+− rnew
+
+i.e., the approximation error is second-order in the low-error
+regime.
+Proof. By Proposition 2,
+approx
+exact
+rnew
+− rnew
+=
+
+(q,σ)
+
+X
+
+µprev
+L λL
+
+.
+
+O(ε2 ) one-step error relative to exact logical-Pauli composition.
+Corollary 1 (Symmetric logical depolarizing special case).
+If the pre-segment residual logical error and the segmentinduced logical error are both symmetric over the three nonidentity logical Pauli operators, i.e.,
+rprev
+,
+µprev
+= µprev
+= µprev
+=
+X̄
+Ȳ
+Z̄
+3
+and
+plog,net
+q,σ
+(q,σ)
+(q,σ)
+(q,σ)
+,
+λX̄ = λȲ
+= λZ̄
+=
+3
+then
+exact
+rnew
+= rprev + (1 − rprev )plog,net
+−
+q,σ
+
+Equivalently,
+4
+exact
+rnew
+= rprev + plog,net
+− rprev plog,net
+.
+q,σ
+q,σ
+3
+Proof. Under the symmetry assumptions,
+
+L∈{X̄,Ȳ ,Z̄}
+
+Since every term in the above sum is nonnegative, we have
+
+X
+
+(q,σ)
+
+µprev
+L λL
+
+=3·
+
+rprev plog,net
+rprev plog,net
+q,σ
+q,σ
+·
+=
+.
+3
+3
+3
+
+Substituting this identity into the exact composition formula
+in Proposition 2 yields the desired expression.
+
+Moreover,
+approx
+exact
+rnew
+− rnew
+=
+
+X
+L∈{X̄,Ȳ ,Z̄}
+
+approx
+exact
+rnew
+− rnew
+≥ 0.
+
+rprev plog,net
+q,σ
+.
+3
+
+(q,σ)
+
+µprev
+L λL
+
+L∈{X̄,Ȳ ,Z̄}
+
+
+
+prev
+prev
+≤ µprev
++
+µ
++
+µ
+X̄
+Ȳ
+Z̄
+
+
+(q,σ)
+(q,σ)
+(q,σ)
++ λZ̄
+· λX̄ + λȲ
+= rprev plog,net
+.
+q,σ
+
+A PPENDIX C
+P ROOF OF T HEOREM 1
+In this appendix, we prove Theorem 1. We first introduce
+the decision version of the problem and show that it is NPcomplete. This immediately implies that the corresponding
+optimization problem is NP-hard.
+
+Combining Eq. (10) with Proposition 3 yields
+
+Min-Cost Feasible Strategy Decision Problem (MCFSD).
+Input: A network instance under our model, a sourcedestination pair (s, d), a cost budget B, an end-to-end logical
+error threshold rθ , and the code/time parameters.
+Question: Does there exist a strategy π = (P, D, Σ) such
+that
+1) P is an s-d simple path;
+2) the total strategy cost satisfies C(π) ≤ B;
+3) the final logical error rate satisfies r(π) ≤ rθ ; and
+4) each segment delimited by two consecutive decoding
+operations satisfies the logical decoherence constraint?
+
+model
+exact
+model
+approx
+approx
+exact
+|rnew
+− rnew
+| ≤ |rnew
+− rnew
+| + |rnew
+− rnew
+|
+2
+Lσ Sq
+≤ (1 − rprev )
++ rprev plog,net
+.
+q,σ
+2
+(11)
+Under the independent-channel and depolarizing assumptions
+used above, the complete one-step error is O(ε2 ) when Sq =
+O(ε), rprev = O(ε), plog,net
+= O(ε), and Lσ = O(1). If
+q,σ
+these conditions hold over m recovery segments, summing
+the one-step bounds gives the conservative accumulated bound
+O(mε2 ). Therefore, under these low-error conditions, the firstorder approximation chain used by the routing model has
+
+Proof of Theorem 1. We prove NP-hardness by exploiting the
+decision version MCFSD. Specifically, we show that MCFSD
+is NP-complete by a polynomial-time reduction from the
+Shortest Weight-Constrained Path Problem (SWCPP). Since
+a polynomial-time algorithm for the optimization problem
+would also solve MCFSD, the optimization problem is NPhard.
+Step 1: MCFSD is in NP: A certificate is a strategy π =
+(P, D, Σ). We can verify in polynomial time that:
+• P is a simple s-d path;
+• D is a valid set of decoding locations on P ;
+
+Therefore,
+approx
+exact
+0 ≤ rnew
+− rnew
+≤ rprev plog,net
+.
+q,σ
+
+are at most ε, then the right-hand
+If both rprev and plog,net
+q,σ
+side is bounded by ε2 . This proves the claimed O(ε2 ) error
+bound.
+The update actually computed by Eqs. (3)–(5) is
+model
+rnew
+= rprev + (1 − rprev )plog
+q,σ .
+
+Σ assigns an available code scheme to each node in D;
+the total cost C(π) is at most B;
+• every segment satisfies the decoherence-time constraint;
+and
+• the final logical error rate is at most rθ .
+Indeed, all these checks require only a polynomial-time scan
+of the path and its segments, together with polynomial-time
+evaluation of the cost function, the segment-time constraints,
+and the logical-error update rule. Here we treat the code
+parameters, lookup tables, and the coefficients used by the
+logical-error model as either fixed constants of the instance
+or data that can be accessed in polynomial time. Therefore,
+MCFSD belongs to NP.
+Step 2: NP-hardness: We reduce from SWCPP, a known
+NP-complete problem [38]. The description of the SWCPP is
+as follows.
+•
+•
+
+Shortest Weight-Constrained Path Problem (SWCPP).
+Input: A graph G = (V, E), a source s ∈ V , a destination
+d ∈ V , an integer channel cost ce ≥ 0 for each e ∈ E, an
+integer channel weight we ≥ 0 for each e ∈ E, and two integer
+budgets B, W ≥ 0.
+Question: Does there exist an s-d simple path P such that
+X
+X
+ce ≤ B
+and
+we ≤ W ?
+e∈P
+
+e∈P
+
+Reduction construction: Given any SWCPP instance, we
+build an instance of MCFSD as follows.
+1) Underlying graph. Use the same graph G = (V, E)
+with the same source s and destination d.
+2) Node types. Let only s and d be super switches. Every
+node in V \ {s, d} is set to be an ordinary switch. Thus,
+no intermediate node can perform decoding.
+3) Code schemes. Equip both s and d with exactly one
+code scheme σ. Set its decoding cost to
+cσ = 0.
+4) Channel costs. For every channel e ∈ E, set its traversal
+cost in our model to be exactly the SWCPP cost:
+c′e = ce .
+5) Propagation times. For every channel e ∈ E, set its
+propagation time to be exactly the SWCPP weight:
+te = we .
+6) Physical error rates. For every channel e ∈ E, set
+pe = 0.
+Hence, every composite physical error rate is zero, and
+therefore the final logical error rate is zero as well.
+7) Logical decoherence time. Set the logical decoherence
+time of the unique code scheme σ to
+Tσlog = W + 1.
+This construction is clearly computable in polynomial time.
+
+Key property of the construction: Due to all intermediate
+nodes are ordinary switches, decoding can only occur at
+d (with the source s serving as the starting point of the
+transmission). Therefore, for any chosen s-d path P , the entire
+path forms exactly one segment.
+Thus, the segment-time constraint in our model becomes
+X
+te < Tσlog .
+e∈P
+
+By construction, te = we and Tσlog = W + 1, so this is
+equivalent to
+X
+we < W + 1.
+e∈P
+
+Since all we are integers, the above strict inequality holds if
+and only if
+X
+we ≤ W.
+e∈P
+
+Moreover, since all pe = 0, the logical error rate along any
+path is zero. Hence, the end-to-end logical error constraint is
+automatically satisfied for any nonnegative threshold rθ (for
+example, one may simply set rθ = 0).
+Finally, because the unique code scheme has zero decoding
+cost, the total strategy cost equals the path cost:
+X
+X
+C(π) =
+c′e =
+ce .
+e∈P
+
+e∈P
+
+Therefore,
+C(π) ≤ B
+
+⇐⇒
+
+X
+
+ce ≤ B.
+
+e∈P
+
+Correctness of the reduction. We prove both directions of
+the equivalence.
+(⇒) Suppose the SWCPP instance is a YES-instance. Then
+there exists an s-d path P such that
+X
+X
+ce ≤ B
+and
+we ≤ W.
+e∈P
+
+e∈P
+
+Consider the corresponding strategy π in the constructed
+MCFSD instance that follows the same path P . Since there is
+no intermediate super switch, the whole path is one segment.
+The segment-time constraint holds because
+X
+X
+te =
+we ≤ W < W + 1 = Tσlog .
+e∈P
+
+e∈P
+
+The logical error constraint holds because all physical error
+rates are zero. The total strategy cost is
+X
+C(π) =
+ce ≤ B.
+e∈P
+
+Hence, the constructed MCFSD instance is also a YESinstance.
+(⇐) Conversely, suppose the constructed MCFSD instance is
+a YES-instance. Then there exists a feasible strategy π with
+total cost at most B. Since only s and d are super switches,
+
+the strategy determines an s-d path P and the whole path is
+a single segment. Feasibility implies
+X
+te < Tσlog = W + 1.
+e∈P
+
+Using te = we and the integrality of the weights, we obtain
+X
+we ≤ W.
+e∈P
+
+Also,
+X
+
+ce = C(π) ≤ B.
+
+e∈P
+
+Therefore, P is a feasible solution to the original SWCPP
+instance. So the SWCPP instance is a YES-instance.
+Conclusion. We have shown that the SWCPP instance is a
+YES-instance if and only if the constructed MCFSD instance
+is a YES-instance. Thus, SWCPP polynomially reduces to
+MCFSD, so MCFSD is NP-hard. Combining this with the
+fact that MCFSD is in NP, we obtain that MCFSD is NPcomplete.
+Suppose, for contradiction, that a minimum-cost feasible
+strategy could be found in polynomial time. Then we could
+solve MCFSD in polynomial time by computing the minimum
+feasible cost and comparing it with the budget B. This
+contradicts the NP-completeness of MCFSD. Therefore, the
+optimization problem is NP-hard.
+A PPENDIX D
+P ROOF OF T HEOREM 2
+Proof. Let P̂ denote the path returned by Algorithm 1 on
+H = (VH , EH ), and let r̂(P̂ ) and t̂(P̂ ) denote its discretized
+logical error rate and discretized segment time, respectively.
+Let P ∗ be an optimal feasible path, and let l∗ be the label
+corresponding to P ∗ at the destination.
+First, we show that c(P̂ ) ≤ c(P ∗ ). During the labelcorrecting process, a label is removed only when it is dominated by another label with no larger cost, no larger logical
+error rate, and no larger elapsed segment time. Hence, pruning
+a dominated label cannot remove all minimum-cost feasible
+continuations. Therefore, the label corresponding to P ∗ either
+remains in Ld or is dominated by another label in Ld with cost
+no larger than c(P ∗ ). Since Algorithm 1 returns the minimumcost label in Ld , we have c(P̂ ) ≤ c(P ∗ ).
+Next, we bound the error-rate violation introduced by errorrate discretization. Suppose ∆r ≤ ϵr rθ /|VH |. Since the
+logical error rate is rounded down with step size ∆r , each
+discretization step may underestimate the true error rate by
+at most ∆r . In the worst case, such rounding occurs at most
+|VH | times along a simple path in the auxiliary graph. Thus,
+r(P̂ ) ≤ r̂(P̂ ) + ∆r |VH |.
+Because Algorithm 1 accepts the output label only when
+r̂(P̂ ) ≤ rθ , we obtain
+r(P̂ ) ≤ rθ + ∆r |VH | ≤ (1 + ϵr )rθ .
+
+Finally, we bound the violation of the logical decoherencetime constraint. Suppose ∆t ≤ ϵt T log /|VH |. Since elapsed
+time is rounded down with step size ∆t , each discretization
+step may underestimate the true elapsed time by at most
+∆t . Along any segment, the accumulated underestimation is
+therefore at most ∆t |VH |. Hence, for any segment q of P̂ ,
+seg
+tseg
+q (P̂ ) ≤ t̂q (P̂ ) + ∆t |VH |.
+
+Because the algorithm accepts a segment only when t̂seg
+q (P̂ ) <
+Tqlog , we have
+log
+log
+tseg
+q (P̂ ) < Tq + ∆t |VH | ≤ (1 + ϵt )Tq .
+
+Therefore, P̂ is an (ϵr , ϵt )-optimal feasible path.
+A PPENDIX E
+P ROOF OF THE M ULTI -F LOW A PPROXIMATION
+G UARANTEE
+In this appendix, we prove the approximation guarantee of
+the randomized rounding policy used in Section VI. Recall
+that K is the set of flows, Πi is the fixed candidate strategy
+pool of flow i, and ai is the throughput demand of flow i.
+We assume that the throughput demands are normalized so
+Π
+denote the optimal value of the
+that 0 ≤ ai ≤ 1. Let yOPT
+candidate-restricted integral path-allocation problem, and let
+y ∗ denote the optimal value of its LP relaxation. Clearly, y ∗ ≤
+Π
+yOPT
+.
+The randomized rounding policy independently selects one
+strategy π ∈ Πi for each flow i with probability x∗i,π , where
+{x∗i,π } is an optimal solution to the LP relaxation. For a
+physical channel e ∈ E, let Xe denote the total rounded
+congestion on channel e. Then
+X
+X
+Xe =
+ai Xi,π ,
+i∈K π∈Πi : e∈E(π)
+
+where Xi,π is the indicator variable that flow i selects strategy
+π. Since each flow is rounded independently, the random
+variables contributed by different flows are independent. Moreover, each contribution is bounded by 1 due to the normalization 0 ≤ ai ≤ 1.
+The expected congestion on channel e is
+X
+X
+Π
+E[Xe ] =
+ai x∗i,π ≤ y ∗ ≤ yOPT
+.
+i∈K π∈Πi : e∈E(π)
+
+Let µe = E[Xe ]. For any λ > 1, by the Chernoff bound for
+independent bounded random variables,
+Π
+
+λyOPT
+eµe
+Π
+.
+Pr[Xe ≥ λyOPT
+]≤
+Π
+λyOPT
+Π
+Since µe ≤ yOPT
+, we have
+Π
+Pr[Xe ≥ λyOPT
+]≤
+
+Π
+ e λyOPT
+
+λ
+
+Π
+Assuming yOPT
+≥ 1, this further implies
+ e λ
+Π
+Pr[Xe ≥ λyOPT
+]≤
+.
+λ
+
+.
+
+Set λ = κ log n/ log log n for a sufficiently large constant
+κ, where n = |V |. Then
+ e λ
+1
+= exp(−λ log(λ/e)) ≤ 3 ,
+λ
+n
+for sufficiently large n and a suitable constant κ. Therefore,
+for any fixed channel e,
+1
+.
+n3
+Finally, by the union bound over all physical channels, and
+using |E| ≤ n2 , we obtain
+Π
+Pr[Xe ≥ λyOPT
+]≤
+
+
+ |E|
+1
+Π
+Pr ∃e ∈ E : Xe ≥ λyOPT
+≤ 3 ≤ .
+n
+n
+Thus, with probability at least 1−1/n, every channel has conΠ
+Π
+gestion at most λyOPT
+= O(log n/ log log n) · yOPT
+. Hence,
+randomized rounding achieves the stated approximation ratio
+for the fixed candidate pools with high probability.
+
+

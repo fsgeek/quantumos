@@ -1,0 +1,1244 @@
+A Dynamic-Kernel/QPacket Executable
+for Quantum Repeater Chains in Q2NS/ns-3
+Adam Pearson
+
+adamgerrit.pearson@unina.it
+University of Naples Federico II
+Naples, Italy
+
+Marcello Caleffi
+
+marcello.caleffi@unina.it
+University of Naples Federico II
+Naples, Italy
+
+arXiv:2608.24152v2 [quant-ph] 26 Aug 2026
+
+Abstract
+The Quantum Internet operates on entanglement, a non-local, noncopyable, stateful network resource, which motivates protocol organization beyond classical layering. We present a first executable specialization of the Dynamic Kernel/QPacket logic from the beyondlayering protocol suite, targeting entanglement distribution over
+a linear quantum repeater chain. The implementation builds on
+Q2NS, an ns-3-based quantum-network simulation module available
+through the ns-3 App Store. It realizes QPacket meta-headers with
+service intent and append-only action-commit stamps processed by
+node-local Dynamic Kernels organized as a Planner–Executor–
+Engine pipeline, while being deliberately scoped to an analytically verifiable service and policy. Within this scoped setting, we
+study node heterogeneity through a link-preparation policy that accounts for pre-distributed entanglement and uneven entanglementgeneration support across nodes, including delegation via QPacket
+forwarding. Simulations verify analytical link-resolvability models
+and expose signaling load, forwarding behavior, and QPacket metaheader growth. Results show that QPacket overhead is shaped by
+more than just encoding, including policy choices and available network resources. Overall, this study demonstrates how the Q2NS/ns3 substrate can support reproducible, policy-specific evaluation of
+quantum-native protocol-suite concepts.
+
+Keywords
+Quantum Internet, Entanglement, Quantum Packet, Dynamic Kernel, ERC-CoG QNattyNet, Q2NS, ns-3
+
+1
+
+Introduction
+
+The Quantum Internet [3–5, 8, 11, 16] is being designed to generate, distribute, maintain, and manipulate quantum entanglement
+as its key communication resource. This fundamentally departs
+from the classical Internet scope, where packets carry copyable
+information that can be buffered, duplicated, and forwarded by
+intermediate nodes. In quantum networks, entanglement is nonlocal and stateful: local operations at a node can affect entangled
+states shared with remote nodes, and protocol decisions depend on
+resource descriptors such as entanglement availability, ownership,
+fidelity, and coherence time. As a result, quantum-network design
+cannot be reduced to a direct adoption of classical Internet design
+principles [4, 9].
+A recently proposed response to this challenge is the beyondlayering protocol suite [3], where quantum network functions are
+not organized into fixed vertical layers. Instead the suite dynamically composes atomic functionalities, called micro-protocols (MPs),
+into higher-order constructs called meta-protocols (MePs) to realize
+complex network functionalities. To support this composition, a
+
+Angela Sara Cacciapuoti
+
+angelasara.cacciapuoti@unina.it
+University of Naples Federico II
+Naples, Italy
+
+quantum packet (QPacket) carries a quantum control field, termed
+meta-header, which contains the selected service intent and an
+append-only sequence of action-commit records, called stamps. At
+each node, a local Dynamic Kernel reads the meta-header nondestructively, enabled by an appropriate quantum encoding [3];
+it combines the packet-carried history with the node-local state;
+constructs a Plan of Actions (PoA), maps actions to MPs and MePs;
+and appends new stamps only at action-commit boundaries. In this
+way, service progression is certified by the packet-carried history
+rather than prescribed by a static layer order [3].
+However, instantiating this suite as an ns-3 executable is nontrivial. The beyond-layering suite intentionally separates the reusable
+architectural substrate from service-specific choices, including policies, MP libraries, routing assumptions, resource-management rules,
+and QPacket choices. This calls for scoped executable specializations in which these choices are made explicit, instrumented, and
+verified against analytical reference models.
+This paper develops such a first executable specialization using Q2NS, an ns-3-based quantum-network simulator [13] available through the ns-3 App Store [14]. Q2NS extends ns-3 with
+quantum-networking primitives while preserving the ability to cosimulate quantum operations and classical communication inside
+the ns-3 event-driven environment. We build on the released Q2NS
+substrate, without modifying its internals, and implement an executable Dynamic Kernel/QPacket specialization for end-to-end
+(e2e) entanglement distribution over a linear quantum repeater
+chain.
+The implementation separates reusable beyond-layering structures from service-specific policy logic: the abstract QPacket metaheader, append-only commit stamps, and the Planner–Executor–
+Engine Kernel pipeline follow the beyond-layering design [3], while
+fixed-chain path selection, capability-dependent MP binding, and
+failure handling are deliberately specialized to this service and
+linear-chain topology, as summarized in Table 1. The service progresses by preparing adjacent entangled links, applying entanglement swapping at intermediate repeaters, and forwarding the
+QPacket along the chain until delivery or failure. Link preparation
+can be resolved in three ways: (i) a node can generate the required
+elementary entanglement locally, (ii) it can delegate generation to
+a neighboring node, or (iii) the required adjacent entanglement
+is already available as a pre-distributed resource. If none of these
+conditions holds, an entanglement link cannot be established under
+this policy and the service fulfillment fails, as detailed in Sec. 2.3.
+The contributions of this work can be summarized as follows:
+• We implement an executable Dynamic Kernel and QPacket
+specialization in Q2NS/ns-3 for e2e-entanglement distribution over a linear quantum repeater chain, instantiating
+
+Adam Pearson, Marcello Caleffi, and Angela Sara Cacciapuoti
+
+Table 1: Scope of the executable e2e-entanglementdistribution specialization of the beyond-layering DynamicKernel.
+Concept
+
+Implementation
+
+Service intent
+
+e2e entanglement distribution over a
+quantum repeater chain
+
+QPacket meta-header
+
+Service intent plus stamps
+
+Dynamic Kernel
+
+Planner–Executor–Engine pipeline
+
+Service-specific policy
+
+Capability-dependent binding to the
+node-local MP library
+
+Path selection
+
+Alice–Bob chain with next-neighbor
+forwarding only
+
+Physical model
+
+Noiseless operations; configurable
+propagation delay; QPacket forwarding with per-qubit emission interval
+
+entanglement resources, which applications later consume, for example through teleportation with classical correction signaling [1].
+In a repeater chain, adjacent EPR links are extended by entanglement swapping: a repeater performs a Bell-state measurement
+(BSM) on its two local halves, sends the classical outcome onward,
+and thereby consumes the adjacent links to establish a longer-range
+entanglement relation [2, 6].
+This section details how the scoped specialization is realized
+in Q2NS. We first describe the Q2NS simulation substrate and the
+abstract QPacket meta-header model, then specify the DynamicKernel workflow and the service-specific policies used for repeaterchain entanglement distribution. This organization exposes a reusable
+beyond-layering core – the QPacket meta-header, append-only
+stamps, and Planner-Executor-Engine pipeline – and instantiates
+path selection, capability-aware link-preparation policy for heterogeneous MP libraries, and failure handling as modular policy
+choices for repeater-chain EPR distribution.
+
+2.1
+
+Simulation Substrate
+
+We implement the above on top of Q2NS [13], an ns-3-based quantumnetwork simulator available on the ns-3 App Store [14]. Q2NS exQPacket meta-headers, append-only commit stamps, and a
+tends ns-3 with quantum networking primitives, while preservPlanner–Executor–Engine pipeline.
+ing ns-3’s event-driven execution model and classical network
+• We design and implement a capability-aware link-preparation
+stack. In particular, Q2NS introduces the QNode class derived from
+policy for heterogeneous MP libraries, supporting local enns3::Node which can engage with all the classical networking simtanglement generation, delegation via QPacket forwarding,
+ulations expected in ns-3, while also allowing transmission and
+pre-distributed entanglement resources, and explicit failure
+reception of qubits and node-local quantum processing such as comoutcomes.
+• We verify the implementation against analytical link-resolvability putations and measurements. There are similarly derived classes
+such as QChannel and QNetDevice. However, quantum networkmodels for deterministic and random generator placement.
+ing simulations require management of quantum states and their
+• We instrument the simulation to measure committed acpotentially non-local nature, such as with entanglement. To address
+tions, signaling load, QPacket forwarding behavior, runtime
+entanglement transmissions, and QPacket meta-header growth this, Q2NS introduces the NetController, which acts as a logically
+centralized controller and registry for quantum states and quantum
+under different capability and resource regimes.
+networking objects such as Qubits, QNodes, and QChannels.
+• We provide a reproducibility artifact built on Q2NS, includFor more details on the architecture and performance of Q2NS,
+ing execution scripts, raw CSV outputs, and plotting scripts
+please
+refer to [13] and the Q2NS repository [15]. In this work,
+for regenerating the main figures.
+we build entirely on the released Q2NS functionalities, without
+modifying its simulation core. The Dynamic-Kernel/QPacket logic
+2 Dynamic Kernel Realization in Q2NS
+is implemented as an additional specialization layer on top of the
+The executable specialization considers a linear repeater chain,
+Q2NS substrate, through new C++ data structures, service-policy
+Alice − 𝑅1 − 𝑅2 − · · · − Bob. In this scoped setting, link-level EPRlogic, and instrumentation specific to the executable specialization
+pair generation between adjacent nodes, entanglement swapping,
+studied here.
+QPacket forwarding, and service termination are all exercised. Although general topologies require routing, any selected route in2.2 Dynamic Kernel and QPackets
+duces a repeater chain: once the participating repeaters have been
+chosen, the local swapping structure is the same.
+The beyond-layering suite is centered on two abstractions: the
+This focus is motivated by the operational difference between
+QPacket and the Dynamic Kernel [3]. QPackets carry a payload
+classical and quantum networks: classical multi-hop forwarding
+of entangled qubits and a quantum control field, the meta-header,
+cannot be directly applied in the quantum domain. In fact, an uncarrying the service intent and committed-action history. Upon
+known quantum state cannot be copied due to the no-cloning theoreceiving an incoming QPacket, the node runs its Dynamic Kernel,
+rem [19]. Moreover, by the quantum measurement postulate, quanwhich advances the service intent by using the node internal state
+tum states cannot in general be measured without disturbing them.
+and the in-band meta-header carried by the QPacket. The Kernel
+Storage and transmission further expose qubits to decoherence
+acts as the node-local orchestration and execution environment:
+effects [7, 9]. Consequently, the classical strategy of receiving, copyit plans candidate actions, composes the corresponding MPs into
+ing, amplifying, and retransmitting information at each hop does
+MePs, invokes the resulting realizations, and records completed acnot directly apply to quantum networks. Long-distance quantum
+tion outcomes as append-only stamps at action-commit boundaries,
+communication is therefore organized around the distribution of
+as illustrated in Fig. 1.
+
+A Dynamic-Kernel/QPacket Executable
+
+Dynamic kernel at current node
+
+Incoming
+QPacket
+
+PoA Planner
+
+PoA Executor
+
+PoA Engine
+
+constructs
+
+binds DAG to
+local MPs
+
+runs each MeP
+may append stamp
+
+local PoA
+DAG
+
+MeP
+schedule
+
+Updated
+QPacket
+
+Node Internal State
+FTQ / FTC
+
+MP
+library
+
+Optional
+Hints
+
+Drop, Deliver, or
+Forward to the next hop
+
+Communication
+Infrastructure
+
+Figure 1: Dynamic-Kernel pipeline triggered by an incoming QPacket. The Planner constructs a local PoA from the QPacket
+meta-header and node-local state. The Executor schedules feasible actions and binds them to MPs/MePs. The Engine runs these
+MPs/MePs and appends stamps only at action-commit boundaries before forwarding, delivering, or dropping the QPacket.
+(1) PoA Planner: The Planner constructs a local and speculative
+Plan of Actions (PoA) from the service intent, the accumulated stamps, and the node internal state. The internal
+state includes FTC and FTQ, respectively capturing classical reachability and the node entanglement inventory.
+Optional control-plane hints may refine the local planning
+policy. The PoA is represented as a directed acyclic graph
+(DAG) of candidate actions and dependency constraints.
+(2) PoA Executor: The Executor binds candidate actions to concrete MP/MeP realizations. An MP implements an atomic
+network functionality, while an MeP is a higher-order construct obtained by dynamically composing MPs to realize a
+more complex functionality. Using the node’s MP library,
+local dependencies, and node capability constraints, the Executor selects feasible actions and produces a dependencyrespecting runnable schedule.
+(3) PoA Engine: The Engine executes the scheduled MP/MeP
+realizations and certifies service progress only at actioncommit boundaries via stamps. Each committed action appends the corresponding stamp to the QPacket meta-header.
+Local execution terminates by forwarding the packet to the
+next hop, delivering the service, or dropping the packet. After a forward, the next node runs its own Dynamic Kernel.
+The QPacket is realized as a C++ struct containing the service
+intent and accumulated stamps. Thus, the QPacket meta-header is
+modeled at a logical level, rather than as a concrete quantum-state
+encoding. To model QPacket forwarding, we assign the QPacket a
+logical qubit-equivalent size, denoted as 𝑛 qpacket . At each forwarding event, 𝑛 qpacket is computed by equating the number of qubits
+with the number of classical bits needed to represent the current
+variables of the QPacket structure. Thereby the model charges one
+qubit-equivalent transmission per represented bit. By assuming
+serial emission over the quantum channel with qubit emission interval of 𝑡 emit and a propagation delay of 𝑡 delay 1 , the total QPacket
+forwarding time is 𝑡 delay + (𝑛 qpacket − 1)𝑡 emit . We chose 𝑡 delay = 0.5
+ms, corresponding to a long, but experimentally demonstrated [18]
+
+100 km of fiber, with a 5 µs/km propagation delay. We also chose
+𝑡 emit = 1 ns, corresponding to an effective 1 GHz photon-emission
+rate, consistent with high-rate single-photon sources [10, 17]. These
+are used as representative timing parameters, however the focus
+of this study is on scaling trends that are largely independent of
+these choices. Overall, this model serves as a logical baseline and
+not as a physical QPacket encoding proposal. Concrete implementations may introduce additional overheads from physical encoding
+choices, synchronization, hardware constraints, or error correction. Thus, the measured forwarding delays quantify meta-header
+growth trends under the abstract model, not absolute physical transmission costs. Classical messages are sent as UDP/IPv4 packets
+under 30 bytes over ns-3 point-to-point links also with propagation
+delay 𝑡 delay = 0.5 ms and a 1 Gbps data rate.
+Dynamic-Kernel processing and individual MP execution are
+instantaneous in simulation time. This isolates QPacket forwarding and meta-header growth effects. Future work will incorporate
+realistic processing times, particularly important in noisy scenarios
+where the quality of distributed entanglement decreases over time.
+Algorithm 1 summarizes the Dynamic-Kernel workflow for the
+executable repeater-chain specialization. Each repeater prepares
+missing adjacent links, swaps between its left and right neighbors,
+and forwards the updated QPacket. Table 2 details the mapping from
+actions to MPs, simulated exchanges, and state/QPacket updates.
+We record Dynamic-Kernel metrics through custom counters
+maintained by a DynamicKernelManager object and by per-node
+runtime state. These metrics include committed actions, delegatedgeneration requests, signaling messages, QPacket forwarding events,
+failure depth, and QPacket meta-header growth. They are implemented as custom counters, rather than ns-3 TraceSources, because
+they are internal to the service-specific Dynamic-Kernel logic instantiated in this work. A future Q2NS module could expose the
+stable subset of these events as ns-3 TraceSources.
+
+2.3
+
+Node Capabilities and Delegation Policy
+
+Realistic quantum networks are expected to contain nodes with
+heterogeneous capabilities. In the beyond-layering suite [3], this
+
+1 Single-qubit transmissions, used in MP
+GEN , propagate on Q2NS QChannels with
+
+propagation delay 𝑡 delay .
+
+1
+
+Adam Pearson, Marcello Caleffi, and Angela Sara Cacciapuoti
+
+Table 2: Executor bindings and Engine behavior for each action in the executable repeater chain specialization
+Planner Action
+
+Executor MeP
+
+Engine Implementation
+
+LINK_PREP (𝑥 )
+
+MPSYN
+
+1. Send link-preparation packet for generation from this node to 𝑥
+2. Receive acknowledgment from 𝑥
+
+MPGEN
+
+1. Generate EPR pair
+2. Send half of EPR pair to 𝑥
+3. Apply LINK_PREP state effect: add 𝑥 to this node’s FTQ and this node to 𝑥 ’s FTQ
+
+Note: If node lacks MPGEN , then non-bindable. The Engine appends a failure stamp for LINK_PREP (𝑥 ) and installs a runtime soft hold waiting for reciprocal link preparation.
+SWAP (𝑥, 𝑦)
+
+MPQP
+
+1. Wait until the runtime guard is satisfied: both adjacent FTQ entries are available.
+2. BSM on two locally stored ebit halves (one from 𝑥 and one from 𝑦 )
+3. Remove 𝑥 and 𝑦 from FTQ
+4. Aggregate BSM outcome with classical correction packet received by 𝑥
+
+MPSIG
+
+Send aggregated classical correction packet to 𝑦 , triggering 𝑦 to change FTQ entry from this node to 𝑥
+
+MPQP
+
+Apply corrections when aggregated correction packet arrives
+
+MPSIG
+
+Send CompletionAck packet to 𝑥 , releasing ACT_HOLD(CompletionAck) at 𝑥 and applying the corresponding update of
+FTQ𝑥
+
+ACT_FORWARD (𝑥 )
+
+MPFW
+
+Forward QPacket to 𝑥 , triggering Dynamic Kernel pipeline at 𝑥
+
+ACT_HOLD(trigger; mode)
+
+None
+
+Install service-level soft state, released by trigger. A stamp is only appended if mode is certifying. No MP invoked
+
+ACT_DELIVER
+
+None
+
+Service terminates successfully, no further QPacket forwarding
+
+ACT_DROP
+
+None
+
+Drop QPacket. Service terminates in failure
+
+CORRECT_AND_ACK (𝑥 )
+
+heterogeneity is naturally represented through node-local MP libraries: each node can bind and invoke only the MPs exposed by
+its own library. In the present repeater-chain specialization, we
+instantiate this heterogeneity through entanglement-generation
+capability. Some nodes expose MPGEN , while others do not. In the
+latter case, a LINK_PREP action cannot be bound locally.
+This setting stresses an important feature of the beyond-layering
+suite: the absence of a local MP does not by itself invalidate the
+service progression. Indeed, the Dynamic Kernel pipeline naturally
+adapts to missing local capabilities while preserving local autonomy and the single-writer discipline of the QPacket meta-header. If
+the current QPacket holder cannot generate entanglement locally,
+the Executor marks LINK_PREP as non-bindable. The Engine then
+invokes no MP and records the failed local realization by appending
+a failure stamp for LINK_PREP. The QPacket is then forwarded
+according to the local PoA. The receiving node runs its own Dynamic Kernel, reads the updated stamp history, and may schedule
+the reciprocal LINK_PREP using its own local MP library. For a
+requested adjacent link between the current QPacket holder 𝑥 and
+its neighbor 𝑦, the implemented policy is as follows:
+(1) If 𝑥’s FTQ already contains an entanglement resource for
+𝑦, no LINK_PREP action is added to the PoA.
+(2) Otherwise, the Planner adds LINK_PREP(𝑦) to the local
+PoA.
+• If 𝑥 exposes MPGEN , the Executor binds LINK_PREP(𝑦)
+according to Table 2. The resulting MeP synchronizes
+the endpoints and generates an EPR pair at 𝑥, which
+sends one half to 𝑦. Upon completion, the Engine applies the corresponding FTQ updates and appends a
+committed LINK_PREP stamp to the QPacket metaheader.
+• If 𝑥 lacks MPGEN , the Executor marks LINK_PREP as
+non-bindable, by scheduling it with an empty MeP.
+
+This signals to the Engine to invoke no MP and append a failure stamp. The QPacket is then forwarded
+to 𝑦 when ACT_FORWARD(𝑦) is present in the local
+PoA. Subsequently, the Engine at 𝑥 installs a local runtime soft hold waiting for reciprocal link preparation.
+This hold is a local state under a release-only mode,
+meaning it does not append a stamp.
+• When 𝑦 receives the forwarded QPacket, it runs a new
+Dynamic-Kernel pipeline. From the failure stamp, the
+Planner knows to add the reciprocal LINK_PREP(𝑥),
+with delegation forbidden. If 𝑦 also lacks MPGEN , the
+service terminates with ACT_DROP. If 𝑦 exposes MPGEN ,
+it realizes the link locally and sends one EPR-pair half
+to 𝑥, releasing 𝑥’s runtime soft hold. After LINK_PREP,
+𝑦 installs a local service soft hold waiting for signaling
+from 𝑥 that it has completed its SWAP and, according
+to the certifying mode, stamps this locally at 𝑦 since 𝑥
+no longer has the QPacket.
+(3) If the current QPacket holder cannot progress as no feasible
+local continuation remains, the service terminates in failure
+with ACT_DROP.
+Our implementation is aligned with the invariants of the beyondlayering suite. Beyond the aforementioned local autonomy and
+single-writer discipline, it also preserves in-band coordination, because the service context is transferred through the QPacket metaheader and its append-only stamp history, rather than through
+global synchronization or an out-of-band speculative plan. And, it
+preserves dynamic composition, since each receiving node recomputes its continuation locally from the stamp history and composes
+its available MPs into an appropriate MeP.
+This specialization also distinguishes two architectural classes
+of local soft state, which differ in origin and semantics. The first
+class consists of explicit service-level soft actions, represented by
+ACT_HOLD. These actions are inserted by the Planner when the
+
+A Dynamic-Kernel/QPacket Executable
+
+Algorithm 1 Dynamic Kernel workflow for the executable repeaterchain specialization
+1: Configure network, MP libraries, and pre-distribute entanglement
+2: Inject QPacket at Alice with intent EPR_DISTRIBUTE(Alice, Bob)
+3:
+4: ReceivePacket(QPacket) {Trigger Dynamic Kernel}
+5: PoA ← Planner(QPacket, FTQ, FTC)
+6: ExecPlan ← Executor(PoA, MPs)
+7: QPacketupdated ← Engine(ExecPlan, MPs, QPacket)
+8:
+9: Planner(QPacket, FTQ, FTC) {Build PoA}
+10: 𝐴 ← first participant in QPacket intent; 𝐵 ← last participant
+11: left ← left neighbor; right ← right neighbor
+12: if LINK_PREP(left) failed in QPacket.stamps then
+13:
+Add LINK_PREP(left) with delegation forbidden
+14:
+Add ACT_HOLD( SWAP(prev(left), this node); certifying)
+15: if this node = 𝐵 then
+16:
+Add CORRECT_AND_ACK(𝐴)
+17:
+Add ACT_DELIVER
+18: else if this node = 𝐴 then
+19:
+if right ∉ FTQ then
+20:
+Add LINK_PREP(right)
+21:
+Add ACT_FORWARD(right)
+22:
+Add ACT_HOLD(CompletionAck; release-only)
+23: else
+24:
+if right ∉ FTQ then
+25:
+Add LINK_PREP(right)
+26:
+Add SWAP(left, right)
+27:
+Add ACT_FORWARD(right)
+28: Add action-level dependencies
+29: return PoA
+30:
+31: Executor(PoA, MPs) {Build ExecPlan}
+32: canGen ← (MPGEN ∈ MPs)
+33: if not canGen ∧ (LINK_PREP with delegation forbidden) then
+34:
+return [ ]
+35: for each action in PoA do
+36:
+if action is ACT_HOLD then
+37:
+Add as service-soft-action {Soft state}
+38:
+else if action is LINK_PREP(𝑣) and not canGen then
+39:
+Add as non-bindable {Engine records a failure stamp}
+40:
+Attach runtime-soft-hold until 𝑣 ∈ FTQ
+41:
+else
+42:
+Bind action according to Table 2
+43:
+Add bound action to ExecPlan
+44: return ExecPlan
+45:
+46: Engine(ExecPlan, MPs, QPacket) {Run ExecPlan}
+47: if ExecPlan = [ ] then
+48:
+Commit ACT_DROP and terminate the request
+49: for each scheduled item in ExecPlan do
+50:
+if item is service-soft-action then
+51:
+Install local service-level soft state
+52:
+if mode is certifying then
+53:
+Append stamp after release
+54:
+else if item is non-bindable then
+55:
+Append failure stamp for the action {No MP is invoked}
+56:
+else if item has an unsatisfied runtime-soft-hold then
+57:
+Install local runtime-level soft state {No stamp}
+58:
+else
+59:
+Execute the bound MPs according to Table 2
+60:
+Apply local state-transition effects
+61:
+Append stamp after the action reaches its commit boundary
+62: return QPacket
+
+Table 3: Generator-capability placements used in the case
+study. 𝐺𝑖 is whether node 𝑖 has MPGEN , indexed 0, . . . , 𝑁 − 1,
+and 𝑛 gen-unres counts links where both endpoints lack MPGEN .
+Placement
+
+𝐺𝑖
+
+𝑛 gen-unres
+
+all
+every2
+every3
+every4
+middleOnly
+finalBottleneck
+random
+
+1 ∀𝑖
+𝑖 ≡ 0 (mod 2)
+𝑖 ≡ 0 (mod 3)
+𝑖 ≡ 0 (mod 4)
+𝑖 = ⌊𝑁 /2⌋
+𝑖 +2 < 𝑁
+Bernoulli(𝑔)
+
+0
+0
+⌊ 𝑁3 ⌋
+2⌊ 𝑁 4−1 ⌋ +max(0, ( (𝑁 − 1) mod 4) − 1)
+max(0, 𝑁 − 3)
+1
+Random variable 𝑛 gen-unres (𝐺 )
+
+waiting condition is part of the service semantics derived from the
+QPacket meta-header. This information must be encoded in the
+PoA, since the Executor receives the PoA and the local MP library
+but does not directly inspect the QPacket meta-header. We type
+ACT_HOLD according to its release behavior. A release-only hold
+is released by its trigger and does not append a stamp. This is the
+case, for example, of ACT_HOLD(CompletionAck; release-only),
+which lets the service initiator wait for the end-to-end completion acknowledgment. A certifying hold is also installed as local
+soft state, but its trigger carries evidence that another node has
+completed an action whose stamp must be written by the current holder of the authoritative QPacket meta-header. After validating the trigger and the associated consistency conditions, the
+Engine releases the hold and appends the corresponding stamp.
+Thus, ACT_HOLD(SwapReport; certifying) can be used when a
+neighboring node performs a local SWAP after the QPacket has
+already been forwarded, while the current QPacket holder remains
+responsible for appending the SWAP stamp.
+The second class consists of runtime soft holds. These are not
+Planner actions. They are introduced by the Executor when a scheduled realization cannot proceed until an execution-time condition
+becomes true, such as reciprocal link preparation after a failed local
+LINK_PREP, or FTQ availability before SWAP. Thus, ACT_HOLD
+communicates a service-level waiting requirement from the Planner to the Executor, whereas runtime soft holds are local execution
+guards attached to scheduled items. Runtime soft holds are always
+local non-stamping state.
+Soft-state release is trigger-based. In the simulator, incoming
+events are typed so that QPacket arrivals are distinguished from
+soft-state triggers and side information. Only a QPacket starts a
+new Dynamic-Kernel pipeline. By contrast, a soft-state trigger is a
+classical or quantum event, such as a CompletionAck, a reciprocal
+link-preparation event, a received EPR-pair half, or a correction
+packet. Such a trigger is delivered through the signaling path and
+matched against locally installed soft states. It does not start a new
+authoritative Kernel pipeline. A trigger notifies the Engine that
+a local runtime condition may have changed. The Engine then
+applies the local state-transition effect according to the action/MeP
+semantics and re-evaluates the guard associated with the hold.
+Under this policy, a physical link is resolvable when it is already
+present in FTQ or when at least one endpoint exposes MPGEN . This
+gives a link-resolvability condition that admits a simple analytical
+success probability characterization, which we compare directly
+
+Adam Pearson, Marcello Caleffi, and Angela Sara Cacciapuoti
+
+Random placement at p = 0 for N = 10, 100, 1000
+1.0
+
+N = 10 theory
+
+Deterministic placements and pre-distributed entanglement, N = 10
+1.0
+
+N = 10 sim
+N = 100 sim
+N = 1000 sim
+
+N = 100 theory
+N = 1000 theory
+
+every-2 (ngap = 0)
+
+0.8
+
+Success probability
+
+Success probability
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+final-bottleneck (ngap = 1)
+every-3 (ngap = 3)
+every-4 (ngap = 4)
+
+0.6
+
+middle-only (ngap = 7)
+
+0.4
+
+0.2
+
+0.0
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+0.0
+
+1.0
+
+0.0
+
+Generator placement probability g
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Pre-distributed entanglement probability p
+
+Figure 2: Success probability of random generator placement
+with probability 𝑔 without pre-distributed entanglement.
+Markers show Q2NS simulation results with 95% binomial
+confidence intervals; dashed curves show the analytical probability that no two adjacent nodes both lack MPGEN .
+
+Figure 3: Success probability for deterministic generatorcapability placements as a function of the pre-distributed
+entanglement probability 𝑝 for 𝑁 = 10. Markers show Q2NS
+simulation results with 95% binomial confidence intervals,
+while dashed curves show the analytical probability 𝑝 𝑛gen-unres .
+
+with simulation outcomes in Sec. 3 for several generator-capability
+configurations.
+Let 𝐺𝑖 = 1 indicate that node 𝑖 ∈ {0, . . . , 𝑁 − 1} has MPGEN
+and 𝑛 gen-unres (𝐺) be the number of generator-unresolvable physical links, i.e. those such that 𝐺𝑖 = 0 ∧ 𝐺𝑖+1 = 0. These are the
+physical links that cannot be prepared by either endpoint during
+service fulfillment. For deterministic capability placements, 𝐺 and
+𝑛 gen-unres (𝐺) are fixed by the placement. For random capability
+placement, each 𝐺𝑖 is independently sampled with Pr(𝐺𝑖 = 1) = 𝑔.
+The specific placements we investigate in this work and their
+𝑛 gen-unres (𝐺) values are presented in Table 3.
+When there is no pre-distributed entanglement, i.e., 𝑝 = 0, the
+service is only successful if 𝑛 gen-unres (𝐺) = 0. For random capability
+placement, this is the probability that no two non-generator nodes
+are adjacent
+
+⌊ (𝑁∑︁
++1)/2⌋ 
+𝑁 −𝑘 +1
+𝑃succ (𝑁 , 𝑔, 0) =
+(1 − 𝑔)𝑘 𝑔𝑁 −𝑘 .
+𝑘
+
+of pre-distributed entanglement. Simulations were run on a MacBook with an Apple M5 chip and 16 GB Unified Memory. The results
+presented here verify the specialized Dynamic-Kernel/QPacket implementation, illustrate the types of analyses supported by Q2NS/ns3, and identify key directions for future modularization and extensions. All data is available in this work’s artifact [12].
+The main observations of these simulations are:
+(1) The executable outcomes match the analytical success probabilities predicted by the link-resolvability model for the
+considered capability placements and pre-distributed entanglement levels.
+(2) Under the implemented policy and linear-chain topology,
+success appears more sensitive to generator probability 𝑔
+than to pre-distributed entanglement probability 𝑝.
+(3) Append-only QPacket stamps induce linear terminal metaheader growth with chain length, while repeated forwarding of the growing meta-header produces a quadratic accumulated forwarding delay.
+
+𝑘=0
+
+If each link is independently pre-distributed an entangled pair
+with probability 𝑝 > 0, then success relies on all 𝑛 gen-unres (𝐺)
+generator-unresolvable links being pre-distributed, resulting in
+𝑃succ (𝐺, 𝑝) = 𝑝 𝑛gen-unres (𝐺 ) .
+For random capability placement, the success probability averages the fixed-placement expression over generator placements.
+
+3
+
+Results
+
+This section evaluates the executable specialization along three axes.
+First, we verify the behavior of the implementation by comparing
+simulated outcomes with the analytic link-resolvability models developed in Sec. 2.3. Second, we examine how signaling load and
+success vary across capability placements and pre-distributed entanglement. Third, we quantify QPacket meta-header growth and
+the accumulated QPacket forwarding delay.
+Data was collected for a range of network sizes, configurations of
+node capabilities that stress particular failure modes, and amounts
+
+3.1
+
+Heterogeneous Node Capability Operation
+without Pre-distributed Entanglement
+
+We consider heterogeneous node capabilities, modeled by nodedependent MP libraries, in the worst-case autonomous regime.
+Specifically, we set the pre-distributed entanglement probability to
+𝑝 = 0, so that no adjacent entanglement resource is available before
+the request, and we do not use control-plane hints for capabilityaware placement or resource activation. Unlike the general beyondlayering architecture in [3], where optional hints may assist local
+decisions without changing the suite semantics or its correctness,
+the Dynamic Kernel here operates fully autonomously only from
+the QPacket meta-header and node-local state. This choice deliberately tests the hint-free regime: the observed agreement with the
+analytical model confirms that hints are not required for correct
+execution, but only for possible policy optimization.
+As a simple first verification, the simulated configurations matched
+the theoretical analysis in Sec. 2.3: in the absence of pre-distributed
+
+A Dynamic-Kernel/QPacket Executable
+
+250
+
+every-3
+every-4
+middle-only
+
+200
+
+150
+
+100
+
+50
+
+0
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Pre-distributed entanglement probability p
+
+Figure 4: Classical signaling load versus pre-distributed entanglement probability for 𝑁 = 100. Increasing 𝑝 reduces
+LINK_PREP associated signaling, but can enable further progression before failure for unresolvable link placements.
+
+entanglement, a service request succeeds only if every physical link
+in the chain has at least one endpoint exposing MPGEN . Accordingly,
+all and every2 always succeed, while all other placements always
+fail. This is evident from the rightmost point of Fig. 2, representing
+100% success when all nodes have MPGEN , and the leftmost point
+of Fig. 3, representing either 100% or 0% success at 𝑝 = 0.
+For random capability placement, Fig. 2 matches the closed-form
+success probability for a range of network sizes. The figure also
+shows that, as the chain length 𝑁 increases, success requires larger
+generator probability 𝑔. This is expected: for fixed 𝑔, increasing 𝑁
+increases the probability that at least one generator-unresolvable
+physical link appears in the chain. The random model should therefore be interpreted as a stress model for autonomous operation. If
+generator-capable nodes could be placed intentionally in a known
+linear chain, the failure modes observed here can be avoided by
+construction. However, the random model can also be interpreted as
+capturing uncertain or time-varying generation availability, where
+𝑔 is the probability that a node can execute MPGEN when the request
+arrives. Such availability may vary because of resource contention,
+source dead time, memory occupancy, local policy constraints, etc.
+Overall, Fig. 2 quantifies how quickly autonomous link-resolvability
+(worst-case scenario) degrades with network size when neither
+pre-distributed entanglement nor control-plane hints are available.
+Control-plane hints, planned generator placement, waiting policies for temporarily unavailable generators, or alternative service
+policies would change the cost and timing model. Exploring these
+richer policy spaces is a natural next step enabled by the DynamicKernel/QPacket executable developed in this work.
+
+3.2
+
+Effect of Pre-distributed Entanglement
+
+Here, we evaluate the executable specialization under varying availability of pre-distributed entanglement resources.
+Fig. 3 compares the measured success probability with the theoretical model 𝑝 𝑛gen-unres for deterministic capability placements. The
+simulations show that failures depend on the link-resolvability condition: any generator-unresolvable physical link must be rescued
+
+1.0
+
+Pre-distributed entanglement probability p
+
+Median classical messages
+
+all
+every-2
+final-bottleneck
+
+Random placement success surface, N = 100
+
+1.0
+
+0.9
+
+0.8
+
+0.8
+
+0.75
+0.5
+0.25
+
+0.6
+
+0.6
+
+0.1
+
+0.4
+
+0.4
+
+0.2
+
+0.2
+
+0.0
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+Success probability
+
+Classical signaling load versus pre-distribution, N = 100
+300
+
+0.0
+
+Generator placement probability g
+
+Figure 5: Success probability under random generator placement with probability 𝑔 and pre-distributed entanglement
+with probability 𝑝 for 𝑁 = 100. For each pair (𝑔, 𝑝), the color
+indicates the empirical success probability. Contours interpolate samples at iso-success levels 0.1, 0.25, 0.5, 0.75, and 0.9.
+by pre-distributed entanglement. For finalBottleneck, the success probability follows 𝑝, since the placement leaves exactly one
+unresolvable link: every node except the last two exposes MPGEN .
+Fig. 4 shows that the classical communication load depends not
+only on pre-distributed entanglement, but also on the capability
+placement, since the placement determines how far the request
+progresses before termination. For placements that are already linkresolvable at 𝑝 = 0, namely all and every2, increasing 𝑝 mainly
+replaces runtime link preparation with pre-existing FTQ resources.
+Consequently, fewer EPR-pair halves are transmitted during the
+service fulfillment and fewer classical synchronization messages
+are exchanged. The number of QPacket transmissions remains
+essentially fixed by the chain length, since successful requests still
+forward the QPacket across the repeater chain.
+For unresolvable-link placements, the interpretation is more subtle. As 𝑝 increases, pre-distributed entanglement may allow the
+service intent to survive earlier unresolvable links and fail later,
+or eventually succeed. The communication load can therefore increase, since more of the service workflow is actually executed. In
+this regime, pre-distributed entanglement reduces the need for local
+link preparation, but it also increases the amount of signaling and
+forwarding performed before termination for runs that ultimately
+fail. This is particularly salient from the finalBottleneck scheme
+in Fig. 4, which uses nearly the same amount of classical messaging
+as the successful schemes despite failing. This observation again
+highlights the tight coupling between classical and quantum dynamics in quantum networks, as well as the impact of architectural
+choices. Increasing entanglement-resource availability improves
+success probability, but the resulting classical signaling load depends on the capability placement, since it determines how far
+requests progress before succeeding or failing. Thus, the relevant
+question is not simply whether pre-distributed entanglement increases or reduces classical cost; rather, the cost depends on the
+interaction among resource availability, node capabilities, and the
+
+Adam Pearson, Marcello Caleffi, and Angela Sara Cacciapuoti
+Terminal QPacket size, all capability placement, p = 0
+
+Relative QPacket forwarding-delay effect of pre-distributed entanglement
+
+propagation delay fit degree = 1.00
+
+data
+
+emission delay fit degree = 1.99
+
+1010
+
+Accumulated delay (ns)
+
+Terminal number of qubits
+
+QPacket delay components, all capability placement, p = 0
+
+1011
+
+fit degree = 1.00
+
+106
+
+105
+
+QPacket forwarding delay / p = 0 baseline
+
+107
+
+propagation delay data
+emission delay data
+
+109
+
+108
+
+107
+
+106
+
+105
+
+104
+
+1.00
+
+0.95
+
+0.90
+
+p=0
+p = 0.05
+
+0.85
+
+p = 0.1
+p = 0.25
+
+0.80
+
+p = 0.5
+p = 0.75
+p = 0.9
+
+0.75
+
+p = 0.95
+p=1
+
+0.70
+
+101
+
+102
+
+103
+
+104
+
+Number of nodes N
+
+101
+
+102
+
+(a)
+
+103
+
+104
+
+101
+
+Number of nodes N
+
+102
+
+103
+
+104
+
+Number of nodes N
+
+(b)
+
+(c)
+
+Figure 6: QPacket growth and forwarding cost. (a) With all placement and 𝑝 = 0, the terminal QPacket size grows approximately
+linearly. (b) Forwarding delay separates into a linear propagation term and a quadratic emission-delay term. (c) Increasing
+pre-distributed entanglement probability 𝑝 reduces relative forwarding delay by reducing LINK_PREP stamps.
+Dynamic-Kernel pipeline. The instrumentation therefore enables
+evaluation beyond success/failure outcomes, including classical signaling load, which is natively supported by the ns-3 environment
+and is essential for realistic quantum-network design.
+Lastly, we examine how random generator placement behaves
+by increasing 𝑝. Fig. 5 reports the success probability as a function
+of 𝑔 and 𝑝 for 𝑁 = 100. As expected, both parameters improve success: increasing 𝑔 reduces the occurrence of adjacent non-generator
+nodes, while increasing 𝑝 covers otherwise unresolvable links with
+pre-distributed entanglement. The heatmap is therefore governed
+by the same link-resolvability condition as the deterministic placements, but now with two coverage mechanisms. In the sampled
+region, the iso-success contours in Fig. 5 vary more sharply along
+the 𝑔 axis than along the 𝑝 axis. This is expected in the considered worst-case autonomous regime: making one node generatorcapable can resolve up to two adjacent physical links, whereas
+pre-distributed entanglement resolves only the individual link on
+which it is present.
+
+3.3
+
+QPacket Growth
+
+We now focus on the QPacket meta-header growth behavior and
+its forwarding cost. Figs. 6a–b show the scaling of the QPacket
+meta-header size and of the accumulated time spent forwarding
+it. We use the all capability placement with 𝑝 = 0, although the
+same results apply to all successful 𝑝 = 0 placements in this case
+study, since the number of stamps does not change. The scaling
+follows directly from the committed stamp sequence: Alice appends
+LINK_PREP and ACT_FORWARD, while each intermediate repeater
+appends LINK_PREP, SWAP, and ACT_FORWARD. Hence, the
+𝑓 ≥ 0-th forwarded QPacket carries 𝑠 𝑓 = 2 + 3𝑓 stamps. At the
+final forwarding step to Bob, 𝑓 = 𝑁 − 2, the terminal number of
+accumulated stamps is linear in 𝑁 :
+𝑠 𝑁 −2 = 2 + 3(𝑁 − 2) = 𝑂 (𝑁 ).
+Because each forwarding event carries the meta-header accumulated so far, linear terminal growth induces a quadratic accumulated
+forwarding cost. For an overhead of 𝑐 qubit-equivalents per stamp,
+
+the total QPacket forwarding time is:
+
+𝑇QPacket (𝑁 ) =
+
+𝑁
+−2
+∑︁
+
+(𝑡 delay + (𝑐𝑠 𝑓 − 1)𝑡 emit ) =
+
+𝑓 =0
+
+(𝑁 − 1)(𝑡 delay − 𝑡 emit ) +
+
+
+
+
+3
+1
+(𝑁 − 1) 2 + (𝑁 − 1) 𝑐𝑡 emit = 𝑂 (𝑁 2 ).
+2
+2
+
+To verify this scaling, we fit the simulated accumulated QPacket
+forwarding time as:
+𝑇QPacket (𝑁 ) = 𝑎(𝑁 − 1) + 𝑏 (𝑁 − 1) 2 .
+where the linear coefficient captures the per-hop propagation component, and the quadratic coefficient captures the cost of repeatedly
+forwarding a growing meta-header.
+The results highlight that the accumulated QPacket forwarding
+cost is not determined by network size alone. Indeed, increased
+network resources, such as pre-distributed entanglement and associated policies, can affect the required number of actions and
+therefore the size and forwarding time of QPackets.
+Fig. 6c shows the accumulated forwarding time relative to the
+𝑝 = 0 baseline for the all capability placement, chosen so that
+failure modes do not factor into this comparison. When 𝑝 = 1,
+adjacent links are already present in FTQ: Alice appends only
+ACT_FORWARD, while each repeater appends SWAP and
+ACT_FORWARD. The 𝑓 -th forward therefore carries fewer stamps
+than in the 𝑝 = 0 case, i.e., 1 + 2𝑓 stamps, giving a quadratic leading
+term of (𝑁 − 1) 2𝑐𝑡 emit , which is 2/3 the size of the leading term for
+𝑝 = 0. The relative delay in Fig. 6c therefore approaches 2/3 as 𝑝
+increases, with a slightly larger value due to the additional linear
+term. Intermediate 𝑝 values interpolate between these regimes by
+reducing the expected number of runtime LINK_PREP stamps.
+While these results are specific to this service request and policy,
+there is a more general takeaway: QPacket growth is not exclusively
+a matter of encoding and network size. It also depends on policy
+choices, resource availability, and the granularity of committed
+actions. Consequently, QPacket design, policy design, and network
+architecture must be evaluated jointly.
+
+A Dynamic-Kernel/QPacket Executable
+
+4
+
+Discussion
+
+This work demonstrated a Q2NS/ns-3 executable specialization
+of the Dynamic-Kernel/QPacket logic introduced by the beyondlayering protocol suite [3]. The implementation instantiates QPackets carrying the service intent and append-only action-commit
+stamps, together with a node-local Dynamic Kernel Planner–Executor–
+Engine processing pipeline. The implementation deliberately targets a scoped service, namely e2e entanglement distribution over a
+repeater chain, so that the resulting behavior can be instrumented,
+analytically verifiable, and interpreted in terms of explicit policy
+choices.
+The simulated results match the analysis that for the considered worst-case autonomous regime service-fulfillment success
+depends on a link-resolvability condition: each link must have
+pre-distributed entanglement or at least one endpoint capable of
+entanglement generation. This agreement is significant because the
+implementation includes nontrivial Dynamic-Kernel behavior: MPagnostic planning, capability-dependent Executor binding, failure
+stamps for non-bindable LINK_PREP actions, QPacket forwarding,
+and local soft-state release.
+Instrumentation also clarifies how node capabilities and resource
+availability shape execution cost, not only success probability. For
+placements that already succeed without pre-distributed entanglement, increasing 𝑝 reduces runtime LINK_PREP and therefore
+lowers both quantum transmissions and classical synchronization.
+For placements with generator-unresolvable links, the effect is
+placement-dependent: additional pre-distributed entanglement can
+let a request progress farther before succeeding or failing, thereby
+exposing later-stage signaling, forwarding, and soft-state-trigger
+costs. Thus, the cost of fulfilling a given service intent is not determined by topology, network size, or resource availability in
+isolation. It emerges from their interaction with node capabilities
+and node-internal state. This is exactly the type of nontrivial dependency that the Dynamic-Kernel pipeline captures without global
+synchronization: each node recomputes its continuation from the
+QPacket meta-header and its own local state.
+The presented executable specialization enables identification
+of next technical steps such as richer service intents, additional
+MP-library heterogeneity, and specific QPacket encoding choices.
+Overall, the paper provides evidence that Q2NS/ns-3 can support
+reproducible evaluation of quantum-native protocol-suite concepts,
+not only isolated quantum-network primitives.
+
+5
+
+Artifact Availability
+
+Q2NS is released through the ns-3 App Store [14]. The separate artifact for this paper uses Q2NS as the ns-3-based quantum-network
+simulation substrate, while providing the Dynamic-Kernel/QPacket
+specialization. The artifact includes the added C++ implementation
+logic, data collection scripts, raw CSV outputs, and analysis scripts
+used to regenerate the main figures, along with a README with
+step-by-step instructions. The repository also provides a Dockerbased workflow, supporting easily reproducible execution of the
+main experiments. The artifact is available on Zenodo [12] and
+GitHub at https://github.com/QuantumInternet-it/q2ns-beyondlayering under release tag icns3-2026-submission.
+
+Acknowledgments
+This work has been funded by the European Union under Horizon
+Europe ERC-CoG grant QNattyNet, n.101169850. Views and opinions expressed are however those of the author(s) only and do not
+necessarily reflect those of the European Union or the European
+Research Council Executive Agency. Neither the European Union
+nor the granting authority can be held responsible for them.
+
+References
+
+[1] Charles H. Bennett, Gilles Brassard, Claude Crépeau, Richard Jozsa, Asher Peres,
+and William K. Wootters. 1993. Teleporting an Unknown Quantum State via
+Dual Classical and Einstein-Podolsky-Rosen Channels. Physical Review Letters
+70, 13 (1993), 1895–1899. doi:10.1103/PhysRevLett.70.1895
+[2] H.-J. Briegel, W. Dür, J. I. Cirac, and P. Zoller. 1998. Quantum Repeaters: The Role
+of Imperfect Local Operations in Quantum Communication. Physical Review
+Letters 81, 26 (1998), 5932–5935. doi:10.1103/PhysRevLett.81.5932
+[3] Angela Sara Cacciapuoti and Marcello Caleffi. 2026. A Quantum Internet Protocol
+Suite Beyond Layering. IEEE Transactions on Network Science and Engineering
+(2026), 1–18. doi:10.1109/TNSE.2026.3679795
+[4] Marcello Caleffi and Angela Sara Cacciapuoti. 2026. Quantum Internet Architecture: Unlocking Quantum-Native Routing via Quantum Addressing. IEEE
+Transactions on Communications 74 (2026), 3577–3599. doi:10.1109/TCOMM.
+2025.3650397
+[5] Wolfgang Dür, Raphael Lamprecht, and Stefan Heusler. 2017. Towards a quantum
+internet. European Journal of Physics 38, 4 (2017), 043001. doi:10.1088/13616404/aa6df7
+[6] M. Żukowski, A. Zeilinger, M. A. Horne, and A. K. Ekert. 1993. “Event-readydetectors” Bell experiment via entanglement swapping. Phys. Rev. Lett. 71 (Dec
+1993), 4287–4290. Issue 26. doi:10.1103/PhysRevLett.71.4287
+[7] Jessica Illiano, Marcello Caleffi, Antonio Manzalini, and Angela Sara Cacciapuoti.
+2022. Quantum Internet Protocol Stack: A Comprehensive Survey. Computer
+Networks 213 (2022), 109092. doi:10.1016/j.comnet.2022.109092
+[8] H. J. Kimble. 2008. The quantum internet. Nature 453, 7198 (2008), 1023–1030.
+doi:10.1038/nature07127
+[9] Wojciech Kozlowski, Stephanie Wehner, Rodney Van Meter, Bruno Rijsman, Angela Sara Cacciapuoti, Marcello Caleffi, and Shota Nagayama. 2023. Architectural
+Principles for a Quantum Internet. RFC 9340. doi:10.17487/RFC9340
+[10] Brahim Lounis and Michel Orrit. 2005. Single-photon sources. Reports on Progress
+in Physics 68, 5 (2005), 1129–1179. doi:10.1088/0034-4885/68/5/R04
+[11] R. Van Meter, R. Satoh, N. Benchasattabuse, K. Teramoto, T. Matsuo, M. Hajdušek,
+T. Satoh, S. Nagayama, and S. Suzuki. 2022. A Quantum Internet Architecture .
+In 2022 IEEE International Conference on Quantum Computing and Engineering
+(QCE). 341–352. doi:10.1109/QCE53715.2022.00055
+[12] Adam Pearson, Marcello Caleffi, and Angela Sara Cacciapuoti. 2026. q2ns-beyondlayering: ICNS3 2026 Submission Artifact. doi:10.5281/zenodo.20446094
+[13] Adam Pearson, Francesco Mazza, Marcello Caleffi, and Angela Sara Cacciapuoti.
+2026. An extensible quantum network simulator built on ns-3: Q2NS design and
+evaluation. Computer Networks 283 (2026), 112292. doi:10.1016/j.comnet.2026.
+112292
+[14] Adam Pearson, Francesco Mazza, Marcello Caleffi, and Angela Sara Cacciapuoti.
+2026. Q2NS ns-3 App Store Release. https://apps.nsnam.org/app/q2ns/.
+[15] Adam Pearson, Francesco Mazza, Marcello Caleffi, and Angela Sara Cacciapuoti.
+2026. Q2NS: Quantum Network Simulator. doi:10.5281/zenodo.19386365
+[16] A Pirker and W Dür. 2019. A quantum network stack and protocols for reliable
+entanglement-based networks. New Journal of Physics 21, 3 (2019), 033003.
+doi:10.1088/1367-2630/ab05f7
+[17] Pascale Senellart, Glenn Solomon, and Andrew White. 2017. High-performance
+semiconductor quantum-dot single-photon sources. Nature Nanotechnology 12
+(2017), 1026–1039. doi:10.1038/nnano.2017.218
+[18] Sören Wengerowsky, Siddarth Koduru Joshi, Fabian Steinlechner, Julien R. Zichi,
+Sergiy M. Dobrovolskiy, René van der Molen, Johannes W. N. Los, Val Zwiller,
+Marijn A. M. Versteegh, Alberto Mura, Davide Calonico, Massimo Inguscio,
+Hannes Hübel, Liu Bo, Thomas Scheidl, Anton Zeilinger, André Xuereb, and
+Rupert Ursin. 2019. Entanglement distribution over a 96-km-long submarine
+optical fiber. Proceedings of the National Academy of Sciences 116, 14 (2019),
+6684–6688. doi:10.1073/pnas.1818752116
+[19] W. K. Wootters and W. H. Zurek. 1982. A single quantum cannot be cloned.
+Nature 299, 5886 (1982), 802–803. doi:10.1038/299802a0
+
+

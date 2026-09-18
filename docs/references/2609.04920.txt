@@ -1,0 +1,1094 @@
+QUASAR: Quantum Satellite Architecture and
+Routing Simulator
+Yaliang Shi, Zi Wang (B) , Bangguo Yuan, Gaojie Wu, and Zhiwei Zhao
+
+arXiv:2609.04920v1 [cs.NI] 4 Sep 2026
+
+College of Computer Science and Engineering, University of Electronic Science and
+Technology of China, Chengdu 610051, China
+{yaliang,wangzi,bangguo,gaojie,zhiwei}@mobinets.org
+
+Abstract. The deployment of Low Earth Orbit (LEO) satellite constellations is an important step toward global-scale quantum networking. However, evaluating satellite quantum network protocols under spatiotemporal orbital dynamics and quantum physical constraints remains
+computationally expensive and challenging. In this paper, we propose
+QUASAR, a lightweight simulator for evaluating entanglement distribution in satellite-based quantum networks. QUASAR provides a decoupled
+architecture that integrates dynamic orbital topologies, time-varying optical transmittance, and quantum memory decoherence into networklayer attributes. To demonstrate its capabilities, we abstract and implement two representative hardware architectures: Simultaneous Downlink
+and On-Orbit Stitching. We further introduce an Entanglement Distribution Rate (EDR)-Aware Spatiotemporal Routing (EASR) heuristic as
+a reference workload. Our case study examines how QUASAR supports
+different satellite architectures, routing workloads, realistic orbital traces,
+concurrent requests, and scalable event-driven execution. With over 85%
+lower network-layer update latency than continuous polling, QUASAR
+provides a practical and extensible framework for future satellite quantum network protocol evaluation.
+Keywords: Satellite Quantum Networks · Entanglement Distribution ·
+Discrete-Event Simulation · Spatiotemporal Routing · Low Earth Orbit
+Constellations
+
+1
+
+Introduction
+
+The realization of a global quantum internet promises secure communication
+and distributed quantum computing [16]. To bridge isolated terrestrial quantum networks into a global infrastructure, satellite-terrestrial architectures have
+become increasingly important, with recent efforts outlining their use cases, architectures, and deployment roadmaps [5]. Due to the exponential photon loss
+in terrestrial optical fibers, Low Earth Orbit (LEO) satellite constellations have
+emerged as a promising approach for global-scale entanglement distribution [25,
+9]. These developments motivate systematic evaluation tools for satellite-based
+quantum network designs before large-scale deployment.
+
+2
+
+Y. Shi et al.
+
+Current quantum network simulators target different design goals. Comprehensive discrete-event simulators such as NetSquid [3] and SeQUeNCe [23] provide fine-grained models of quantum hardware, protocols, and control processes.
+They can capture photon-level timing and density-matrix state evolution, but
+such detail can incur substantial computational overhead for large-scale, dynamic
+LEO constellation evaluation. Network-layer simulators such as SimQN [2] improve scalability and ease of protocol evaluation. However, these engines are
+optimized for static, terrestrial topologies. They lack native support for continuous LEO orbital propagation, elevation-dependent atmospheric attenuation, and
+dynamic line-of-sight (LOS) contact graphs.
+Consequently, current routing studies for satellite quantum networks often
+rely on customized optimization models and heuristics [21, 1, 22, 11, 10]. While
+these studies provide theoretical insights, they are usually evaluated under isolated or averaged physical conditions, making it difficult to capture the joint impact of LEO orbital dynamics, optical channel variation, and quantum memory
+decoherence. Evaluating routing paradigms ranging from instantaneous downlinks to memory-assisted spatial relays therefore requires an event-driven simulator that can abstract continuous physical constraints into dynamic network
+topologies and routing metrics.
+To bridge the gap between static terrestrial network-layer simulators and the
+need for dynamic satellite quantum network evaluation, we propose QUASAR
+(Quantum Satellite Architecture and Routing Simulator).1 QUASAR is implemented as a lightweight, decoupled Python overlay built on top of SimQN’s
+discrete-event simulation core. It acts as a spatiotemporal abstraction bridge
+that processes LEO orbital geometry, optical transmittance, and memory decoherence. These physical states are exposed as dynamic network-layer attributes
+for event-driven routing evaluation.
+The main contributions of this paper are threefold:
+– We propose QUASAR, a lightweight spatiotemporal overlay built on top
+of SimQN. By decoupling continuous orbital mechanics and channel modeling from the discrete-event execution layer, QUASAR extends network-layer
+quantum simulation to dynamic LEO quantum network scenarios with reduced update overhead.
+– We abstract and formalize two representative quantum satellite architectures within the overlay—Simultaneous Downlink and On-Orbit Stitching—
+introducing temporal decoherence models to reflect the physical limits of
+quantum memories.
+– We conduct a system-level case study using Entanglement Distribution Rate
+(EDR)-Aware Spatiotemporal Routing (EASR) as a reference workload. The
+evaluation covers controlled architecture behavior, trace-driven orbital inputs, concurrent request workloads, and runtime mechanism ablation, demonstrating QUASAR’s ability to support scalable satellite quantum network
+evaluation.
+1
+
+Source code: https://github.com/QuNets/quasar.
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+BSM
+
+msg.
+
+3
+
+EPR'
+
+BSM
+EPR
+
+Alice
+
+EPR1
+
+Bob
+
+Alice
+
+EPR2
+
+Repeater
+
+Bob
+
+Fig. 1: Illustration of two quantum networking primitives: quantum teleportation
+on the left and entanglement swapping on the right.
+
+2
+
+Background and Related Work
+
+This section reviews the quantum-networking primitives, simulators, satellite
+channel models, and routing studies that motivate QUASAR’s reusable eventdriven substrate for LEO satellite quantum network evaluation.
+
+2.1
+
+Quantum Networking Primitives
+
+Unlike classical packet-switched networks, quantum networks do not primarily
+deliver data packets over a forwarding path. Instead, their fundamental networklayer service is to distribute high-fidelity Einstein–Podolsky–Rosen (EPR) pairs
+between remote users [18, 26]. Such entangled pairs serve as consumable communication resources for higher-layer quantum protocols, including teleportationbased state transfer and distributed quantum applications.
+Fig. 1 illustrates two basic primitives used in long-distance quantum networking. In quantum teleportation, an input qubit is transferred by consuming
+a shared EPR pair and a classical message produced after a Bell-state measurement (BSM). In entanglement swapping, two local EPR pairs are converted into
+a longer end-to-end EPR pair through an intermediate BSM at a repeater node.
+These primitives shift the network-layer objective from classical packet delivery
+to the establishment of usable end-to-end entanglement.
+In satellite quantum networks, realizing these primitives is inherently spatiotemporal. Optical attenuation depends on satellite-ground distance, elevation angle, and link type, while feasible links appear only during intermittent
+contact windows. In memory-assisted operation, quantum memories temporarily store entangled qubits, which leads to storage-induced fidelity degradation.
+Therefore, evaluating satellite quantum-network protocols requires a simulator
+that can expose time-varying physical constraints as network-layer attributes.
+This observation motivates QUASAR’s design: continuous orbital, channel, and
+memory dynamics are abstracted into dynamic topology and routing metrics for
+event-driven evaluation.
+
+4
+
+Y. Shi et al.
+
+2.2
+
+Related Work
+
+Quantum network simulators. Several quantum network simulators have
+been developed with different abstraction levels and design goals. NetSquid and
+SeQUeNCe provide comprehensive discrete-event frameworks for modeling quantum hardware, memories, protocol state machines, and control-plane behavior,
+making them suitable for detailed full-stack or hardware-aware evaluation [3, 23].
+Other platforms such as SimulaQron, QuNetSim, and QuISP support quantum
+Internet software development, protocol experimentation, and architecture-level
+studies [4, 6, 17]. SimQN takes a complementary network-layer view by reducing quantum-state simulation overhead and supporting reusable network protocols [2]. These platforms have significantly advanced quantum-network experimentation, but they are not primarily designed around continuously evolving LEO satellite contact graphs, elevation-dependent optical attenuation, and
+event-driven routing recomputation under orbital dynamics.
+Satellite quantum channel modeling. A complementary line of work focuses on the physical feasibility and channel modeling of satellite quantum communication. Existing analyses characterize how propagation distance, contact geometry, atmospheric attenuation, and satellite-ground visibility affect achievable
+entanglement rates [13, 19, 14]. Recent work also considers Earth-to-satellite optical links and spatial diversity under realistic optical impairments [20, 7]. These
+studies provide important physical-layer models and feasibility insights, but they
+are not primarily designed as reusable network-layer simulation substrates for
+routing and event-driven evaluation.
+Satellite quantum network routing. Recent studies have begun to address routing, scheduling, and resource allocation problems in satellite-based
+quantum networks. Optimization-based approaches formulate satellite assignment, resource allocation, and path selection for entanglement distribution under satellite and ground-station resource constraints [21]. Other works consider
+dynamic satellite movement, inter-satellite links, scalable scheduling policies,
+and space-ground integrated routing for satellite-assisted entanglement distribution [1, 22, 11]. More recent efforts further investigate satellite-assisted quantum Internet architectures for global-scale entanglement distribution [10]. These
+studies provide important algorithmic insights, but reusable event-driven substrates for comparing satellite quantum-network architectures, dynamic channel
+attributes, and routing workloads under a common abstraction remain less explored.
+Position of QUASAR. QUASAR is positioned between detailed physical
+layer simulators and customized satellite routing optimization studies. Rather
+than replacing full stack quantum network simulators or high fidelity optical
+channel models, QUASAR provides a lightweight spatiotemporal abstraction
+layer for satellite entanglement distribution evaluation. It integrates orbital visibility, optical transmittance, and memory related fidelity degradation into dynamic network layer attributes, allowing different satellite quantum network architectures and routing workloads to be evaluated under a common event driven
+execution model. This design makes QUASAR complementary to existing tools
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+Topology Engine
+
+Abstraction Layer
+
+SAT
+
+Channel Transmittance
+ηᵉ(t) ← L(t), θ(t), h₀,type
+
+Routing Interface
+
+Discrete-Event Core
+
+Modes
+
+Event Queue
+
+SD
+
+OOS
+…
+
+L(t)
+h₀
+
+SAT
+
+G(t₁)
+
+Link
+
+G(t₂)
+
+tail
+
+LINK_DROP
+
+Route
+Recompute
+
+P↔(𝒫) ← ηᵉ(t), ζ⋈
+GS₂
+
+GS
+
+head
+
+Entanglement Success
+
+θ(t)
+
+GS₁
+
+5
+
+Pruned
+
+G(t₃)
+
+Memory Fidelity
+
+Memory
+Fidelity
+F(Δτ) ∝ exp(−Δτ/τc)
+
+DSP
+
+Workloads
+MPR
+EASR
+
+Path API
+π(G(t), s, d) → P*
+
+FIDELITY_LOSS
+GRAPH_UPDATE
+
+Dynamic Edge Attributes
+ηᵉ(t), P↔, F(Δτ), L(t), θ(t), Δτ, type
+
+Routing Decisions
+D(t) ↦ {(Pᵢ*, mᵢ)}
+
+…
+
+Trace
+Recorder
+
+Fig. 2: Core simulation modules of the QUASAR framework.
+
+by preserving network-layer programmability while retaining key time-varying
+LEO constraints.
+
+3
+
+The QUASAR Simulator Design
+
+QUASAR is a decoupled Python overlay that bridges continuous physical calculations and discrete-event network simulation. As illustrated in Fig. 2, it abstracts orbital visibility, channel transmittance, and memory decoherence into
+evolving network-layer attributes consumed by the simulation engine.
+3.1
+
+Spatiotemporal Topology Engine
+
+The foundation of QUASAR is its spatiotemporal topology engine, designed to
+natively model the high-velocity mobility of LEO constellations. The engine supports configurable Walker-Delta constellations and standard Two-Line Element
+(TLE) sets, and utilizes the SGP4 orbital propagator to track satellite trajectories in the Earth-Centered Inertial (ECI) coordinate frame [20]. At each ∆t = 100
+ms simulation slot, the physical engine evaluates orbital visibility, channel transmittance, and memory states, and then triggers network-layer updates only when
+the corresponding visibility, channel, or fidelity conditions change.
+At any given time t, for a satellite located at position vector rs (t) and a
+ground station at rg , the engine calculates the instantaneous Euclidean slant
+range L(t) = ∥rs (t)−rg ∥2 and the respective elevation angle θ(t). To prevent the
+underlying routing algorithms from attempting infeasible connections, the engine
+enforces a Line-of-Sight (LOS) visibility mask. It proactively prunes the network
+graph by dropping any space-to-ground edge where θ(t) falls below a minimum
+hardware-dictated threshold θ0 , capturing Earth blockage and low-elevation visibility constraints. For inter-satellite links, QUASAR similarly updates candidate
+edges according to mutual visibility and hardware range constraints. An ISL is
+included in Et only when the corresponding satellite pair has an unobstructed optical path and satisfies the configured range limit; otherwise, the edge is pruned
+before being exposed to the routing layer.
+
+6
+
+3.2
+
+Y. Shi et al.
+
+Dynamic Channel Models
+
+Quantum signals traversing satellite networks experience distance-dependent attenuation, which directly bounds the entanglement generation rate. To capture
+this spatial heterogeneity, the simulator differentiates the transmittance of a
+given edge e based on its physical environment: satellite-to-ground links (SGLs)
+penetrating the atmosphere, and inter-satellite links (ISLs) operating in the vacuum of space. Before applying environmental penalties, QUASAR computes a
+baseline free-space transmittance for each edge. This baseline captures propagation loss induced by the instantaneous propagation distance, telescope apertures,
+and beam divergence. The total edge transmittance, denoted as η (e) (t), is then
+instantiated as
+( (e)
+η0 (t) · κ,
+e ∈ EISL (t),
+(e)
+(1)
+η (t) =
+(e)
+η0 (t) · ηα (θe (t)) · κ, e ∈ ESGL (t),
+(e)
+
+where η0 (t) denotes the edge-specific free-space transmittance and κ absorbs
+fixed optical implementation losses such as coupling loss, detector efficiency, internal optical transmittance, and residual pointing loss. For SGLs, QUASAR
+further applies an elevation-dependent atmospheric penalty. As the satellite approaches the horizon, the optical path length through the atmosphere increases.
+We use the standard cosecant-law approximation [14]:
+
+
+αh0
+,
+(2)
+ηα (θe (t)) = exp −
+sin θe (t)
+where α is the linear atmospheric attenuation coefficient, h0 denotes the effective
+thickness of the atmosphere, and θe (t) is the instantaneous elevation angle of edge
+e. The resulting η (e) (t) is exposed as a dynamic edge attribute for network-layer
+pathfinding.
+3.3
+
+Loss and Fidelity Model
+
+Beyond spatial photon loss (erasure errors), quantum networks suffer from operational penalties and temporal decoherence (depolarizing errors). To decouple
+these complex quantum physical constraints into classical network-layer heuristics, QUASAR employs a lightweight success-probability and fidelity tracking
+model.
+In the On-Orbit Stitching paradigm, multi-hop entanglement distribution
+requires successive Bell state measurements (BSMs). We denote the probabilistic
+(k)
+success rate of the k-th orbital relay as ζ▷◁ . The end-to-end success probability
+over a spatial path P is modeled as
+Y
+Y (k)
+(3)
+P↔ (P) =
+η (e)
+ζ▷◁ ,
+e∈P
+
+k∈V▷◁
+
+where V▷◁ is the subset of intermediate routing satellites performing entanglement swapping.
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+
+7
+
+Furthermore, to model temporal decoherence during the orbital carry phase,
+let τc be the characteristic coherence time of the onboard quantum memory.
+Given an initial heralded fidelity F0 , the degraded fidelity F (∆τ ) after a physical
+storage duration ∆τ is modeled as
+
+
+
+
+1
+1
+∆τ
+F(∆τ ) = + F0 −
+exp −
+.
+(4)
+4
+4
+τc
+Instead of hardcoding a specific network policy, QUASAR decouples the
+physical simulation from the algorithmic execution layer. The simulator continuously tracks the geometric survival probability P↔ and the temporal fidelity
+F(∆τ ), exposing them as dynamic physical attributes for routing evaluation.
+Any higher-layer protocol evaluated within the framework can enforce the fidelity threshold condition F(∆τ ) ≥ F ∗ . By exposing these physical attributes,
+QUASAR allows the network layer to balance the spatial probabilistic penalty
+of multi-hop swapping against the temporal decoherence induced by memory
+buffering.
+
+4
+
+Satellite Architectures and Routing
+
+Operating on top of the physical models abstracted in Section 3, the QUASAR
+overlay maintains a dynamic topology G(t) = (V, Et ) and exposes dynamic
+edge attributes for network-layer evaluation. To capture representative LEO
+quantum-network capabilities, QUASAR supports two operational paradigms.
+4.1
+
+Quantum Hardware Architectures
+
+The routing decision space is fundamentally constrained by the satellite’s onboard hardware, specifically the presence and quality of quantum memories.
+Simultaneous Downlink (SD). This paradigm assumes satellites act purely as
+entangled photon-pair sources (e.g., via SPDC) without memory buffering [8].
+A distribution opportunity is valid only when a single satellite simultaneously
+maintains Line-of-Sight (LOS) to both target nodes. Consequently, the temporal
+delay is zero (∆τ = 0), bypassing decoherence but restricting the spatial routing
+space to highly constrained geometrical intersections.
+On-Orbit Stitching (OOS). Satellites equipped with quantum memories can
+buffer incoming qubits and act as memory-assisted relays. This decoupling allows
+entanglement generation and subsequent swapping (▷◁) to occur asynchronously
+within feasible contact opportunities. However, memory-assisted operation incurs an inevitable fidelity penalty. Recalling (4), the penalty is governed by
+the coherence
+P time τc . For a path P accumulating a total storage duration
+∆τ (P) = v∈V▷◁ ∆τv , the routing protocol must account for the exponential
+decoherence of fidelity.
+
+8
+
+Y. Shi et al.
+
+These hardware paradigms expose different decision spaces in QUASAR.
+Under SD, routing reduces to selecting a satellite that simultaneously covers
+both target nodes; if no such satellite exists, the request is infeasible. Under OOS,
+routing becomes a memory-assisted spatiotemporal path-selection problem over
+G(t).
+4.2
+
+Routing Interface and Reference Workloads
+
+Operating at the boundary of this physical-to-network decoupling, the QUASAR
+routing interface ingests the physical attributes generated by the models in Section 3. It exposes a dynamic topology whose edges carry real-time attributes such
+as transmittance η (e) (t), edge type, and visibility status, while OOS-based routing additionally queries predicted LOS contact windows to determine feasible
+stitching opportunities and accumulated memory-residence delay ∆τ .
+To provide simple reference points, QUASAR includes two routing baselines representing opposite extremes in the decision space. Dynamic Shortest
+Path (DSP) minimizes instantaneous physical hops without explicitly accounting for optical loss, while Max-Probability Routing (MPR) greedily selects hightransmittance paths without explicitly accounting for temporal memory decoherence.
+As a concrete reference workload, QUASAR includes the EDR-Aware Spatiotemporal Routing (EASR) heuristic, which consumes the dynamic attributes
+exposed by the event-driven interface to evaluate the joint effect of spatial loss
+and temporal decoherence. For memory-assisted path selection, we formulate the
+reference EDR-aware objective as
+
+
+
+∆τ (P)
+∗
+.
+(5)
+P = arg max P↔ (P) · exp −
+P
+τc
+To integrate this multiplicative objective into an efficient discrete-event pathfinding structure, we apply a negative logarithmic transformation, yielding a unified
+time-dependent edge weight
+(v)
+
+ωu,v (t) = − ln η (u,v) (t) − ln ζ▷◁ +
+
+∆τv
+.
+τc
+
+(6)
+
+Here, ∆τv denotes the memory storage time at repeater node v in a feasible
+OOS stitching opportunity, capturing the local buffering and coordination delay
+before entanglement swapping.
+This formulation can be specialized to the selected hardware abstraction. Under the memoryless SD paradigm, it reduces to selecting a feasible simultaneous
+dual-downlink opportunity based on the joint instantaneous downlink transmittance, since ∆τ = 0 and no memory-assisted swapping is performed. Under OOS,
+it balances multi-hop spatial penalties against temporal decoherence penalties.
+Algorithm 1 illustrates how the EASR workload consumes QUASAR’s dynamic edge attributes. The priority queue expands the partial path with the
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+
+9
+
+Algorithm 1 EDR-Aware Spatiotemporal Routing (EASR)
+Input: Dynamic graph G(t), Source s, Destination d, Coherence time τc ,
+Fidelity threshold F ∗
+Output: EDR-aware feasible path P ∗
+1: Initialize cost array C[v] ← ∞ for all v ∈ V
+2: Initialize Priority Queue Q, insert (s, 0)
+3: C[s] ← 0
+4: while Q is not empty do
+5:
+Extract node u with minimum C[u] from Q
+6:
+if u == d then
+7:
+return Reconstruct Path P ∗
+8:
+end if
+9:
+for each neighbor v of u in G(t) do
+10:
+τb ← ∆τ (s ⇝ u → v) {Cumulative delay}
+11:
+Estimate F(b
+τ ) using (4)
+12:
+if F(b
+τ ) < F ∗ then
+13:
+continue {Prune paths violating fidelity}
+14:
+end if
+15:
+Compute edge weight ωu,v (t) using (6)
+16:
+if C[u] + ωu,v (t) < C[v] then
+17:
+C[v] ← C[u] + ωu,v (t)
+18:
+Insert (v, C[v]) into Q
+19:
+end if
+20:
+end for
+21: end while
+22: return ∅ {No feasible path found}
+
+lowest accumulated spatiotemporal cost. For each candidate extension, the algorithm estimates the cumulative storage delay τb and prunes the path if the
+resulting fidelity violates F ∗ . Feasible extensions are then ranked by the edge
+weight in (6), which combines optical loss, swapping success, and temporal storage cost. In this design, fidelity acts as a hard feasibility filter, while the edge
+weight provides a soft ranking among feasible paths.
+
+5
+
+Software Architecture and Implementation
+
+Building on the physical models in Section 3 and the routing abstractions in
+Section 4, this section presents three software interfaces of QUASAR: topology
+instantiation, event-driven physical decoupling, and custom routing orchestration. The listings illustrate how users configure and run QUASAR workloads
+through these interfaces.
+5.1
+
+Spatiotemporal Topology Instantiation
+
+The foundation of any QUASAR simulation is the instantiation of the physical network overlay. Rather than manually defining static adjacency matrices,
+
+10
+
+Y. Shi et al.
+
+researchers can construct large-scale Low Earth Orbit (LEO) constellations natively using standard orbital specifications.
+As demonstrated in Listing 1.1, QUASAR abstracts physical entities into
+object-oriented Node classes. Ground stations are instantiated via exact geographical coordinates, while the dynamic satellite nodes are generated from
+orbital specification files, such as TLE datasets or configurable Walker-Delta
+constellation descriptions. The framework then establishes dynamic quantum
+connections with time-varying visibility and channel attributes.
+# 1. Topology Generation : Satellites and Stations
+import quasar
+# Initialize core and add Ground Station ( GS )
+net_core = quasar . Network . get_instance ()
+gs_pek = quasar . GroundStation (
+" GS_PEK " , lat =39.9 , lon =116.4)
+net_core . add_node ( gs_pek )
+# Load LEO constellation config
+leo_nodes = quasar . Constellation ( " walker . txt " )
+net_core . add_nodes ( leo_nodes )
+# Establish dynamic quantum channels
+for sat in leo_nodes :
+net_core . a d d _ q _ c o n n e c t i o n (
+sat , gs_pek , dynamic_loss = True )
+
+Listing 1.1: Instantiation of LEO constellation and ground stations.
+
+5.2
+
+Event-Driven Physical Decoupling
+
+A primary challenge in evaluating LEO quantum networks is the computationally prohibitive physical layer. Existing simulators either rely on static physical
+snapshots or execute continuous environmental polling, both of which impose
+severe limits on scalability.
+QUASAR introduces a Discrete-Event Bridge. As shown in Listing 1.2,
+the physical engine triggers state updates only when visibility, range, or fidelity
+thresholds are crossed, keeping spatial calculations decoupled from the networklayer event loop.
+# 2. Core Impl ementa tion : Event - Driven Bridge
+class EventBridge :
+def c h e c k _ t h r e s h o l d s ( self , edge_st ):
+# Monitor physical attributes
+if not edge_st . available :
+self . trigger (
+" LINK_DROP " , edge_st . nodes )
+elif edge_st . fidelity < F_STAR :
+self . trigger (
+" FIDELITY_LOSS " , edge_st . nodes )
+else :
+# Update additive spat iotemp oral weight
+w = - math . log ( edge_st . eta ) + \
+( edge_st . dt / TAU_C )
+self . update_weight ( edge_st . nodes , w )
+
+Listing 1.2: Event-driven bridge decoupling physics from discrete events.
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+
+5.3
+
+11
+
+Custom Orchestration Interface
+
+The primary objective of QUASAR is to serve as a versatile testbed for advanced network-layer algorithms. By exposing a unified RoutingAlgo interface,
+the framework allows researchers to evaluate complex spatiotemporal heuristics
+without manually managing the underlying orbital and quantum optical dynamics.
+To illustrate this extensibility, Listing 1.3 demonstrates the integration of
+the EDR-Aware Spatiotemporal Routing (EASR) reference workload. The orchestrator dynamically calculates the unified edge weight—combining the negative logarithm of spatial success probability with the temporal decoherence
+penalty—and executes a modified shortest-path search.
+# 3. Custom Orchestrator : EDR - Aware Routing
+class E A S R _ O r c h e s t r a t o r ( quasar . RoutingAlgo ):
+def compute_route ( self , src , dst , graph ):
+# EASR : Minimize spatio tempor al cost
+def easr_cost ( edge ):
+p_succ = edge . eta * edge . swap_prob
+dec_penalty = edge . dt / TAU_C
+return - math . log ( p_succ ) + dec_penalty
+# Execute dynamic shortest path search
+path = graph . dijkstra (
+src , dst , weight_fn = easr_cost )
+return path
+# Usage : Register heuristic and execute
+overlay . set_algorithm ( E A S R _ O r c h e s t r a t o r ())
+overlay . run ( duration =86400 , dt =0.1)
+
+Listing 1.3: Custom orchestrator interface demonstrating EASR integration.
+
+6
+
+Case Study and System Evaluation
+
+We evaluate QUASAR through a case study covering controlled architecture behavior, routing workload sensitivity, event-driven runtime overhead, trace-driven
+orbital inputs, concurrent OD workloads, and runtime mechanism ablation. Together, these experiments examine QUASAR’s ability to expose physical dynamics as network-layer attributes and to support scalable satellite quantum-network
+evaluation.
+6.1
+
+Simulation Setup
+
+The simulation is driven by the QUASAR Python overlay integrated with a
+discrete-event network core. We use a configurable Walker-Delta LEO constellation to provide repeated and reproducible global contact opportunities. Unless
+otherwise specified, the controlled studies use a fixed-size Walker-Delta constellation with N = 60 satellites to isolate architecture- and memory-related effects.
+The runtime scalability benchmark varies the constellation size from 20 to 800
+satellites, and the runtime ablation is conducted at the largest constellation setting. QUASAR also supports trace-driven orbital inputs through TLE files; in
+
+12
+
+Y. Shi et al.
+
+Table 1: Baseline Simulation Parameters
+Parameter
+
+Symbol
+
+Value
+
+Orbital Dynamics
+Constellation Type
+Orbit Altitude
+Inclination Angle
+
+–
+–
+–
+
+Walker-Delta
+500 km
+53◦
+
+Quantum Channels
+Base Transmittance (at 500 km) η0
+Source Repetition Rate
+R0
+Atmospheric Attenuation
+α
+Effective Atm. Thickness
+h0
+Static Hardware Efficiency
+κ
+
+10−3
+108 s−1
+0.01 km−1
+20 km
+0.85
+
+Hardware & Routing Constraints
+Swap Success Probability
+ζ▷◁
+Initial Heralded Fidelity
+F0
+Target Fidelity Threshold
+F∗
+Baseline Coherence Time
+τc
+Minimum LOS Elevation
+θ0
+
+0.60
+0.99
+0.75
+100 ms
+15◦
+
+the trace-driven topology experiment, we use a 60-satellite Starlink TLE subset obtained from CelesTrak as a realistic LEO orbital trace, not as a quantum
+communication deployment [12]. Satellite positions are propagated with a time
+resolution of ∆t = 100 ms, and the resulting visibility, channel transmittance,
+and memory states are exposed to the network layer as dynamic attributes. The
+baseline physical parameters, inspired by near-term quantum satellite studies
+and analytical bounds [15, 24], are summarized in Table 1.
+Our evaluation uses three workload settings. First, for the controlled architecture and workload-sensitivity studies, we isolate a representative long-distance
+ground-station pair between Houston (GS1 ) and Washington, DC (GS2 ) [13].
+This single-pair setting allows us to separate the effects of orbital visibility, optical loss, and memory decoherence from traffic-matrix effects. Second, for runtime
+scalability and mechanism ablation, we use a macro-benchmark with up to 32
+worldwide ground stations and continuously sampled origin-destination requests,
+so that the simulator is stressed by increasing constellation size and routing activity. Third, for the concurrent OD workload study, we fix the Walker-Delta
+constellation at N = 60 satellites, use the same 32-station macro-benchmark
+setting, and increase the number of concurrent OD pairs from 4 to 32. We report aggregate EDR across all active requests in ebits/s, where EDR is computed
+from the source repetition rate R0 , the end-to-end path success probability, and
+fidelity-threshold filtering.
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+
+SD
+
+Avg. EDR (ebits/s)
+
+OOS
+
+Norm. EDR
+
+1.0
+
+0.5
+
+0.0
+0
+
+8
+
+16
+
+24
+
+DSP
+
+100
+
+MPR
+
+13
+
+EASR
+
+50
+
+0
+
+10
+
+100
+
+Time (h)
+
+τc (ms)
+
+(a) Architecture.
+
+(b) Workload.
+
+1000
+
+Fig. 3: Controlled mechanism studies enabled by QUASAR. (a) Architecturedependent EDR under SD and OOS. (b) Routing workload sensitivity to memory
+coherence time.
+
+6.2
+
+Controlled Mechanism Studies
+
+We first examine how QUASAR represents the service opportunities exposed by
+different hardware abstractions. Fig. 3(a) shows the normalized instantaneous
+EDR between GS1 and GS2 over a 24-hour simulation horizon.
+Under the Simultaneous Downlink (SD) paradigm, feasible service appears
+only at sparse instants when a single satellite simultaneously covers both ground
+stations. These short pulse-like opportunities reflect the geometric constraint of
+memoryless dual downlinking. Under the On-Orbit Stitching (OOS) abstraction,
+onboard quantum memories allow entanglement generated across separate contact intervals to be buffered and stitched later, producing wider feasible EDR
+windows. This result illustrates how QUASAR separates hardware-dependent
+feasibility from the routing workload: the same physical scenario exposes different network-layer opportunities depending on the selected architecture model.
+We next use QUASAR’s workload interface to compare routing behavior
+under different memory-coherence regimes. We sweep the quantum memory coherence time τc from 10 ms to 1 s and instantiate three reference workloads: Dynamic Shortest Path (DSP), Max-Probability Routing (MPR), and EDR-Aware
+Spatiotemporal Routing (EASR). As shown in Fig. 3(b), the three workloads
+respond differently to the same physical constraints. DSP primarily minimizes
+hop count and therefore remains insensitive to τc , but its average EDR remains
+lower because it does not explicitly account for optical loss or memory decoherence. MPR improves link quality by favoring higher-transmittance paths, but
+its performance is limited when memories decohere rapidly. EASR achieves the
+highest EDR among the reference workloads because it combines spatial loss
+and temporal storage penalties through the edge weight in (6). Rather than
+serving as a standalone algorithmic benchmark, this comparison demonstrates
+
+Y. Shi et al.
+
+Events/h
+
+150
+
+Link
+
+Graph
+
+Fid.
+
+Route
+
+100
+50
+0
+
+10
+
+50
+
+100 500
+
+1k
+
+τc (ms)
+(a) Events.
+
+Update Latency (ms)
+
+14
+
+QUASAR
+
+225
+
+Polling
+
+150
+75
+0
+
+20
+
+50 100 200 400 800
+
+Constellation Size
+(b) Runtime.
+
+Fig. 4: Event-driven runtime behavior of QUASAR. (a) Triggered-event composition under different memory coherence times. (b) Network-layer update latency
+under increasing constellation size.
+
+that QUASAR can host multiple routing workloads and expose their sensitivity
+to the same underlying physical model.
+6.3
+
+Event-Driven Runtime Behavior
+
+Fig. 4(a) reports the triggered-event composition recorded by the discrete-event
+core under the same controlled workload setting. Topology-driven events, including link and graph updates, remain stable across different values of τc because
+they are mainly determined by orbital visibility. In contrast, fidelity-loss events
+decrease as τc increases, since longer memory lifetimes reduce decoherenceinduced violations. The number of route recomputation events follows the same
+trend, indicating that fewer physical-state violations propagate to the routing
+layer when memory coherence improves. This event-level view illustrates how
+QUASAR converts continuous orbital and decoherence dynamics into discrete
+updates consumed by network-layer workloads.
+We then evaluate QUASAR’s runtime overhead as the constellation size increases from 20 to 800 satellites. To stress the simulation engine beyond the
+single-pair case study, we use a macro-benchmark with 32 worldwide ground stations and a continuous stream of randomly sampled origin-destination requests.
+At each ∆t = 100 ms simulation slot, the physical engine evaluates orbital visibility, channel transmittance, and memory states, while network-layer attributes
+and routing states are refreshed only when the corresponding visibility, channel,
+or fidelity events are triggered.
+Fig. 4(b) compares QUASAR’s event-driven update mechanism with a continuous polling baseline. Both settings perform the same slot-level physical evaluation of orbital visibility, channel transmittance, and memory states; the reported latency measures downstream network-layer updates, including edge-
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+
+Walker-Delta
+
+Starlink TLE
+
+30
+
+0
+0
+
+8
+
+16
+
+24
+
+Time (h)
+(a) Trace.
+
+DSP
+
+450
+
+Agg. EDR
+
+Visible SGLs
+
+60
+
+MPR
+
+15
+
+EASR
+
+300
+150
+0
+
+4
+
+8
+
+16
+
+32
+
+Concurrent OD Pairs
+(b) Concurrent OD.
+
+Fig. 5: Trace-driven and concurrent-workload evaluation. (a) Visibility dynamics
+under Walker-Delta and Starlink TLE inputs. (b) Aggregate EDR under increasing concurrent OD pairs.
+
+attribute refreshes and routing recomputation. The polling baseline refreshes
+candidate link and routing states at every slot, whereas QUASAR triggers such
+updates only when visibility, channel, or fidelity changes produce relevant network events. Together with visibility and range pruning, this event filtering keeps
+the exposed graph sparse and reduces network-layer update latency by more than
+85% at the largest constellation setting.
+6.4
+
+System Macro-Benchmarks
+
+To evaluate QUASAR beyond the controlled single-pair setting, we extend the
+case study to trace-driven orbital inputs and concurrent OD routing workloads.
+We first demonstrate QUASAR’s spatiotemporal topology engine using a
+Starlink TLE trace as a realistic LEO orbital input. Fig. 5(a) compares the
+instantaneous number of visible satellite-to-ground links over a 24-hour horizon. Compared with the smoother periodic visibility pattern generated by the
+controlled Walker-Delta configuration, the Starlink TLE trace exhibits more irregular contact dynamics. This result shows that QUASAR can ingest non-ideal
+orbital traces and drive the same visibility, channel, and event pipeline used in
+the controlled experiments.
+Fig. 5(b) further stresses the routing workload interface by increasing the
+number of concurrent origin-destination (OD) pairs from 4 to 32. The aggregate
+EDR is reported in ebits/s across all active OD pairs. As concurrency increases,
+all workloads deliver higher aggregate EDR, but their scaling behaviors differ
+because they respond differently to spatial channel loss, contact availability, and
+memory decoherence. DSP and MPR show earlier saturation under heavier request concurrency, while EASR sustains a higher aggregate EDR by accounting
+
+16
+
+Y. Shi et al.
+
+Table 2: Runtime Mechanism Ablation
+Config.
+
+Mechanisms
+
+Metrics
+
+Vis. Chan. Fid. Updates Latency Speedup
+Polling
++ Vis.
++ Chan.
+
+×
+✓
+✓
+
+×
+×
+✓
+
+×
+×
+×
+
+1.00×
+0.54×
+0.23×
+
+210.0 ms
+92.6 ms
+45.7 ms
+
+1.0×
+2.3×
+4.6×
+
+QUASAR full
+
+✓
+
+✓
+
+✓
+
+0.11×
+
+20.5 ms
+
+10.2×
+
+for both spatial and temporal costs. The aggregate EDR in Fig. 5(b) is measured
+across randomly sampled concurrent OD pairs and is therefore not directly comparable to the single-pair EDR in Fig. 3(b). This experiment is not intended
+as a standalone algorithmic benchmark or a full resource-contention scheduling
+model; rather, it demonstrates that QUASAR can drive multiple routing workloads under concurrent OD traffic and expose how aggregate service rates evolve
+with request concurrency.
+6.5
+
+Runtime Mechanism Ablation
+
+Finally, Table 2 reports a runtime mechanism ablation on the 800-satellite benchmark. We start from a continuous polling baseline and then progressively activate
+three mechanisms: visibility pruning, channel event filtering, and fidelity event
+filtering. Visibility pruning reduces the number of infeasible satellite-ground and
+inter-satellite candidates exposed to the routing layer. Channel event filtering
+avoids refreshing network-layer edge attributes unless channel changes produce
+relevant events. Fidelity event filtering further reduces redundant route recomputation caused by memory-state updates.
+In Table 2, Vis. denotes visibility pruning, Chan. denotes channel event filtering, and Fid. denotes fidelity event filtering. Updates are normalized to the
+continuous polling baseline, while speedup is computed from the average update
+latency. The full QUASAR configuration reduces the normalized update frequency to 0.11× of the polling baseline and achieves a 10.2× latency speedup,
+showing that the runtime gain comes from the combined event-driven design
+rather than a single implementation shortcut.
+
+7
+
+Conclusion
+
+In this paper, we presented QUASAR, a lightweight spatiotemporal simulator
+for evaluating entanglement distribution in satellite quantum networks. By abstracting dynamic orbital topologies, time-varying optical transmittance, and
+quantum memory decoherence into network-layer attributes, QUASAR bridges
+continuous physical constraints and discrete-event routing evaluation.
+
+QUASAR: Quantum Satellite Architecture and Routing Simulator
+
+17
+
+Using QUASAR, we modeled two representative satellite paradigms: Simultaneous Downlink and On-Orbit Stitching. We also deployed an EDR-aware
+routing heuristic as a reference workload to exercise the routing interface. The
+case study evaluates architecture-dependent EDR, memory-coherence sensitivity, event composition, runtime scalability, trace-driven orbital inputs, concurrent OD workloads, and runtime mechanism ablation. Compared with continuous
+polling, QUASAR reduces network-layer update latency by over 85%, while the
+ablation study shows that this gain comes from the combined effect of visibility
+pruning, channel event filtering, and fidelity event filtering. These results suggest
+that QUASAR provides a practical and extensible framework for future satellite
+quantum-network protocol evaluation.
+
+References
+1. Chang, A., Wan, Y., Xue, G., Sen, A.: Entanglement distribution in satellite-based
+dynamic quantum networks. IEEE Network 38(1), 79–86 (2024)
+2. Chen, L., et al.: SimQN: A network-layer simulator for the quantum network investigation. IEEE Network 37(5), 182–189 (2023)
+3. Coopmans, T., et al.: NetSquid, a network simulator for quantum information
+using discrete events. Communications Physics 4(1), 164 (2021)
+4. Dahlberg, A., Wehner, S.: SimulaQron—a simulator for developing quantum internet software. Quantum Science and Technology 4(1), 015001 (2018)
+5. de Forges de Parny, L., et al.: Satellite-based quantum information networks: use
+cases, architecture, and roadmap. Communications Physics 6(1), 12 (2023)
+6. Diadamo, S., Nötzel, J., Zanger, B., Beşe, M.M.: QuNetSim: A software framework
+for quantum networks. IEEE Transactions on Quantum Engineering 2, 1–12 (2021)
+7. Gonzalez-Raya, T., Pirandola, S., Sanz, M.: Satellite-based entanglement distribution and quantum teleportation with continuous variables. Communications
+Physics 7(1), 126 (2024)
+8. Goswami, S., Dhara, S.: Satellite-relayed global quantum communication without
+quantum memory. Physical Review Applied 20(2), 024048 (2023)
+9. Goswami, S., et al.: Satellites promise global-scale quantum networks. Optica
+Quantum 3(6), 590–605 (2025)
+10. Gu, H., Yu, R., Li, Z., Wang, X., Xue, G.: QuESat: satellite-assisted quantum
+internet for global-scale entanglement distribution. In: Proceedings of the IEEE
+Conference on Computer Communications (INFOCOM). pp. 1–10 (2025)
+11. Hu, T., Wu, J., Li, Q.: Dynamic routing in space-ground integrated quantum networks. In: Proceedings of the IEEE Military Communications Conference (MILCOM). pp. 1138–1143 (2024)
+12. Kelso, T.S.: A new way to obtain GP data (aka TLEs). CelesTrak. https://ce
+lestrak.org/NORAD/documentation/gp-data-formats.php (2024), accessed
+2026-06-22
+13. Khatri, S., et al.: Spooky action at a global distance: analysis of space-based entanglement distribution for the quantum internet. npj Quantum Information 7(1),
+4 (2021)
+14. Klen, M., Semenov, A.A.: Numerical simulations of atmospheric quantum channels.
+Physical Review A 108(3), 033718 (2023)
+
+18
+
+Y. Shi et al.
+
+15. Meister, J., Kleinpaß, P., Orsucci, D.: Simulation of satellite and optical link dynamics in a quantum repeater constellation. EPJ Quantum Technology 12(1), 5
+(2025)
+16. Pan, D., et al.: The evolution of quantum secure direct communication: On the
+road to the qinternet. IEEE Communications Surveys & Tutorials 26(3), 1898–
+1949 (2024)
+17. Satoh, R., et al.: QuISP: A quantum internet simulation package. In: Proceedings
+of the IEEE International Conference on Quantum Computing and Engineering
+(QCE). pp. 353–364. Broomfield, CO, USA (2022)
+18. Shi, S., Qian, C.: Concurrent entanglement routing for quantum networks: Model
+and designs. In: Proceedings of the ACM SIGCOMM Conference. pp. 62–75 (2020)
+19. Vasylyev, D., Vogel, W., Moll, F.: Satellite-mediated quantum atmospheric links.
+Physical Review A 99(5), 053830 (2019)
+20. Wang, Z., Ralph, T.C., Aguinaldo, R., Malaney, R.: Exploiting spatial diversity in
+earth-to-satellite quantum-classical communications. IEEE Transactions on Communications 73(11), 11736–11752 (2025)
+21. Wei, X., Fan, L., Guo, Y., Han, Z., Wang, Y.: Entanglement from sky: Optimizing satellite-based entanglement distribution for quantum networks. IEEE/ACM
+Transactions on Networking 32(6), 5295–5309 (2024)
+22. Williams, A., Panigrahy, N.K., McGregor, A., Towsley, D.: Scalable scheduling
+policies for quantum satellite networks. In: Proceedings of the IEEE International
+Conference on Quantum Computing and Engineering (QCE). vol. 1, pp. 1760–1769
+(2024)
+23. Wu, X., et al.: SeQUeNCe: a customizable discrete-event simulator of quantum
+networks. Quantum Science and Technology 6(4), 045027 (2021)
+24. Yehia, R., et al.: Connecting quantum cities: simulation of a satellite-based quantum network. New Journal of Physics 26(7), 073015 (2024)
+25. Yin, J., et al.: Satellite-based entanglement distribution over 1200 kilometers. Science 356(6343), 1140–1144 (2017)
+26. Zhao, Y., Qiao, C.: Redundant entanglement provisioning and selection for
+throughput maximization in quantum networks. In: Proceedings of the IEEE Conference on Computer Communications (INFOCOM). pp. 1–10 (2021)
+
+

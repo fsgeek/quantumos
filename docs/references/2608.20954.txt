@@ -1,0 +1,1632 @@
+Tools for Reducing Service Time in Near-Term
+Quantum Networks
+Jake Smith1,2,3 , Thomas R. Beauchamp1,2,3 , Scarlett Gauthier1,2,3 , Oumayma Bouchmal1,2,3 , and Stephanie Wehner1,2,3
+1
+
+QuTech, Delft University of Technology
+Kavli Institute of Nanoscience, Delft University of Technology
+3
+Quantum Computer Science, Electrical Engineering, Mathematics and Computer Science, Delft University of Technology
+jsssmith@tudelft.nl, t.r.beauchamp@tudelft.nl, s.s.gauthier@tudelft.nl, o.bouchmal@tudelft.nl, s.d.c.wehner@tudelft.nl
+
+arXiv:2608.20954v1 [quant-ph] 21 Aug 2026
+
+2
+
+Abstract—Architectures have been proposed to control entanglement generation in multi-user quantum networks. To
+allow time for local operations and classical communication at
+end nodes, these architectures insert fixed separations between
+consecutive batches of entanglement generation attempts. This
+reduces network utilization when attempts fail, leaving the
+network idle during the scheduled separation. To address this
+limitation, we propose a novel method to reclaim this idle time
+by shortening the scheduled separation between attempts while
+respecting hardware constraints. The method uses an analytical
+execution model to optimize the separation and reduce the total
+network service time of an application. Evaluations within the
+Arqon architecture show network service time reductions of up to
+42 minutes (7.6%) for single applications and 16–29 minutes (26–
+30%) per application when co-scheduled. The approach applies
+broadly to quantum network architectures that share hardware
+between entanglement generation and local operations, and the
+method can be used online by network schedulers.
+Index Terms—Quantum Internet, entanglement scheduling,
+minimum separation.
+
+I. I NTRODUCTION
+Quantum networks generate shared entanglement between
+end nodes, enabling the execution of applications such as
+secure remote computation [1], improved clock synchronization [2], precision sensing [3], and others [4], [5]. Application
+execution at end nodes is organized into an application session, defined by a target number of application instances to be
+completed. A session describes the application’s demand for
+entanglement over time, requiring the network to repeatedly
+generate entanglement in order to serve successive instances.
+To support the execution of each application instance, the
+network generates end-to-end entanglement as entangled links.
+The network computes a schedule that coordinates entanglement generation attempts along a path, organizing them into
+scheduled blocks of time during which attempts are retried
+until the required entanglement is produced or the block ends.
+The network service time is the total time scheduled by the
+network for a session.
+The end nodes at either end of the path are not under
+network control and must actively participate for an entangled
+This work was funded by the European Union’s Horizon Europe research
+and innovation programme under grant agreement No. 101102140 – QIA
+Phase 1. The authors also acknowledge funding from NWO VICI.
+
+link to be generated. Two distinct roles arise within a scheduled block. The network delivers an entangled link when it
+successfully produces one spanning the interior of the path.
+The end nodes then consume a delivered link by aligning
+their own generation attempts with the network’s schedule.
+After consumption, the end nodes perform local operations
+and classical communication (LOCC), such as quantum gates,
+to complete the execution of an application instance.
+In demonstrated quantum networks, end node hardware participating in consumption also performs LOCC (e.g. [6]–[11]).
+As a result, consecutive consumptions must be separated by at
+least the time required for LOCC, an interval we refer to as the
+minimum separation. The network scheduler must therefore
+space consecutive deliveries by at least this interval, making
+schedule computation a constrained scheduling problem.
+The impact of the minimum separation constraint depends
+on how the minimum separation compares to the expected
+interval between successive consumptions. On current hardware, these two timescales are comparable. Demonstrated
+heralded entanglement generation rates are 2.22 Hz in trappedion systems [6] and 0.022 Hz in solid-state platforms [7],
+both over 10 km links. Minimum separation times arise
+from device-level operations such as quantum gates, cooling,
+and readout [12]–[14], as well as from control-stack overhead including classical processing and communication [15],
+[16]. These contributions span microseconds to seconds. At
+the trapped-ion rate, successive consumptions occur every
+450 ms on average, comparable to a representative minimum
+separation of approximately 500 ms, making the separation
+sufficiently long to constrain every consumption.
+A conservative scheduling approach assumes that end nodes
+always require the full minimum separation between consecutively scheduled blocks. Because each block succeeds
+only probabilistically, many blocks fail to produce an endto-end entangled link. Nevertheless, the minimum separation
+is scheduled after every block, so following a failure the end
+nodes remain idle for the full interval despite having no LOCC
+to perform. This behavior over-provisions the network service
+time and prolongs session execution time.
+To reduce this idle time, it is natural to consider shortening
+the scheduled separation below the minimum. Doing so,
+however, risks scheduling a block while the end nodes are
+
+still performing LOCC. In this case, the block must be skipped
+or the current application instance preempted, discarding inprogress computation. Shorter separations therefore reduce
+network service time but increase the probability that blocks
+are skipped. Enough skips will prevent the session from completing its target number of instances. This tradeoff admits an
+optimal scheduled separation that minimizes session execution
+time while still completing the target instances.
+In this work, we address this challenge by developing
+analytical tools that compute the optimal scheduled separation
+for a given application session. Because the minimum separation constraint arises whenever the end node hardware that
+participates in consumption also performs LOCC, the proposed
+tools apply broadly to entanglement delivery scheduling and
+are not tied to a specific network architecture. We evaluate
+the tools within the Arqon [17] suite of network control
+applications, which accepts entanglement demands from end
+nodes and computes schedules that respect the minimum separation constraint. Arqon commits to delivering the entangled
+links required by a session with at least a specified service
+probability, providing a concrete architecture in which to
+quantify the benefits of an optimized scheduled separation.
+The contributions of this work are as follows:
+Analytical optimization of scheduled separation: We
+develop a novel method to align the network’s delivery
+schedule with end node consumption by modeling session
+execution under a reduced scheduled separation as a
+Markov chain over executed and skipped blocks. From
+this we formalize a constrained optimization to determine
+the optimal scheduled separation and derive a closed-form
+lower bound on the expected execution speedup. The
+resulting tools are lightweight and can be used by network
+schedulers at runtime without repeated simulation.
+• Evaluation under realistic hardware parameters: We
+evaluate the proposed tools within the Arqon architecture [17] using state-of-the-art and projected trapped-ion
+entanglement generation parameters. In the state-of-theart regime, the network service time is reduced by up to
+42 minutes, a 7.6% reduction corresponding to a singlesession execution speedup of 6.1%. In the projected
+regime, the network service time is reduced by up to
+2.8 hours, a 6.5% reduction and a speedup of 5.1%. We
+identify the conditions required for positive speedup and
+validate the analytical predictions using Monte Carlo simulation, confirming that the requested service probabilities
+are maintained across all tested configurations.
+• Extension to multi-session scheduling: We extend the
+analysis to multiple sessions co-scheduled under roundrobin scheduling, showing that this configuration provides
+additional separation that mitigates or eliminates skip
+penalties. For two co-scheduled sessions, the network
+service time is reduced by 16–29 minutes per session, a
+26–30% reduction corresponding to execution speedups
+of 25–27%, substantially exceeding the single-session
+case while maintaining the required service probability.
+
+•
+
+II. R ELATED W ORK
+The minimum separation constraint poses an explicit
+scheduling problem only when three conditions hold together.
+Entanglement must be generated when requested rather than
+buffered in advance; each end node must manage its own
+execution, as in quantum internet (QI) applications; and the
+end node must share hardware between consumption and
+LOCC, since dedicated hardware for each would let local
+operations proceed without blocking the next consumption.
+Demonstrated quantum networks operate in the generatewhen-requested (GWR) paradigm, generating entanglement in
+response to application demand rather than in advance [6]–
+[11]. A pre-loaded network instead generates and buffers
+entanglement independently of requests, and applications draw
+from the buffer when ready to consume [18]–[20] Each
+consumption then proceeds when ready and respects the
+separation by construction. Such architectures, however, require generation rates and coherence times beyond current
+capabilities [21] and have not been demonstrated.
+The constraint also depends on which entity schedules end
+node execution. In distributed quantum computing, a central
+orchestrator schedules entanglement deliveries, consumption,
+and local operations jointly [9]–[11], again satisfying the constraint by construction. QI applications, by contrast, partition
+the application into node-specific programs scheduled independently by each end node. The network schedule coordinates
+delivery but cannot guarantee the constraint is respected. Even
+so, most scheduling work for GWR networks serving QI
+applications terminates the model at the generation of an
+end-to-end link, abstracting delivery and consumption into a
+single event [18], [22]–[28], so the local operations that follow
+consumption on shared hardware never enter the optimization.
+The constraint therefore has not been observed as a scheduling problem in any demonstration. The networks that both
+generate on demand and share end node hardware either
+orchestrate execution centrally, or have not yet performed
+QI sessions with repeated application instances in which it
+manifests. This is the regime in which near-term quantum
+networks will operate and QI applications will be programmed,
+and recent work has begun to develop end node and network
+architectures to support it.
+QNodeOS, implemented by Delle Donne et al. [15], is the
+first end node runtime enabling platform-independent execution of QI applications written in high-level software. To provide a compatible network architecture, Beauchamp et al. [21]
+propose a centrally controlled architecture organized around
+the entanglement packet: a specification of the entangled links
+required to execute a single application instance, generated
+within a scheduled interval referred to as a packet generation
+attempt (PGA). To respect the minimum separation constraint,
+consecutive PGAs are conservatively separated by the full
+minimum separation, assuming the worst case in which the
+packet is generated at the very end of the PGA. This is notably
+the first architecture to consider how application execution
+requirements must inform network scheduling.
+
+While the network architecture requires that successive
+packets be separated by some minimum separation, it does
+not prescribe how packet deliveries are scheduled or with what
+reliability. To address this, Arqon [17] builds on this architecture as the first suite of network control applications designed
+to reliably fulfill accepted demands by periodically computing
+a network schedule of PGAs. For each accepted demand, a
+service agreement specifies the number of packets required to
+complete all instances, and Arqon schedules sufficient PGAs
+to meet this requirement with the service probability before
+the expiry time. For each scheduled PGA, Arqon reserves the
+appropriate network resources on an end-to-end path between
+the two end nodes executing the application.
+The Arqon authors further provide a dedicated simulation
+framework, arqon-sim [29], which simulates schedule execution at the level of individual PGAs: a PGA either succeeds
+or fails with the packet success probability, and the time at
+which the packet is generated within a PGA is not modeled.
+Investigating scheduled separation reduction requires this finer
+resolution, since minimum separation violations occur only
+when a packet is generated late enough that LOCC operations
+extend into the subsequent PGA. We therefore develop a
+separate, dedicated simulation package that resolves packet
+generation time within each PGA.
+III. P RELIMINARIES
+A. Network Model
+To optimize the scheduled separation chosen by the network scheduler between consecutive deliveries, we consider
+a GWR network supporting QI applications. Each end node
+participates in entanglement generation and performs LOCC
+using the same hardware. End-to-end entangled links are
+generated at rate λ with some minimum fidelity, abstracting the
+network’s interior delivery, the end nodes’ consumption, and
+any hardware calibration latencies into a single rate parameter.
+An application App is executed between a pair of networked
+end nodes N = (N1 , N2 ) and requires N inst instances to
+complete, subject to a deadline texpiry . These parameters define
+an application session [21],
+S = (session_id, N , App, N inst , texpiry ).
+
+(1)
+
+Each session submits a demand to the network specifying
+the identical packet required for each instance. A packet is
+generated when the required number of entangled links have
+been delivered and consumed within a time window w, where
+w is constrained by the coherence time of the end node’s
+quantum memory. The network schedules PGAs for each
+demand, and end nodes participate in all scheduled PGAs.
+Following [17], we assume each instance’s LOCC begin
+only after a packet is generated and that end nodes do not
+interrupt an executing instance to participate in entanglement
+generation. Successive packet generations not separated by at
+least the duration of LOCC violate the minimum separation
+constraint, and we assume the end nodes skip the subsequent
+PGA. In practice, LOCC also account for hardware calibration
+
+no ingress
+tgen
+Original
+separation
+(α = 0)
+
+idle
+(wasted)
+
+PGA i
+
+T ′ = tminsep
+
+E
+tgen
+Reduced
+separation
+(α > 0)
+
+PGA i+1
+
+ingress α
+PGA i+1
+
+PGA i
+T′
+
+E
+
+T ′ = tminsep − αE
+PGA
+
+ingress α
+
+LOCC
+
+separation
+
+Fig. 1. The ingress α is the fraction of PGA i by which the scheduled
+separation is shortened, giving T ′ = tminsep − αE. At α = 0 (top) the
+full minimum separation is kept and the network idles after an early tgen .
+At α > 0 (bottom) the separation shortens by αE, reclaiming idle time. A
+packet generated within the shaded ingress region risks a minimum separation
+violation (Section IV-B).
+
+(e.g. ion cooling [6] or charge-resonance checks in colorcenter platforms [7]) and software stack overheads such as
+processing [15] and communication latencies [8].
+B. Performance Metrics
+To quantify the effects of scheduling improvements on
+network resource provisioning and end node session execution,
+we define three performance metrics: the reduction in network
+service time R, the absolute service time savings ∆Tserv ,
+and the session execution speedup S. We first introduce the
+following quantities. For session S, let E denote the duration
+of a PGA, tminsep the minimum time an end node requires
+for LOCC between successive consumptions, and T ′ ≤ tminsep
+the scheduled separation between consecutive PGAs. Each instance requires exactly one packet, and the network allocates a
+release time of E +T ′ per instance, following the terminology
+of Arqon [17]. Let N scheduled denote the total number of release
+times allocated by the network for a session. Let tgen denote
+the time at which a packet is generated within a successful
+PGA, and let τ denote the dimensionless release-time index
+at which the final required packet is generated, counting both
+executed and skipped PGAs.
+The network service time Tserv = N scheduled · (E + T ′ ) is the
+total duration over which network resources are scheduled for
+a single session. The reduction in service time at a reduced
+scheduled separation (T1′ < tminsep ) relative to the baseline at
+the full minimum separation (T2′ = tminsep ) is
+R=1−
+
+Tserv,1
+,
+Tserv,2
+
+(2)
+
+with corresponding absolute saving ∆Tserv = R · Tserv,2 .
+The service time upper bounds the session execution time,
+Tsession = (τ − 1) · (E + T ′ ) + tgen ,
+
+(3)
+
+since not all allocated release times may be needed to
+generate the required number of packets. When τ = 1,
+the first PGA produces the final required packet and
+Tsession = tgen ≤ E + T ′ . In the ideal case where every scheduled PGA succeeds, τ = N inst and the session completes at
+
+(N inst − 1) · (E + T ′ ) + tgen . The session execution speedup
+compares Tsession at the reduced and baseline separations:
+Tsession,1
+S = 1−
+.
+Tsession,2
+
+(4)
+
+These metrics depend only on the scheduling structure of
+repeated entanglement deliveries and apply to any network
+architecture in which persistent demands require successive
+generation attempts separated by a minimum interval.
+C. Architecture
+To develop and evaluate the methods for the constrained
+scheduling problem, we adopt the demand and scheduling
+formalism of Arqon [17], which defines end node demands and
+how their corresponding packet generation probabilities and
+PGA execution times are calculated. Each session S submits
+a demand d for entanglement generation to the network,
+d = (p; tminsep ; texpiry ; N inst ; ϵservice
+)
+d
+
+(5)
+
+with packet p = (w, s, F ) requesting s entangled links of
+minimum fidelity F to be generated within a window w,
+and ϵservice
+defining the service probability (1 − ϵservice
+) with
+d
+d
+which the demand must be fulfilled. Arqon constructs periodic
+schedules over fixed-length scheduling intervals, and each
+scheduled PGA attempts to generate a packet for end node
+consumption. To respect the minimum separation constraint,
+Arqon separates consecutive PGAs scheduled for the same
+demand by a minimum interval of tminsep . The PGA duration
+E(p) is the time required to generate a packet with probability
+at least p, determined by the entanglement generation rate
+along the end-to-end route: larger p requires more attempts
+and therefore a longer E(p). The PGA success probability
+ppacket is then determined by the optimization
+
+
+ppacket = argmin N SI (p, ϵservice
+) E(p) + tminsep , (6)
+d
+p
+
+SI
+
+(p, ϵservice
+) is the number of PGAs scheduled per
+d
+inst
+
+where N
+scheduling interval for the demand to generate N
+packets
+with probability at least (1 − ϵservice
+).
+If
+all
+scheduled
+PGAs
+d
+execute, the expected number of packets generated is
+E[P ] = ppacket N executed ≥ N inst .
+
+(7)
+
+Minimum service is achieved when the number of packets
+generated is at least N inst , and the service agreement between
+the network and an accepted demand guarantees that minimum
+service is provided with probability at least (1 − ϵservice
+).
+d
+Scheduling improvements must continue to satisfy the service agreement while also reducing the execution time of each
+session. The definitions of Tserv , Tsession , and session speedup
+S from Section III-B apply directly with N scheduled = N SI .
+Because Arqon allocates the same number of PGAs for a
+given demand regardless of the scheduled separation, N SI
+is identical for both the original and reduced schedules.
+Expanding Tserv = N SI · (E + T ′ ) in Eq. (2) shows the ratio
+N1SI /N2SI cancels, and the service time reduction and session
+speedup follow from Eqs. (2) and (4).
+
+D. Problem Statement
+Arqon satisfies the minimum separation constraint by
+scheduling consecutive PGAs with a separation of tminsep . This
+assumes the worst-case generation time of E. In practice,
+packets are frequently generated before E, and the required
+separation depends on the generation time within the PGA.
+Arqon’s conservative treatment of this constraint therefore
+overestimates the required scheduled separation, prolonging
+session execution time and reserving network resources that
+could otherwise be allocated to nodes ready to use them.
+Reducing the scheduled separation below tminsep shortens the
+release time and recovers this excess capacity. However, a
+packet generated sufficiently late in the PGA may violate
+the minimum separation constraint. This work addresses this
+tradeoff by computing the scheduled separation that minimizes
+the expected session execution time, subject to the expected
+packet count reaching N inst within the allocated N SI PGAs.
+The probabilistic minimum service guarantee is not formally
+enforced by the optimization and is instead verified empirically
+by simulation across all tested configurations.
+IV. M ETHODS
+The following methods develop the analytical tools for
+computing the optimal scheduled separation and are publicly
+available in [30].
+A. Simulating Packet Generation
+We employ a Monte Carlo approach [31] to evaluate
+whether a packet is generated within a sliding window w for
+a given demand d. The simulation, described by Algorithm 1,
+samples end-to-end entangled link generation as a Poisson
+process with rate λ over the PGA duration E. At each new
+link generation, the current sliding window is set to the earliest
+generation still within w of the latest, tracked by the pointer
+ptrfirst into the arrivals list. If s links accumulate within the
+window, the packet is generated at time tgen marking the
+final accumulated link. Otherwise, E expires before s links
+accumulate and the PGA fails to generate a packet.
+We compare two parameter regimes of λ and w following
+recent demonstrations of entanglement distribution between
+trapped-ion nodes at metropolitan-scale distances. Liu et
+al. [6] represents the state-of-the-art (SOTA) in rate and
+coherence time, achieving (λ = 2.22 Hz, tcoh = 550 ms).
+We also compare this to an optimistic ion-trap regime of
+(λ = 10 Hz, tcoh = 4 s) [17]. The window w is set
+to tcoh /2, reserving the remaining coherence time for local quantum operations. The minimum separation is set to
+tminsep = tcoh /2 + tLOCC , where tLOCC = 0.25 s accounts
+for local operations and classical communication between
+nodes [15], [16], and trapped ion cooling latencies [14]. Qubit
+decoherence after delivery is not modeled, as we assume the
+window w is chosen to ensure that delivered qubits remain
+coherent throughout instance execution.
+
+Under our earlier assumption that a minimum separation
+violation causes the end node to skip the subsequent PGA,
+pmv (α) is also the probability that an end node skips the next
+PGA. The distribution of packet generation times within a
+PGA admits no closed-form expression, so pmv (α) cannot be
+evaluated analytically. The Markov chain session model in the
+following subsection requires pmv at many values of α during
+the constrained optimization, which would be prohibitively
+expensive to evaluate by fresh Monte Carlo simulation, particularly at runtime by a network scheduler. To avoid this cost,
+we precompute pmv into a lookup table by sweeping ppacket
+and α with the Monte Carlo simulator of Algorithm 1. Each
+table is computed once per physical configuration (λ, w, s)
+and reused across all demands sharing those parameters. For
+each configuration, we collect N = 104 successful trials
+via rejection sampling, and pmv is the fraction in which the
+packet is generated within the violation zone. Once the table is
+available, the Markov chain model and the optimization over α
+reduce to table lookups and closed-form expressions, enabling
+lightweight runtime evaluation within the network scheduler.
+
+Algorithm 1: Packet generation within sliding window
+Input: λ, tstart , E, w, s
+Output: Success flag and tgen , the time s links
+accumulate within w
+Initialize t ← tstart , ptrfirst ← nil, arrivals ← [ ];
+while t < E do
+t ← t + Exp(1/λ);
+if t ≥ E then
+break;
+Append t to arrivals;
+for each ti ∈ arrivals do
+if t − ti < w then
+ptrfirst ← index of ti ;
+break;
+if |arrivals| − ptrfirst ≥ s then
+tgen ← t;
+return true, tgen ;
+return false, nil
+
+C. Modeling Session Performance with Reduced Scheduled
+Separation
+
+B. Relaxing a Demand’s Scheduled Separation
+We consider reducing the scheduled separation between
+consecutive PGAs from the demand’s minimum separation
+tminsep to T ′ ≤ tminsep , described by Figure 1. A minimum separation violation occurs when the interval between packet generation in PGA i and the start of PGA i+1 is less than the time
+required for LOCC tminsep , formally T ′ + (E − tgen ) < tminsep .
+We restrict our analysis to the single-skip regime, in which
+at most one consecutive PGA is ever skipped. In the worst
+case, a packet generated at time E of PGA i triggers a skip
+of PGA i+1, and the time from that packet to the start
+of PGA i+2 is 2T ′ + E. Reducing T ′ further would leave
+insufficient time for PGA i+2 and trigger cascading skips.
+The single-skip guarantee therefore requires
+2T ′ + E ≥ tminsep ,
+
+(8)
+
+yielding a lower bound on the reduced separation of
+(tminsep − E)/2 ≤ T ′ . Since T ′ is a scheduled time interval
+and therefore non-negative, the admissible range is
+
+
+tminsep − E
+max 0,
+≤ T ′ ≤ tminsep .
+(9)
+2
+At the upper bound, the original schedule is recovered. At the
+lower bound, the single-skip constraint (8) ensures the worstcase violation skips only PGA i+1. Further reduction would
+permit cascading skips.
+We parameterize the reduction of the scheduled separation
+by the PGA ingress α = (tminsep − T ′ )/E ∈ [0, 1]. A packet
+generated within the violation zone ((1 − α)E, E] causes a
+minimum separation violation. The conditional probability of
+this event given successful packet generation is
+pmv (α) = P[tgen ∈ ((1 − α)E, E] | tgen ≤ E].
+
+(10)
+
+To evaluate session performance under reduced scheduled
+separation, we simulate sessions by executing N SI scheduled
+PGAs subject to the skip behavior introduced in Section IV-B,
+in which a minimum separation violation causes the end node
+to skip the subsequent PGA. Although demands are generally
+long-lived and served across multiple scheduling intervals until
+texpiry , our analysis focuses on a single session, which isolates
+the tradeoff between reduced separation and skip penalties.
+For each executed PGA, sampled link generations determine
+whether a packet is generated and whether tgen falls in the
+violation zone ((1 − α)E, E]. The session terminates when
+N inst packets have been generated or when all N SI PGAs are
+exhausted. For completed sessions, Tsession takes the form of
+Eq. (3), with τ the release time in which the final packet is
+generated. Sessions that do not generate N inst packets within
+the allocation are assigned Tsession = N SI · (E + T ′ (α)). We
+estimate the expected session times as sample means over all
+trials, both completed and incomplete. The average simulated
+speedup at a given ingress is
+
+
+E (τ (α)−1)(E + T ′ (α)) + tgen (α)
+ . (11)
+S(α) = 1 − 
+E (τ (0)−1)(E + tminsep ) + tgen (0)
+We define S(α) as one minus the ratio of expected session
+execution times, not the expectation of the per-session speedup
+of Eq. (4). We report the former to match the mean-based
+quantities predicted by the Markov chain model developed
+below. To predict session performance without repeated simulation, we introduce a Markov chain for the expected number
+of PGAs executed out of the total scheduled. We introduce
+several quantities to define the state space. Let Nk be the
+cumulative number of executed PGAs after k scheduled steps.
+Each scheduled step is labeled as either executed (G) or
+
+skipped due to a minimum separation violation at the preceding step (G), and Sk ∈ {G, G} denotes this label at step
+k.
+The session is then modeled as the Markov chain
+Mk = (Nk , Sk ) on the state space N × {G, G} ∪ {(0, G)}.
+The transition structure reflects the skip rule directly. In state
+G, the scheduled PGA is executed, and it triggers a skip of the
+next step only if both hold: a packet is generated, which occurs
+with probability ppacket , and its generation time falls in the
+violation zone, which occurs with conditional probability pmv .
+The transition G → G therefore occurs with unconditional
+probability pr = ppacket · pmv . Oherwise the state remains in
+G. From G, the state returns deterministically to G, since a
+skipped step triggers no minimum separation violation, and
+the single-skip regime of Eq. (8) prevents any repeated ones.
+The sub-chain Sk forms a reduced Markov chain on the
+state space {G, G}, which describes the transitions between
+executed and skipped steps and can be used to compute the
+k-step transition probabilities. Its transition matrix is
+
+
+1 − pr pr
+PS =
+,
+(12)
+1
+0
+where rows and columns are ordered (G, G), from which
+the k-step transition probabilities follow by induction. In
+particular, the probability of being in the skip state G at step k,
+starting from G, is
+fk (pr ) = pr
+
+k−1
+X
+
+(−pr )i .
+
+(13)
+
+i=0
+
+Conditioning Nk on Sk−1 yields the recurrence
+E[Nk ] = E[Nk−1 ] + 1 − fk−1 (pr ),
+
+(14)
+
+where fk is as in (13). This resolves to the closed form
+E[Nk ] =
+
+k−1
+X
+
+(k − i)(−pr )i .
+
+πG =
+(15)
+
+i=0
+
+The expected number of packets generated after k scheduled
+steps is then E[Pk ] = ppacket · E[Nk ], since each executed PGA
+independently produces a packet with probability ppacket . We
+define k ∗ as the smallest k such that E[Pk ] ≥ N inst . An outline
+of the full proof is provided in Appendix VII-A.
+In any individual session, however, variance in both the
+number of executed PGAs and the per-PGA packet outcomes
+causes τ , the release time the session completes, to differ
+from k ∗ . Because Pk has positive variance around its mean, a
+fraction of simulated sessions complete before step k ∗ , such
+that E[τ ] ≤ k ∗ . The quantity k ∗ (α) · (E + T ′ (α)) therefore
+provides a conservative upper bound on E[Tsession (α)]. The
+minimum session speedup is then
+S̃(α∗ , k ∗ ) = 1 −
+
+k ∗ (α∗ ) E + T ′ (α∗ )
+·
+,
+k ∗ (0) E + tminsep
+
+Three constraints bound the admissible PGA ingress α
+and define the feasible region of the optimization. First,
+the scheduled separation cannot be reduced below zero,
+since there is no remaining interval to shorten. This
+geometric constraint requires T ′ (α) ≥ 0, equivalently
+α ≤ tminsep /E. Second, the single-skip constraint (8)
+requires T ′ (α) ≥ max(0, (tminsep − E)/2), ensuring that
+the worst-case violation skips at most one consecutive
+PGA. When E < tminsep , this prevents T ′ from being
+reduced to zero. Finally, the service feasibility constraint
+requires k ∗ (α) ≤ N SI , ensuring the expected packet count
+reaches N inst within the allocated PGAs. We define α∗
+as the ingress that minimizes the Markov session time
+Tsession (α) = k ∗ (α) · (E + T ′ (α)) over this feasible region.
+We remark that k ∗ enforces an expectation-based analog of
+the probabilistic service guarantee defined in Eq. (7). While
+minimum service requires that N inst packets are generated with
+probability at least (1 − ϵservice
+), the Markov chain tracks only
+d
+the expected packet count and does not bound the probability
+that an individual session falls short. The service feasibility
+constraint k ∗ (α) ≤ N SI is therefore necessary but not sufficient for the probabilistic guarantee, and we verify empirically
+with simulation that minimum service is maintained at the
+optimal ingress across all tested configurations.
+While the speedup lower bound in Eq. (16) can be evaluated
+numerically from k ∗ , it does not reveal the structure of the
+tradeoff between reduced release time and skip penalties. To
+decompose the speedup into scheduling quantities, we derive
+a closed-form approximation of the ratio k ∗ (α∗ )/k ∗ (0) using
+the stationary distribution of the reduced Markov chain. The
+stationary distribution π = (πG , πG ) satisfies πPS = π and
+πG + πG = 1, which yields
+
+(16)
+
+which lower bounds the average simulation speedup
+S(α∗ ) ≥ S̃(α∗ , k ∗ ).
+
+1
+,
+1 + pr
+
+πG =
+
+pr
+.
+1 + pr
+
+(17)
+
+In steady state, a fraction πG of scheduled PGAs result in an
+executed PGA. Since each executed PGA produces a packet
+with probability ppacket regardless of the skip dynamics, the
+number of executions required to generate N inst packets is the
+same at any ingress. In the stationary limit, the number of
+scheduled steps at ingress α∗ therefore satisfies
+k ∗ (α∗ )
+= k ∗ (0),
+1 + pr (α∗ )
+
+(18)
+
+and k ∗ (α∗ ) = k ∗ (0) · (1 + pr (α∗ )). The relation is exact in
+the stationary limit and applies to finite sessions once they
+are long enough for the chain to converge, as is the case for
+all tested configurations with N inst = 103 averaged over 103
+iterations. For shorter sessions, Eq. (18) should be replaced by
+numerical evaluation.
+Substituting Eq. (18) into Eq. (16) yields a closed-form
+speedup expressed only by the release time reduction R(α∗ )
+and the unconditional skip probability pr (α∗ ). Because N SI
+is held fixed across scheduled separations, the service time
+reduction in Eq. (2) simplifies to the release time reduc-
+
+State-of-the-Art Regime
+
+101
+
+100
+
+100
+
+0.0
+
+0.2
+
+0.4
+0.6
+ppacket [a.u.]
+
+0.8
+
+1.0
+
+tgen/w
+E/w
+d10
+d20
+
+102
+E/w [a.u.]
+
+101
+
+102
+tgen / w [a.u.]
+
+102
+E/w [a.u.]
+
+tgen / w [a.u.]
+
+102
+
+Optimistic Regime
+
+tgen/w
+E/w
+d2
+d4
+
+101
+
+101
+
+100
+
+100
+
+0.0
+
+0.2
+
+0.4
+0.6
+ppacket [a.u.]
+
+0.8
+
+1.0
+
+Fig. 2. Average packet generation time (solid, left axis) and PGA duration (dashed, right axis) as a function of packet generation probability ppacket for
+the state-of-the-art regime (left; λ = 2.22 Hz, w = 275 ms) and optimistic regime (right; λ = 10 Hz, w = 2 s). Both quantities are normalized by the
+window length √
+w to enable comparison across demands with different PGA durations. Demands are labeled by their requested link count s, with z-scores
+z = (s − λw)/ λw of 1.8 and 4.3 for d2 and d4 (SOTA), and −2.2 and 0 for d10 and d20 (optimistic). Shaded regions indicate ± one standard deviation
+over 104 trials per point. All demands use N inst = 1 and ϵservice
+= 10−5 .
+d
+
+tion R(α) = 1 − (E + T ′ (α))/(E + tminsep ), and the stationary speedup becomes
+
+
+S̃(α∗ ) = 1 − 1 + pr (α∗ ) · 1 − R(α∗ )
+
+=
+R(α∗ )
+− pr (α∗ ) · 1 − R(α∗ ) . (19)
+| {z }
+|
+{z
+}
+release time reduction
+
+skip penalty
+
+∗
+
+The first term, R(α ), captures the fraction of session time
+savings if no PGAs were skipped. The second term captures
+the fraction of that savings lost to the additional PGAs
+executed to compensate for skipped PGAs. The speedup is
+positive only when the release time reduction exceeds the skip
+penalty. Evaluating S̃(α∗ ) requires no simulation, only the
+pmv (α∗ ) lookup table and T ′ (α∗ ) = tminsep − α∗ E computed
+from demand parameters. Determining the optimal α∗ requires
+evaluating the service feasibility constraint k ∗ (α) ≤ N SI
+through the Markov chain recurrence, since the decomposition
+alone cannot predict whether the session completes in time.
+V. E VALUATION
+We evaluate the proposed methods in three stages. We
+first characterize the distribution of packet generation times
+within a PGA and the resulting lookup tables of minimum
+separation violation probabilities that drive the optimization,
+then quantify the single-session speedup, and finally extend to
+round-robin scheduling of two co-scheduled sessions.
+A. Simulating Packet Generation Time Distributions
+To evaluate scheduled separation relaxation, the distribution
+of packet generation times within a PGA must first be understood, since packets arriving near the end of the PGA are more
+likely to cause minimum separation violations. Demands ds
+are indexed by the requested packet’s link count s. Fig. 2
+shows d2 and d4 in the SOTA regime and d10 and d20 in the
+optimistic regime.
+Fig. 2 plots tgen /w against ppacket , with E/w on the secondary axis; normalization by w enables comparison across
+
+√
+demands. The z-score z = (s − λw)/ λw indicates within
+how many standard deviations the requested link count lies
+from the expected number of arrivals per window. When
+z ≫ 0, a single window is unlikely to generate enough links,
+so the PGA spans many overlapping windows (E ≫ w).
+Generation times then spread across a substantial portion of E,
+as seen for d2 at z = 1.8 and d4 at z = 4.3. When z ≤ 0,
+a single window suffices (E ≤ w) and packets are likely
+generated within roughly one window scan (d10 at z = −2.2).
+B. Demand Lookup Tables
+Since no closed-form expression exists for the packet generation time within a PGA, the conditional violation probability
+pmv must be obtained by sampling. Fig. 3 presents pmv as a
+function of α and ppacket for one representative configuration
+from each regime: d2 (z = 1.8) in the SOTA regime and d10
+(z = −2.2) in the optimistic regime. The two surfaces
+exhibit qualitatively distinct contour structures. In the SOTA
+regime (E ≫ w), pmv contours disperse along the α axis,
+allowing the ingress to encompass a substantial fraction of
+the PGA before minimum separation violations dominate. In
+the optimistic regime (E ≤ w), the contours concentrate at
+low α and pmv rises steeply with even small ingress fractions.
+Increasing ppacket at fixed α reduces pmv in both regimes, since
+a longer PGA shifts generation times earlier.
+These surfaces confirm that the z-score governs pmv ’s
+sensitivity to ingress: low-z demands reach high minimum
+separation violation probabilities at smaller ingress and therefore require more conservative separation reductions. Each
+surface is computed once for a given physical configuration
+(λ, w, s) and stored as a lookup table that the Markov chain
+session model queries during optimization. Because the table
+is precomputed, evaluating pmv at any candidate (α, ppacket )
+requires only interpolation rather than repeated simulation. In
+regimes where λw is large, a unit√change in s produces only a
+small shift in z-score (∆z = 1/ λw), suggesting that tables
+
+State-of-the-Art Regime
+0.3 0.4
+
+0.96
+
+0.1
+0.2
+0.3
+0.
+0.45
+0.6
+0.7
+0.8
+0.9
+
+0.2
+
+0.5
+0.6
+0.7
+0.8
+0.9
+
+0.1
+
+Optimistic Regime
+0.96
+0.84
+
+0.8
+
+0.84
+
+0.8
+
+0.48
+0.4
+
+0.36
+0.24
+
+0.2
+
+0.6
+
+0.60
+
+pmv [a.u.]
+
+0.60
+
+0.72
+
+ppacket [a.u.]
+
+0.6
+
+pmv [a.u.]
+
+ppacket [a.u.]
+
+0.72
+
+0.48
+0.4
+
+0.36
+0.24
+
+0.2
+
+0.12
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+[a.u.]
+
+0.8
+
+1.0
+
+0.00
+
+0.12
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+[a.u.]
+
+0.8
+
+1.0
+
+0.00
+
+Fig. 3. Probability pmv of a minimum separation violation, conditioned on successful packet generation. The surfaces are shown as a function of PGA
+ingress α and packet generation probability ppacket . Two configurations are compared: requested links s = 2 in the state-of-the-art regime (left; λ = 2.22 Hz,
+w = 275 ms, z = 1.8) and s = 10 in the optimistic regime (right; λ = 10 Hz, w = 2 s, z = −2.2). Each grid point is estimated from 104 successful
+trials obtained by rejection sampling. White contours are spaced at intervals of 0.1. These surfaces are computed once per physical configuration (λ, w, s)
+and stored as lookup tables for use by the Markov chain session model.
+
+computed for nearby s values may provide reasonable approximations without recomputation. Quantifying the interpolation
+error across configurations is left to future work.
+C. Single Session Speedup
+To evaluate session performance under reduced scheduled
+separation, demands ds from each regime are configured with
+N inst = 103 and ϵservice
+= 0.5, and the associated sessions
+d
+are simulated over 103 trials. We restrict the analysis to
+feasible demands with z-scores below 5, namely d2 , d3 , d4
+in the SOTA regime and d10 , d20 , d28 , d34 in the optimistic
+regime. Of these, d10 yields no speedup at any feasible ingress,
+since its high ppacket = 0.951 causes the skip penalty to
+dominate the admissible range. The remaining six demands
+achieve positive speedup; for each, Table I reports the optimal
+ingress α∗ , the Markov minimum speedup bound S̃(α∗ , k ∗ ),
+and the sample mean simulated speedup S(α∗ ) along with
+its 95% confidence interval over 103 trials. Across these
+configurations, Tsession (α) is strictly decreasing in α over the
+feasible region, so α∗ coincides with the largest feasible
+ingress. We remark that the stationary approximation S̃(α∗ )
+agrees with S̃(α∗ , k ∗ ) to within 0.05 percentage points across
+all configurations, confirming that the chain converges well
+within the session length at N inst = 103 . The Markov bound
+S̃(α∗ , k ∗ ) underestimates the simulated speedup S(α∗ ) by
+0.1 to 0.7 percentage points, remaining tight enough to be
+predictive without repeated simulation.
+Whether any speedup exists depends on ppacket . Since pr =
+packet mv
+p
+·p (α), a high ppacket makes the skip penalty large at every α, and when ppacket is near unity the penalty wipes out any
+gain across the admissible range, as observed for d10 . When
+speedup is possible, its size is controlled by z through R(α∗ ).
+
+The geometric ceiling on R(α∗ ) is tminsep /(E + tminsep ), which
+shrinks with z as E grows relative to tminsep . However, the
+ceiling also becomes more reachable as z grows: longer PGAs
+spread generation times out, so pmv rises more slowly with α
+and the optimizer can push α∗ further before the skip penalty
+dominates. Near z = 0 (d20 ), the ceiling is large at 42.2%,
+but pmv rises quickly and holds R(α∗ ) to 2.8%, yielding a
+speedup of at least 0.8%. At the opposite extreme (d4 ), the
+ceiling shrinks to 7.6% but is reached by R(α∗ ), yielding a
+speedup of at least 6.1%.
+Across all configurations, simulations confirm that at
+least N inst packets are generated with probability 1 − ϵservice
+d
+at α∗ , though the analytical framework does not guarantee
+service delivery. Formalizing the relationship between α∗ and
+ϵservice
+is left to future work.
+d
+D. Multi-Session Speedup
+When multiple sessions share the network by round-robin
+scheduling, the PGAs of other sessions provide natural separation between consecutive same-session
+PGAs. For sesP
+sion i, this separation is gi = Ti′ + j̸=i (Ej + Tj′ ). When
+gi ≥ tminsep
+, no minimum separation violations occur and Ti′
+i
+can be fully eliminated. Otherwise, αi∗ still sets the scheduled
+separation through Ti′ = tminsep
+− αi∗ Ei . However, only the
+i
+minsep
+∗
+residual αeff,i = (ti
+− gi )/Ei ≤ αi∗ contributes to
+∗
+violations through the violation zone ((1 − αeff,i
+)Ei , Ei ]. We
+restrict our analysis to n = 2 co-scheduled sessions, which
+eliminates skip penalties for nearly all demand configurations
+demonstrating single-session speedup, since the no-violation
+condition reduces to E ≥ tminsep . The analysis extends to larger
+n by replacing the single intervening PGA with the sum of
+the other n − 1 intervening PGA durations.
+
+TABLE I
+S INGLE -S ESSION PERFORMANCE AT OPTIMAL INGRESS α∗
+
+TABLE II
+M ULTI - SESSION PERFORMANCE AT OPTIMAL INGRESS α∗i
+
+Session
+
+z
+
+α∗
+
+S̃(α∗ , k∗ ) [%]
+
+S(α∗ ) [%]
+
+R(α∗ ) [%]
+
+∆Tserv
+
+Session
+
+z
+
+α∗i
+
+S̃i (α∗i , k∗ ) [%]
+
+S i [%]
+
+Ri [%]
+
+∆Tserv,i
+
+d2
+d3
+d4
+
+1.8
+3.1
+4.3
+
+0.063
+0.095
+0.082
+
+2.0
+5.2
+6.1
+
+2.7 ± 0.1
+5.8 ± 0.2
+6.2 ± 0.2
+
+4.4
+7.9
+7.6
+
+2.3 min
+11.1 min
+41.9 min
+
+d20
+d2
+
+0.0
+1.8
+
+0.442
+0.431
+
+25.2
+26.7
+
+25.4 ± 0.1
+26.7 ± 0.1
+
+25.6
+30.1
+
+29.2 min
+15.8 min
+
+d20
+d28
+d34
+
+0.0
+1.8
+3.1
+
+0.049
+0.062
+0.069
+
+0.8
+2.5
+5.1
+
+1.1 ± 0.1
+3.1 ± 0.1
+5.3 ± 0.2
+
+2.8
+4.9
+6.5
+
+3.2 min
+18.1 min
+2.8 hr
+
+We consider co-scheduling demand d20 with demand
+d2 under round-robin. The round-robin cycle has duration
+′
+E20 + T20
++ E2 + T2′ , with each Ti′ = tminsep
+− αi∗ Ei . The
+i
+cycle reduction Rcyc is the fractional reduction of the optimized cycle relative to the baseline cycle in which every
+session uses its full minimum separation. We fix α2∗ = 0.431
+at its geometric maximum, which eliminates T2′ ; this is jointly
+∗
+optimal because αeff,2
+= 0 leaves no skip penalty. Optimizing
+∗
+d20 then yields α20
+= 0.442, giving an inter-PGA separation
+∗
+of 2.1 s (tminsep
+= 2.25 s) and a residual αeff,20
+= 0.047.
+20
+Two distinct mechanisms drive the multi-session speedup.
+First, the round-robin cycle replaces the single-session release
+time E + T ′ , and the release time reduction R(α∗ ) is correspondingly replaced by the cycle reduction Rcyc defined above.
+Second, only the residual ingress contributes to minimum
+separation violations, so the skip probability pr,i is evaluated
+∗
+at αeff,i
+rather than at αi∗ . Combining both effects, the persession speedup admits the two analytical forms developed
+for the single-session case: the Markov lower bound on
+speedup S̃i (αi∗ , k ∗ ) analogous to Eq. (16), and its closed-form
+∗
+stationary approximation S̃i (αeff,i
+) analogous to Eq. (19). The
+Markov bound is what Table II reports, and is computed by
+evaluating the chain of Section IV-C with transition probability
+∗
+pr,i (αeff,i
+) to obtain ki∗ , then substituting into the multisession analog of Eq. (16). The stationary approximation,
+obtained from the Markov bound by substituting the stationary
+approximation of Eq. (18), gives a closed-form expression for
+S̃i measured against the baseline cycle:
+
+
+∗
+∗
+S̃i (αeff,i
+) ≈ 1 − 1 + pr,i (αeff,i
+) · 1 − Rcyc
+
+∗
+=
+Rcyc
+− pr,i (αeff,i
+) · 1 − Rcyc , (20)
+|{z}
+{z
+}
+|
+cycle reduction
+
+skip penalty
+
+with analogous decomposition of scheduling quantities as
+Eq. (19). We remark that the approximation agrees with the
+Markov bound to within 0.01 percentage points.
+The results of co-scheduling are reported in Table II, where
+each row corresponds to one session. The first three columns,
+αi∗ , S̃i (αi∗ , k ∗ ), and S i , give the optimal ingress, the Markov
+minimum speedup bound, and the sample mean simulated
+speedup with its 95% confidence interval over 103 trials.
+The remaining columns, Ri and ∆Tserv,i , give the release
+time reduction session i would achieve if run alone at αi∗ ,
+computed against the baseline Ei + tminsep
+as in Table I.
+i
+
+This framing allows direct comparison with each session’s
+standalone performance in Section V-C.
+Co-scheduling raises the minimum session speedup S̃i from
+0.8% to 25.2% for d20 , and from 2.0% to 26.7% for d2 . The
+co-scheduled PGA fills most of the round-robin cycle on its
+own, so each session’s residual ingress is small relative to the
+∗
+∗
+single-session case (αeff,20
+= 0.047, αeff,2
+= 0). The Markov
+bound S̃i underestimates the simulated speedup S i by at most
+0.2 percentage points, narrower than in the single-session case
+due to the reduced skip penalty.
+VI. D ISCUSSION
+The evaluation yields two practical takeaways for entanglement generation scheduling. Firstly, the single-session results
+reveal that scheduled separation reduction yields no benefit
+when packets are produced with near-certainty within a scheduled block. In this regime, minimum separation violations
+become very likely, the resulting skips accumulate, and execution time grows faster than the separation reduction recovers.
+Schedulers can use this criterion to evaluate whether scheduled
+separation reduction is indicated for a given demand. Secondly,
+co-scheduled sessions provide natural separation between a
+session’s consumptions, absorbing time that would otherwise
+be reserved for the scheduled separation. This enables larger
+scheduled separation reductions.
+Within both state-of-the-art and projected hardware regimes,
+the co-scheduling effect can fully eliminate the scheduled
+separation: when the duration of co-scheduled blocks exceeds
+a session’s minimum separation, no minimum separation violations are possible. The scheduler then allocates the minimum
+scheduled time, and the session correspondingly achieves the
+maximum reduction in network service time and maximum
+execution speedup. Whether this condition holds in practice
+depends on how the scheduler allocates resources across demands. Network schedulers may partition scheduled resources
+into non-interacting regions, as Arqon does through its path
+partition; within such a region a session may have few or
+no co-scheduled partners, and the single-session optimization
+determines the largest feasible separation reduction. Conversely, when multiple sessions share the same resources, the
+duration of intervening co-scheduled blocks is more likely to
+exceed a session’s minimum separation, enabling its scheduled
+separation to be fully eliminated.
+Several directions remain regarding improvements to the
+analytical methods and demonstrations of the scheduled separation optimization in quantum network testbeds. Firstly,
+within the Arqon architecture, accepted sessions receive service agreements committing the scheduler to produce the
+
+required packets before expiry with at least the specified
+service probability. Monte Carlo simulations confirm that the
+service commitment is met under the optimized separation, but
+the framework does not formally guarantee it. Establishing this
+guarantee analytically would convert the empirical observation
+into a formal property of the scheduler. Secondly, the Markov
+lower bound on the expected session execution speedup is
+conservative. Because packet generation times have variance,
+individual sessions on average complete earlier than the bound
+predicts. Accounting for this variance would tighten the bound
+while preserving its closed form.
+For network schedulers that enter service agreements with
+sessions, extending the framework to stricter operating regimes
+raises two further questions. The evaluation uses a relaxed
+service probability to isolate the effect of scheduled separation
+reduction. Higher service probabilities require the scheduler to
+allocate additional blocks to compensate for minimum separation violations. Jointly optimizing the separation and the block
+allocation in this regime remains open. This joint optimization
+could also incorporate the session’s expiry, guaranteeing the
+service time meets the deadline.
+Although developed within the Arqon architecture, our
+methods apply to any architecture in which end nodes share
+hardware between entanglement generation and LOCC. Alternative network schedulers or end node behaviors may yield
+further gains in scheduling or session execution efficiency.
+For example, adaptive scheduling could allocate additional
+blocks in regimes where minimum separation violations are
+likely, providing benefit in cases where uniform reduction
+yields none. End node policies could also begin consumption
+mid-block as soon as LOCC operations complete, rather than
+skipping the block entirely.
+ACKNOWLEDGMENT
+Claude Opus 4.6 co-developed simulations running Alg. 1.
+
+It is then equivalent to show that
+
+1 − fk (x)
+P (x)k =
+1 − gk (x)
+
+We proceed by induction. For k = 1, we have f1 (x) = x
+and g1 (x) = 0, so P (x)1 is of the desired form.
+Assume the results holds for n = k. Then
+
+
+
+1 − fk (x) fk (x) 1 − x x
+P (x)k+1 = P (x)k P (x) =
+1 − gk (x) gk (x)
+1
+0
+
+
+1 − x(1 − fk (x)) x(1 − fk (x))
+=
+1 − x(1 − gk (x)) x(1 − gk (x))
+By direct calculation one can show x(1 − fk (x)) = fk+1 (x),
+x(1 − gk (x)) = gk+1 (x) and the result follows.
+Claim 2. E[Nk ] = E[Nk−1 ] + 1 − fk−1 (pr)
+Proof.
+E[Nk ] =
+
+X
+
+=
+
+X
+
+Let Mk be a Markov chain defined on the state space N ×
+{G, G} ∪ {(0, G)}, with transition probabilities of Eq. 12, and
+let us write Mk = (Nk , Sk ). We want to calculate E[Nk ].
+Claim 1 (k-step transition matrix of Sk ). Let PS be the
+transition matrix for the Markov chain Sk . Then the k-step
+transition matrix for Sk , PSk is given by
+
+
+1 − fk (pr) fk (pr)
+PSk =
+(21)
+1 − gk (pr) gk (pr)
+where
+(−x)i
+
+gk (x) = x
+
+i=0
+
+Proof. We can write PS = P (pr), where
+
+
+1−x x
+P (x) =
+.
+1
+0
+
+n P[Nk = n | Nk−1 = m] P[Nk−1 = m]
+
+n,m
+
+=
+
+X 
+n P[Nk = n | Nk−1 = m, Sk−1 = G] P[Sk−1 = G]
+n,m
+
++ P[Nk = n | Nk−1 = m, Sk−1 = Ḡ] P[Sk−1 = Ḡ]
+× P[Nk−1 = m].
+
+
+
+(24)
+
+Now, we have that
+
+1
+P[Nk = n|Nk−1 = m, Sk−1 = G] =
+0
+
+1
+P[Nk = n|Nk−1 = m, Sk−1 = G] =
+0
+
+n=m+1
+else
+n=m
+else
+
+and so from (24), we get
+
+X
+E[Nk ] =
+m P[Sk−1 = G] + (m + 1) P[Sk−1 = Ḡ]
+m
+
+× P[Nk−1 = m].
+
+A. Expected Number of Executed PGAs
+
+k−1
+X
+
+n P[Nk = n]
+
+n
+
+VII. A PPENDICES
+
+fk (x) = x
+
+
+fk (x)
+.
+gk (x)
+
+k−2
+X
+
+(−x)i .
+
+(22)
+
+i=0
+
+(23)
+
+From the earlier claim, we have that P[Sk−1 = G] = 1 −
+P[Sk−1 = G] = fk−1 (pr). Therefore, we have
+E[Nk ] =
+
+X
+
+=
+
+X
+
+
+mfk−1 (pr) + (1 + m)(1 − fk−1 (pr)) P[Nk−1 = m]
+
+m
+
+mP[Nk−1 = m] + (1 − fk−1 (pr))
+
+m
+
+X
+
+P[Nk−1 = m]
+
+m
+
+= E[Nk−1 ] + 1 − fk−1 (pr)
+
+Claim 3. E[Nk ] =
+
+Pk−1
+
+i
+i=0 (k − i)(−pr)
+
+Proof. We proceed by induction. By inspection of the corresponding Markov chain in Figure ??, we can see that given
+we start in state (0, G), we mustPhave E[N1 ] = 1. From the
+0
+desired form, we have E[N1 ] = i=0 (k − i)(−pr)i = 1. So
+the base case holds.
+Let us now assume that the assumption holds for n = k.
+Then, using the recurrence relation from Claim 2, we have
+that E[Nk+1 ] = E[Nk ] + 1 − fk+1 and the result follows by
+direct calculation.
+
+R EFERENCES
+[1] A. Broadbent, J. Fitzsimons, and E. Kashefi, “Universal blind quantum
+computation,” in 2009 50th annual IEEE symposium on foundations of
+computer science. IEEE, 2009, pp. 517–526.
+[2] V. Giovannetti, S. Lloyd, and L. Maccone, “Quantum-enhanced positioning and clock synchronization,” Nature, vol. 412, no. 6845, pp. 417–419,
+2001.
+[3] S. Zaiser, T. Rendler, I. Jakobi, T. Wolf, S.-Y. Lee, S. Wagner,
+V. Bergholm, T. Schulte-Herbrüggen, P. Neumann, and J. Wrachtrup,
+“Enhancing quantum sensing sensitivity by a quantum memory,” Nature
+communications, vol. 7, no. 1, p. 12279, 2016.
+[4] S. Wehner, D. Elkouss, and R. Hanson, “Quantum internet: A vision for
+the road ahead,” Science, vol. 362, no. 6412, p. eaam9288, 2018.
+[5] F. Bova, A. Goldfarb, and R. G. Melko, “Commercial applications of
+quantum computing,” EPJ quantum technology, vol. 8, no. 1, p. 2, 2021.
+[6] W.-Z. Liu, Y.-B. Zhou, J.-P. Chen, B. Wang, A. Teng, X.-W. Han, G.-C.
+Liu, Z.-J. Zhang, Y. Yang, F.-G. Liu et al., “Long-lived remote ion-ion
+entanglement for scalable quantum repeaters,” Nature, pp. 1–3, 2026.
+[7] A. J. Stolk, K. L. van der Enden, M.-C. Slater, I. te Raa-Derckx,
+P. Botma, J. Van Rantwijk, J. B. Biemond, R. A. Hagen, R. W. Herfst,
+W. D. Koek et al., “Metropolitan-scale heralded entanglement of solidstate qubits,” Science advances, vol. 10, no. 44, p. eadp6442, 2024.
+[8] M. Pompili, C. Delle Donne, I. te Raa, B. van der Vecht, M. Skrzypczyk,
+G. Ferreira, L. de Kluijver, A. J. Stolk, S. L. Hermans, P. Pawełczak
+et al., “Experimental demonstration of entanglement delivery using a
+quantum network stack,” npj Quantum Information, vol. 8, no. 1, p.
+121, 2022.
+[9] S.-y. Yu, E. Perego, J. Phillips, Y.-W. Cheah, P. Umesh, G. Gao,
+J. Liu, E. Kissel, M. Bregar, K. Sun, Q. Wu, R. Valivarthi,
+E. Saglamyurek, W. Wu, M. Spiropulu, H. Haffner, and I. Monga,
+“ A Two-Level Control Framework for Quantum Networks ,” in
+2025 IEEE International Conference on Quantum Computing and
+Engineering (QCE). Los Alamitos, CA, USA: IEEE Computer
+Society, Sep. 2025, pp. 1302–1311. [Online]. Available: https:
+//doi.ieeecomputersociety.org/10.1109/QCE65121.2025.00145
+[10] M. S. Islam, J. Chung, E. M. Eastman, R. J. Hayek, P. Kumar, and
+R. Kettimuthu, “Experimental demonstration of software-orchestrated
+quantum network applications over a campus-scale testbed,” arXiv
+preprint arXiv:2511.01247, 2025.
+[11] K. Kapoor, S. Hoseini, J. Choi, B. Nussbaum, Y. Zhang, K. Shetty,
+C. Skaar, M. Ward, L. Wilson, K. Shinbrough et al., “Public quantum
+network: The first node,” Applied Physics Letters, vol. 126, no. 5, 2025.
+[12] V. Krutyanskiy, M. Canteri, M. Meraner, J. Bate, V. Krcmarsky,
+J. Schupp, N. Sangouard, and B. P. Lanyon, “Telecom-wavelength
+quantum repeater node based on a trapped-ion processor,” Physical
+Review Letters, vol. 130, no. 21, p. 213601, 2023.
+[13] M. Canteri, Z. Koong, J. Bate, A. Winkler, V. Krutyanskiy, and
+B. Lanyon, “A photon-interfaced ten qubit quantum network node,”
+arXiv preprint arXiv:2406.09480, 2024.
+[14] D. Hucul, I. V. Inlek, G. Vittorini, C. Crocker, S. Debnath, S. M. Clark,
+and C. Monroe, “Modular entanglement of atomic qubits using photons
+and phonons,” Nature Physics, vol. 11, no. 1, pp. 37–42, 2015.
+[15] C. Delle Donne, M. Iuliano, B. van der Vecht, G. M. Ferreira,
+H. Jirovská, T. J. van der Steenhoven, A. Dahlberg, M. Skrzypczyk,
+D. Fioretto, M. Teller et al., “An operating system for executing
+applications on quantum network nodes,” Nature, vol. 639, no. 8054,
+pp. 321–328, 2025.
+[16] B. van der Vecht, A. T. Yücel, H. Jirovská, and S. Wehner, “Qoala: an
+application execution environment for quantum internet nodes,” arXiv
+preprint arXiv:2502.17296, 2025.
+[17] S. Gauthier, T. R. Beauchamp, and S. Wehner, “Arqon: A suite
+of control applications enabling a reliable quantum network,” 2026.
+[Online]. Available: https://arxiv.org/abs/2604.08692
+[18] H. Gu, R. Yu, Z. Li, X. Wang, and F. Zhou, “Esdi: Entanglement
+scheduling and distribution in the quantum internet,” in 2023 32nd
+International Conference on Computer Communications and Networks
+(ICCCN). IEEE, 2023, pp. 1–10.
+[19] A. Pirker and W. Dür, “A quantum network stack and protocols for
+reliable entanglement-based networks,” New Journal of Physics, vol. 21,
+no. 3, p. 033003, 2019.
+[20] S. Pouryousef, N. K. Panigrahy, and D. Towsley, “A quantum overlay
+network for efficient entanglement distribution,” in IEEE INFOCOM
+
+2023-IEEE Conference on Computer Communications. IEEE, 2023,
+pp. 1–10.
+[21] T. R. Beauchamp, H. Jirovská, S. Gauthier, and S. Wehner, “A modular
+quantum network architecture for integrating network scheduling with
+local program execution,” arXiv preprint arXiv:2503.12582, 2025.
+[22] S. Shi and C. Qian, “Concurrent entanglement routing for quantum
+networks: Model and designs,” in Proceedings of the Annual conference
+of the ACM Special Interest Group on Data Communication on the
+applications, technologies, architectures, and protocols for computer
+communication, 2020, pp. 62–75.
+[23] Y. Zhao and C. Qiao, “Redundant entanglement provisioning and selection for throughput maximization in quantum networks,” in IEEE INFOCOM 2021-IEEE Conference on Computer Communications. IEEE,
+2021, pp. 1–10.
+[24] M. Pant, H. Krovi, D. Towsley, L. Tassiulas, L. Jiang, P. Basu, D. Englund, and S. Guha, “Routing entanglement in the quantum internet,”
+npj Quantum Information, vol. 5, no. 1, p. 25, 2019.
+[25] C. Li, T. Li, Y.-X. Liu, and P. Cappellaro, “Effective routing design for
+remote entanglement generation on quantum networks,” npj Quantum
+Information, vol. 7, no. 1, p. 10, 2021.
+[26] C. Cicconetti, M. Conti, and A. Passarella, “Request scheduling in
+quantum networks,” IEEE Transactions on Quantum Engineering, vol. 2,
+pp. 2–17, 2021.
+[27] W. Dai, T. Peng, and M. Z. Win, “Optimal remote entanglement distribution,” IEEE Journal on Selected Areas in Communications, vol. 38,
+no. 3, pp. 540–556, 2020.
+[28] T. Vasantam and D. Towsley, “Stability analysis of a quantum network
+with max-weight scheduling,” arXiv preprint arXiv:2106.00831, 2021.
+[29] S. Gauthier, T. R. Beauchamp, and S. Wehner, “Code and data for arqon:
+A suite of control applications enabling reliable quantum networks,”
+2026.
+[30] J. Smith, “Data-set and Software Tools: Tools for Reducing Service Time
+in Near-Term Quantum Networks,” https://gitlab.tudelft.nl/wehner-res
+earch/minsep relaxation, 2026.
+[31] R. L. Harrison, “Introduction to Monte Carlo simulation,” in AIP Conf.
+Proc., vol. 1204, no. 1. Amer. Inst. Phys., 2010, p. 17ß.
+
+

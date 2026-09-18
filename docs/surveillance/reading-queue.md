@@ -429,22 +429,86 @@ entry is a debt and not a finding.
   vocabulary neighbour for the HotOS hostile-federation section — occupied
   at the topology level, unoccupied at the custody level.
 
----
-
-## Open (UNREAD)
-
-*Sweep of 2026-07-25 (first run, fired manually to validate the routine). The
-sweep found these two and correctly excluded arXiv 2607.16394 (condensed-matter
-"entanglement entropy" — the vocabulary trap the protocol names) and arXiv
-2607.05642 (metrics taxonomy, no data answering any threshold). Its own commit
-was stranded in an ephemeral cloud checkout with read-only credentials; these
-entries were rewritten locally from the arXiv abstracts read first-hand, not
-transcribed from the sweep's summary. Question mapping revised on the first
-entry — see note.*
+### arXiv 2608.20954 — Tools for Reducing Service Time in Near-Term Quantum Networks
+*Smith, Beauchamp, Gauthier, Bouchmal, Wehner. Submitted 2026-08-21.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** Q1, Q4 — and *possibly* Q6
+- **would change:** Our Q4 in-place-herald-retry threshold (failure-to-next-
+  attempt cycle time vs deadline slack) and Q1's operational quantile ask
+  (is the upper-tail configuration-plus-generation latency small enough
+  that a replenishment completes before its reserve margin expires?) are
+  both currently answered only by invented numbers in our simulator. This
+  paper's entire object is the same quantity from the other direction: the
+  abstract states that existing multi-user entanglement architectures
+  insert "fixed separations between consecutive batches of entanglement
+  generation attempts" after failures, that this separation leaves the
+  network "idle" when attempts fail, and that their method shortens it
+  "while respecting hardware constraints," using an analytical execution
+  model evaluated within the Arqon architecture (service-time reductions of
+  up to 7.6% single-application, 26-30% co-scheduled). If the full paper's
+  execution model exposes the actual minimum safe separation and what
+  hardware constraint floors it, that could replace our invented
+  failure-to-next-attempt figure and settle whether our simulator's
+  retain-and-retry vs release-and-reacquire asymmetry (Q4) is physics-earned
+  or just a design choice. *Possibly* Q6: "respecting hardware constraints"
+  when shortening the separation is an explicit claim that some constraint
+  bounds achievable cadence, but the abstract does not name the constrained
+  resource (thermal, calibration, controller traffic, or something else),
+  so whether it ratifies Q6's "does an actuation/reservation consume ANY
+  constrained resource" ask is inference pending the full read.
+- **mapping note:** the paper is framed as a scheduling/service-time
+  optimization over an existing hardware-constrained separation, not as a
+  hardware characterization paper — so the debt is whether its analytical
+  execution model contains a hardware-measured (vs assumed) cycle-time
+  distribution. Whoever pays this debt should check whether the "hardware
+  constraints" the abstract references are cited to a measurement or
+  simply asserted.
+- **disposition:** **Q4: the idle after a failed attempt is
+  architecture-imposed, not physics-imposed — that is the paper's own
+  thesis. Q1 unanswered. Q6 names the constrained resource. And the paper
+  exposes a two-dates demand tuple in Arqon that the fence must now be
+  checked against.** The "minimum separation" is the LOCC time an end node
+  needs *after a successful consumption* (gates, cooling, readout, control
+  stack; "microseconds to seconds"), modelled as t_minsep = t_coh/2 + t_LOCC
+  with t_LOCC = 0.25 s and t_coh = 550 ms (SOTA trapped ions, λ = 2.22 Hz
+  over 10 km) → 525 ms, "comparable" to the 450 ms mean between
+  consumptions. Conservative schedulers pay it after every block including
+  failed ones, "despite having no LOCC to perform" — so for Q4 the
+  failure-to-next-attempt cost on this evidence has no hardware floor
+  beyond the block structure itself; the paper reclaims it by shortening
+  the scheduled separation to T′ ≥ (t_minsep − E)/2 and models the
+  resulting skip risk as a Markov chain (gains 2–6% single-session,
+  25–27% co-scheduled). Our simulator's retain-and-retry vs
+  release-and-reacquire asymmetry is therefore *not* ratified by hardware
+  here: the asymmetry in this architecture lives in the control stack. The
+  physics floor the paper does name is the post-*success* LOCC/cooling
+  time, ~0.25 s on ions. **Q1:** arrivals are a Poisson process at λ; no
+  cadence distribution is measured. **Q6:** the constrained resource is
+  named — end-node hardware shared between entanglement generation and
+  local operations — but it is not a switch and carries no budget figure.
+  **Fence — new debt raised:** the Arqon demand is d = (p; t_minsep;
+  t_expiry; N_inst; ε_service) with packet p = (w, s, F): a coherence-derived
+  window w (physical date: s links must land within w) *and* a session
+  expiry t_expiry (institutional date) *and* a service probability, and
+  the network "commits to delivering… with at least a specified service
+  probability" before expiry. That is two dates carried as separate
+  fields in one demand, enforced at different layers (w at packet
+  generation, t_expiry at schedule construction). Whether they are
+  *co-enforced at consumption* with per-good custody, or whether Arqon
+  folds them (window-only at admission, as SeQUeNCe was fenced), is
+  exactly the fence's item 3 and cannot be settled from this paper.
+  Arqon (arXiv 2604.08692) and the Beauchamp/Jirovská/Gauthier/Wehner
+  modular architecture (arXiv 2503.12582) are entered below as new
+  fence debts. **Unlooked-for:** the "skip" — a delivered packet that
+  arrives while the consumer is still in LOCC is discarded — is a
+  cause-tagged terminal (stranded-by-consumer-busy) of exactly the kind our
+  taxonomy names; and the acknowledgement records that "Claude Opus 4.6
+  co-developed simulations," an AI-collaboration disclosure in a Wehner-
+  group paper, relevant to our G6 disclosure norm.
 
 ### arXiv 2607.19849 — Distributed Entanglement Distribution Using Multiple Entanglement Sources in WDM-based Quantum Optical Networks
 *Agrawal, Dulta, Kanseri. Submitted 2026-07-22.*
-- **status:** UNREAD (abstract read 2026-07-25; the paper itself is the debt)
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
 - **touches:** Q5, fence
 - **would change:** Multi-source WDM entanglement distribution over multi-hop
   repeaterless mesh, with heterogeneous demands differentiated by required ebit
@@ -461,37 +525,43 @@ entry — see note.*
   no aging in place. It is flow allocation, not a cold chain. If the paper turns
   out to model any holding time, the fence needs re-examining, and that check is
   the reason this entry exists.
-
----
-
-*Sweep of 2026-08-03 (second scheduled run). Window: submissions/revisions
-2026-07-25 through 2026-08-03, query table run against quant-ph primarily,
-cs.NI/cs.OS/physics.optics secondary. **Provenance caveat:** direct arXiv
-access (WebFetch, and curl to export.arxiv.org) is blocked outright by this
-session's network egress policy — confirmed via repeated 403s and the local
-proxy's own relay log ("gateway answered 403 to CONNECT", host
-`export.arxiv.org:443`), not a transient failure. Per the proxy's own
-instructions, a policy denial is reported, not routed around. All candidate
-identification and abstract-level reading this sweep was therefore done
-through the WebSearch tool, which fetches and paraphrases page content
-server-side rather than through this session's blocked egress path;
-technical phrasing repeated verbatim across independent queries was treated
-as a reliable proxy for the abstract, but this is one step further from the
-primary than the previous sweep's direct abstract reads. Two candidates were
-checked against the query table and rejected as non-hits: arXiv 2607.25501
-("Automated discovery of high-probability heralded schemes for path-entangled
-states", submitted 2026-07-28) raises heralding *success probability* via
-automated linear-optics circuit search but reports no failure-cost or
-blocking data, so it does not answer Q4's threshold; arXiv 2607.28572
-("Quantum Fidelity-per-Cost: A Metric for Evaluation of Quantum Computing
-Systems") is a cross-provider cost/fidelity benchmarking metric for cloud QPU
-access with no networked-entanglement or custody content — a metrics-paper
-foil in the same shape as last sweep's excluded 2607.05642.*
+- **disposition:** **Fence stands — admission and quality-typed demands
+  are present, custody is absent because time is absent. Q5: concurrency
+  lives in the spectrum, confirmed, with a real per-source heterogeneity
+  datum.** The model is an incremental-traffic simulation: demands
+  Q{a, b, V_q, R_q} "of infinite holding times arrive randomly"; each is
+  routed on a min-loss path, an EPPS is selected or placed (one-photon /
+  both-photon / hybrid schemes; placement by betweenness centrality and
+  dominant sets), and a wavelength pair is first-fit assigned only if the
+  delivered ebit rate and visibility clear the demand's thresholds after
+  loss (visibility falls with path loss through the accidental term,
+  Eq. 5); otherwise the demand is blocked. So: admission (accept/block)
+  against demands typed by (rate, visibility) — yes; perishable good — no,
+  there is no time axis at all (holding times infinite, degradation is
+  with distance and hops, never with age), so nothing is held, ages, or is
+  reclaimed. Memoryless and repeaterless as the abstract said; the
+  "entanglement receiver" may be "a quantum transducer and quantum memory
+  module" but everything downstream of detection is declared out of
+  scope. Two of the fence's three parts without the third is the
+  flow-allocation shape, not the cold chain. **Q5:** links-per-endpoint
+  are set by wavelength pairs (3 or 5 per source; six 3-pair or four 5-pair
+  sources fill the C-band) through a per-node 1×K WSS array; no switch
+  radix or reconfiguration-granularity measurement — a simulation over a
+  node architecture, so Q5's hardware ask stays open, but the sweep's
+  suspicion is confirmed: in WDM distribution the concurrency question is
+  spectral, not port-level. **Unlooked-for, for the provocation:** the
+  measured source (Fig. 2, Table II) shows that wavelength pairs *from the
+  same SPDC source* differ in both rate (21.4k/29.7k/33.8k cps) and
+  visibility (85/87/93%), and the paper builds demand-aware assignment on
+  that heterogeneity — offers from one source are not fungible even at
+  the source. Citable as hardware-characterised support for "equal
+  nominal source, different offer quality," a memoryless neighbour of the
+  typed-offer claim.
 
 ### arXiv 2607.18387 — Remote entanglement need not be the bottleneck for modular trapped-ion quantum computing
 *Knollmann, Nadlinger, Blue, Corsetti, Bishop, Martinez, Notaros, Bruzewicz,
 McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
-- **status:** UNREAD (abstract read via search 2026-08-03, see provenance
+- **status:** READ 2026-09-18 (primary read by this thread: abstract, Secs. I, III, V, VI-A and App. C in full, Sec. IV and Apps. A/B skimmed; PDF + text in `docs/references/`)
   caveat above; the paper itself is the debt)
 - **touches:** Q5 — and *possibly* Q4, Q1
 - **would change:** Our Q5 threshold (links-per-module = 1 vs > 1) is
@@ -531,6 +601,188 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
   still the debt. (Egress note: the scheduled job now has *.arxiv.org
   access, so future sweeps read abstracts directly and this caveat class
   should not recur.)
+- **disposition:** **Q5: links-per-module > 1, by design and by number
+  — but as a projected architecture, not a demonstration. Q4 and Q6 each
+  get a projected datum. Fence not touched.** The module is a
+  surface-electrode QCCD trap with integrated optics hosting C parallel
+  "Bell factory" channels (six zones and two junctions each, 0.84 mm² per
+  channel, 858 s⁻¹ distilled per channel at 99.9% projected); Table I sizes
+  C at 2–850 channels per module depending on code scheme and syndrome
+  cycle. Each channel has *its own* photonic interference network at the
+  central station, "which enable independent M-module connectivity maps on
+  each of the C channels" — so the architecture's answer to Q5 is: many
+  simultaneous links per module, one per channel, each independently
+  routable. Reconfiguration granularity (App. C, Table V): per channel, an
+  active depth-log₂M butterfly switch network connects all M/2 pairs
+  simultaneously; a passive symmetric multiport connects one pair at a
+  time; on the drive side "each channel in a module requires one switch
+  per wavelength to gate module participation in that entanglement
+  cycle." The packing gain the sweep asked about is *within* a module
+  (channels tile the trap because 0.4 NA grating couplers cover
+  0.0015 mm² of a 0.14 mm² zone), not just across modules. This is the
+  strongest Q5 evidence in the queue, with the caveat that every number
+  is a projection from demonstrated components (Table III), not a
+  measured radix. **Q4 (projected):** the fast loop simply repeats
+  attempts of t_cycle = 237 ns (π-pulse, 12τ, decision, excitation and
+  detection latencies at < 8 m); failure-to-next-attempt is one cycle
+  with nothing destroyed — but the paper also proposes "discarding a raw
+  pair whose partner is not heralded within a set time" to bound phase
+  excursion, i.e. a retain-then-release rule with a time cut, at "a small
+  rate cost." A finite entanglement buffer (N_buf = 4) produces a 13.3%
+  buffer-starvation skip fraction — a held-good stall cost, modelled.
+  **Q6 (analytical):** Table V and App. C price switch actuation in
+  *fidelity*: an active network "accrues infidelity due to crosstalk at
+  each switch crossing a live line," p_false = n_X·ε_X, whereas the
+  passive multiport has none — the first entry in the queue where a
+  fabric's reconfigurability is charged against the good's quality rather
+  than against time or power. No duty-cycle or wear figure. **Q1:**
+  herald rate 7.7×10³ s⁻¹ at p_herald = 0.18% is a projection; no cadence
+  distribution. **Fence:** an architecture perspective — buffers and
+  pipelines, no admission, no custody record; drift is made common-mode
+  by distilling within a channel. Relevant to the HotOS "heterogeneous
+  quantum computer" frame as the modular-ion pole of the design space.
+
+### arXiv 2608.09364 — Quantum-Classical Coexistence Network Tomography
+*Wang, Chapman, Ramaswamy, Guedes de Andrade, Chen, Lukens, Vardoyan, Towsley. Submitted 2026-08-10.*
+- **status:** READ 2026-09-18 (primary read by this thread: abstract, Secs. I, II, VI-A/B and the Table I emulation results in full, Secs. III–V skimmed; PDF + text in `docs/references/`)
+- **touches:** Q2
+- **would change:** Q2 asks whether the instantaneous gap between
+  calibration-published and true fidelity is large enough to be OS-visible.
+  This paper builds a tomography framework that infers per-link channel
+  parameters of a fibre-shared quantum-classical network from end-to-end
+  measurements, and on single-link testbed data reports estimated process
+  fidelities "closely tracking the Bayesian-process-tomography baseline...
+  residual gaps reflect the depolarization-only approximation." If those
+  residual gaps are read against the full paper and turn out small relative
+  to scheduler decision resolution, that weakens the case for carrying a
+  calibration-uncertainty field at all; if large or systematic, it ratifies
+  Q2's premise that a calibration-published number needs an attached
+  uncertainty (and age) before the OS can trust it.
+- **disposition:** **Q2: premise ratified structurally, threshold still
+  unmeasured. Unlooked-for: an epistemic-admission cost law.** The paper
+  infers per-link (loss q, success s, depolarization d^(0,1,2)) of
+  fibre-shared quantum-classical links from end-to-end counts, validated on
+  the Chapman et al. single-link dataset (0.5/5/15 km, 91 C-band
+  wavelengths). What it gives Q2: (i) the "published" per-link number is
+  model-dependent and its error is *per-link and systematic* — on the 5 km
+  link the depolarizing-only estimator returns ŝ ≈ 0.06 against a BPT
+  truth of 0.0015, and the authors say the QLT–BPT process-fidelity gap
+  "reflects the off-depolarizing (coherent/non-unital) weight that the
+  depolarizing model cannot represent" (Fig. 6; the gap is not tabulated
+  as a scalar in the text, so no threshold number can be lifted); (ii) the
+  same physical link carries different depolarization depending on which
+  way the co-scheduled classical traffic runs — Table I at 1555 nm:
+  d^(1) = 0.03/0.17/0.34 vs d^(2) = 0.10/0.33/0.59 at 0.5/5/15 km — so a
+  link's quality is a function of the network's other traffic, not a
+  property of the link; (iii) estimator bias and variance are
+  characterised (§IV), which is the "published uncertainty" half of Q2's
+  ask, but on emulated multi-link networks built from copies of one
+  measured link, since "no multi-link coexistence testbed yet exists." No
+  age dimension: drift is removed by a deterministic correction before
+  tomography, so nothing here speaks to freshness. Q2's threshold (is the
+  instantaneous published-vs-true gap OS-visible?) therefore remains open
+  in the sense the question means; what is now citable is that the gap is
+  model-structured, link-specific, and traffic-direction-dependent. **For
+  the second admission rule ("how can the runtime know it, at what
+  cost"):** Fig. 13 reports that the sample size needed to recover per-link
+  parameters from end-to-end probes "grows super-exponentially with
+  network depth" — a measured (simulated) cost law for the runtime's
+  knowledge of a field, exactly the quantity the epistemic-admission gate
+  asks for and the first such number in the queue. Fence: not touched.
+
+---
+
+## Open (UNREAD)
+
+---
+
+*Debts raised by a first-hand read, not by a sweep (2026-09-18). While
+discharging arXiv 2608.20954 this thread found that the Arqon architecture
+carries a demand tuple with a coherence window, a session expiry and a
+service probability as separate fields. Whether those two dates are
+co-enforced at consumption with per-good custody, or folded at admission
+(the SeQUeNCe shape the matrix already fenced), decides fence item 3 and
+cannot be settled from 2608.20954. Abstracts read 2026-09-18 from
+arxiv.org/abs; the papers are the debt. Read together; Arqon builds on the
+Beauchamp architecture.*
+
+### arXiv 2604.08692 — Arqon: A suite of control applications enabling a reliable quantum network
+*Gauthier, Beauchamp, Wehner. Submitted 2026-04-09.*
+- **status:** UNREAD (abstract read 2026-09-18; the paper itself is the debt)
+- **touches:** fence (item 3: two dates co-enforced; item 2: custody with
+  cause-tagged terminals)
+- **would change:** The abstract claims admission control (O(k³) in
+  incoming demands) and schedule computation for "accepted demands" with
+  "reliability requirements that extend classical computer network
+  concepts to quantum network service delivery." Per 2608.20954, each
+  demand is d = (p; t_minsep; t_expiry; N_inst; ε_service), p = (w, s, F):
+  a physical window w and an institutional expiry both present. If Arqon
+  enforces w at packet generation *and* t_expiry at schedule construction
+  as independent constraints — and especially if it records why an
+  accepted demand's packets failed (window expired vs. skipped vs.
+  generation failed) — then the fence's "two dates co-enforced" and
+  "cause-tagged terminals" cells have a Wehner-group occupant and §12 of
+  both papers must be rewritten against it. If instead the window is
+  consumed at admission into a fixed PGA length E(p) and only the expiry
+  survives to runtime, the fence holds with a sharper wording. Whoever
+  pays this debt should read the demand lifecycle and the definition of
+  "reliability requirements" first, and check whether anything is held
+  across PGAs.
+- **mapping note:** static topologies only (abstract). Not a hardware
+  paper; Q1–Q7 not mapped.
+
+### arXiv 2503.12582 — A Modular Quantum Network Architecture for Integrating Network Scheduling with Local Program Execution
+*Beauchamp, Jirovská, Gauthier, Wehner. Submitted 2025-03-16.*
+- **status:** UNREAD (abstract read 2026-09-18; the paper itself is the debt)
+- **touches:** fence (item 3), and the HotOS "typed offers" provocation
+- **would change:** Defines the *entanglement packet* "to meet application
+  requirements on near-term quantum networks where the lifetimes of the
+  qubits stored at the end nodes are limited" — the object that carries w.
+  If the packet definition types its links beyond (count, min-fidelity,
+  window) — by carrier, cardinality, or residue — the HotOS abstract's
+  "current model of (endpoint, fidelity, time) tuples" sentence is
+  false as written and must name this packet as the nearest neighbour.
+  If it is exactly (s, F, w), the sentence is ratified with a citation.
+  Also states "robust admission control is required to maintain quality
+  of service" — read for what QoS is measured against and whether
+  anything is booked by cause at expiry.
+- **mapping note:** predates the question list; queued now because
+  2608.20954 makes it load-bearing for the fence. Simulated 6-node star.
+
+*Sweep of 2026-07-25 (first run, fired manually to validate the routine). The
+sweep found these two and correctly excluded arXiv 2607.16394 (condensed-matter
+"entanglement entropy" — the vocabulary trap the protocol names) and arXiv
+2607.05642 (metrics taxonomy, no data answering any threshold). Its own commit
+was stranded in an ephemeral cloud checkout with read-only credentials; these
+entries were rewritten locally from the arXiv abstracts read first-hand, not
+transcribed from the sweep's summary. Question mapping revised on the first
+entry — see note.*
+
+---
+
+*Sweep of 2026-08-03 (second scheduled run). Window: submissions/revisions
+2026-07-25 through 2026-08-03, query table run against quant-ph primarily,
+cs.NI/cs.OS/physics.optics secondary. **Provenance caveat:** direct arXiv
+access (WebFetch, and curl to export.arxiv.org) is blocked outright by this
+session's network egress policy — confirmed via repeated 403s and the local
+proxy's own relay log ("gateway answered 403 to CONNECT", host
+`export.arxiv.org:443`), not a transient failure. Per the proxy's own
+instructions, a policy denial is reported, not routed around. All candidate
+identification and abstract-level reading this sweep was therefore done
+through the WebSearch tool, which fetches and paraphrases page content
+server-side rather than through this session's blocked egress path;
+technical phrasing repeated verbatim across independent queries was treated
+as a reliable proxy for the abstract, but this is one step further from the
+primary than the previous sweep's direct abstract reads. Two candidates were
+checked against the query table and rejected as non-hits: arXiv 2607.25501
+("Automated discovery of high-probability heralded schemes for path-entangled
+states", submitted 2026-07-28) raises heralding *success probability* via
+automated linear-optics circuit search but reports no failure-cost or
+blocking data, so it does not answer Q4's threshold; arXiv 2607.28572
+("Quantum Fidelity-per-Cost: A Metric for Evaluation of Quantum Computing
+Systems") is a cross-provider cost/fidelity benchmarking metric for cloud QPU
+access with no networked-entanglement or custody content — a metrics-paper
+foil in the same shape as last sweep's excluded 2607.05642.*
 
 ---
 
@@ -593,41 +845,6 @@ absorb-store-teleport cycle via quantum process tomography — no repeated-
 readout wear data and no networked/scheduling content, so it does not answer
 Q3 or any other threshold.*
 
-### arXiv 2608.20954 — Tools for Reducing Service Time in Near-Term Quantum Networks
-*Smith, Beauchamp, Gauthier, Bouchmal, Wehner. Submitted 2026-08-21.*
-- **status:** UNREAD (abstract read 2026-08-24; the paper itself is the debt)
-- **touches:** Q1, Q4 — and *possibly* Q6
-- **would change:** Our Q4 in-place-herald-retry threshold (failure-to-next-
-  attempt cycle time vs deadline slack) and Q1's operational quantile ask
-  (is the upper-tail configuration-plus-generation latency small enough
-  that a replenishment completes before its reserve margin expires?) are
-  both currently answered only by invented numbers in our simulator. This
-  paper's entire object is the same quantity from the other direction: the
-  abstract states that existing multi-user entanglement architectures
-  insert "fixed separations between consecutive batches of entanglement
-  generation attempts" after failures, that this separation leaves the
-  network "idle" when attempts fail, and that their method shortens it
-  "while respecting hardware constraints," using an analytical execution
-  model evaluated within the Arqon architecture (service-time reductions of
-  up to 7.6% single-application, 26-30% co-scheduled). If the full paper's
-  execution model exposes the actual minimum safe separation and what
-  hardware constraint floors it, that could replace our invented
-  failure-to-next-attempt figure and settle whether our simulator's
-  retain-and-retry vs release-and-reacquire asymmetry (Q4) is physics-earned
-  or just a design choice. *Possibly* Q6: "respecting hardware constraints"
-  when shortening the separation is an explicit claim that some constraint
-  bounds achievable cadence, but the abstract does not name the constrained
-  resource (thermal, calibration, controller traffic, or something else),
-  so whether it ratifies Q6's "does an actuation/reservation consume ANY
-  constrained resource" ask is inference pending the full read.
-- **mapping note:** the paper is framed as a scheduling/service-time
-  optimization over an existing hardware-constrained separation, not as a
-  hardware characterization paper — so the debt is whether its analytical
-  execution model contains a hardware-measured (vs assumed) cycle-time
-  distribution. Whoever pays this debt should check whether the "hardware
-  constraints" the abstract references are cited to a measurement or
-  simply asserted.
-
 ---
 
 *Sweep of 2026-08-17 (third scheduled run). Window: submissions 2026-08-03
@@ -657,23 +874,6 @@ per-module/per-port reconfiguration-granularity ask. arXiv 2608.04476
 Interferometry") uses "heralding" for a continuous-variable metrology
 protocol, not networked entanglement generation, and reports no
 failure-cost or blocking data against Q4's threshold.*
-
-### arXiv 2608.09364 — Quantum-Classical Coexistence Network Tomography
-*Wang, Chapman, Ramaswamy, Guedes de Andrade, Chen, Lukens, Vardoyan, Towsley. Submitted 2026-08-10.*
-- **status:** UNREAD (abstract read 2026-08-17; the paper itself is the debt)
-- **touches:** Q2
-- **would change:** Q2 asks whether the instantaneous gap between
-  calibration-published and true fidelity is large enough to be OS-visible.
-  This paper builds a tomography framework that infers per-link channel
-  parameters of a fibre-shared quantum-classical network from end-to-end
-  measurements, and on single-link testbed data reports estimated process
-  fidelities "closely tracking the Bayesian-process-tomography baseline...
-  residual gaps reflect the depolarization-only approximation." If those
-  residual gaps are read against the full paper and turn out small relative
-  to scheduler decision resolution, that weakens the case for carrying a
-  calibration-uncertainty field at all; if large or systematic, it ratifies
-  Q2's premise that a calibration-published number needs an attached
-  uncertainty (and age) before the OS can trust it.
 
 ---
 

@@ -690,6 +690,124 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
   knowledge of a field, exactly the quantity the epistemic-admission gate
   asks for and the first such number in the queue. Fence: not touched.
 
+### arXiv 2604.21388 — Bayesian Phase Stabilization at the Shot-Noise Limit for Scalable Quantum Networks
+*Liu, Xue, Chen, Zheng, Yang, Li, Wang, Yang, Jiang, Wan, Wang, Chen, Zhang, Pan. Submitted 2026-04-23; revised (v2) 2026-09-09.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** Q6 — and *possibly* Q1
+- **would change:** Our Q6 threshold (does an actuation/reservation consume
+  ANY constrained resource at the relevant rate) is currently unanswered by
+  hardware data for any budgeted-resource class. This paper reports a
+  phase-stabilization protocol for trapped-ion memory nodes bounded to "a
+  duty cycle less than 6.5%" specifically "to avoid disturbing fragile
+  quantum states," and states the resulting memory-memory entanglement at
+  10 km "survives beyond the average time required to establish it." If the
+  full paper's duty-cycle bound is a hardware-imposed limit (not a chosen
+  operating point) that generalizes to other near-memory operations
+  including switch actuation, it would give Q6 its first real number for a
+  constrained-resource class of exactly the kind the question names
+  (duty-cycle limit tied to avoiding quantum-state disturbance). *Possibly*
+  Q1: the "survives beyond the average time required to establish it" claim
+  mirrors Q1's replenishment-vs-reserve-margin quantile ask — if the full
+  paper reports the actual generation-cadence distribution against memory
+  lifetime (not just one favorable comparison), it could supply a first
+  real number there too.
+- **mapping note:** the duty-cycle figure governs phase-stabilization probe
+  pulses on trapped-ion nodes, not photonic switch-fabric actuation — a
+  close analog to Q6's ask, not a verbatim answer, so Q6 is primary but not
+  yet a direct hit until the full paper is read for whether the constraint
+  generalizes. Q1 rests on one comparative sentence in the abstract, not a
+  reported cadence distribution, so it is marked possible. This is a v2
+  revision of an April 2026 submission (predating this project's question
+  list); it is queued now because the revision date falls in this sweep's
+  window and the paper was not previously discharged or queued.
+- **disposition:** **Q6: first measured budget for a rationed actuation
+  class — calibration traffic on matter nodes, not switch actuation. Q1
+  withdrawn.** The duty-cycle bound is hardware-imposed in the sense Q6
+  asks: "strong phase-reference light cannot be injected during active qubit
+  operations, restricting phase probes to experimental dead times (e.g.,
+  during extended cooling)" — the probe is confined to the cooling window of
+  the ion sequence (65 µs of a 500 µs cycle at 10 km, 95 of 800 µs at 100 km,
+  probe pulses at 50% duty inside that window ⇒ ≤ 6.5%). Two further
+  photon-budget ceilings are stated with their mechanisms: WDM reference
+  ≈ 2 MHz/detector to avoid Raman noise into the quantum channel; TDM probe
+  < 600 kHz/detector to avoid re-Rayleigh scattering. And the budget is
+  *swept*, which is what makes it a Q6 datum rather than an operating point:
+  Fig. 3(c) shows shot-noise-limited tracking held down to 2% duty cycle,
+  with phase-unlocking events only below 0.1%. So for this resource class the
+  answer to "is the actuation rationed, and at what rate" is: yes, to dead
+  time; usable floor ≈ 2%; failure below 0.1%; the rationing exists to
+  protect the held quantum state. **Scope limit:** this is
+  phase-reference/calibration traffic interleaved with the quantum signal on
+  trapped-ion nodes. Whether a photonic switch reconfiguration is rationed
+  by the same "do not disturb the held state" mechanism is *not* shown and
+  should not be inferred — the disturbance channel differs. Cite as: the
+  first hardware instance in our queue of an actuation budget imposed by
+  state-protection, for one class. **Q1:** the abstract's "survives beyond
+  the average time required to establish it" is one comparative sentence;
+  no generation-cadence distribution appears in the main text (supplement
+  not read — refs [31] only), so Q1's quantile ask is unanswered. Fence:
+  not touched (a physics-layer stabilization result).
+
+### arXiv 2609.11359 — Engineering Quantum Links: Noise and Quantum-State-Degradation Metrics over Metropolitan Fiber Network
+*Caleffi, d'Avossa, Cacciapuoti. Submitted 2026-09-10.*
+- **status:** READ 2026-09-18 (primary read in full by this thread; PDF + text in `docs/references/`)
+- **touches:** Q7 — and *possibly* Q2
+- **would change:** This paper builds quantum-network analogs of classical
+  link-budget metrics (a photon-counting SINR and a BER) on a 7.3 km deployed
+  metropolitan fiber loop, and explicitly quantifies, for each of
+  polarization/time/frequency encodings, "the channel-induced degradation
+  and its drift over time." If the full paper's drift measurements yield an
+  autocorrelation time or comparable timescale, that is a direct,
+  hardware-measured answer to Q7's persistence-vs-lead-time threshold — from
+  a deployed link rather than a lab bench. *Possibly* Q2: the paper's stated
+  goal is a small set of measurable parameters that "turn quantum networking
+  over deployed fiber... into an engineering design problem," adjacent to
+  Q2's calibration-published-vs-true-fidelity gap, but the abstract
+  characterizes one link over time, not a cross-sectional spread across
+  simultaneously available paths, so a Q2 reading is inference.
+- **mapping note:** this is a single deployed link measured over time, not
+  multiple simultaneously available paths — the same distinction the queue
+  already draws for arXiv 2608.07163 between Q7's temporal-persistence
+  framing and Q2's instantaneous-spread framing. Whoever pays this debt
+  should check Q7 first.
+- **disposition:** **Q7: a measured persistence law on a deployed
+  metro link — and it lands on the "not a ghost" side, at hours, with a
+  caveat the authors state themselves. Q2 withdrawn.** For polarization the
+  paper reports the autocorrelation of the reconstructed Stokes direction,
+  C(t) = exp[−B t^α], with pairwise fidelity F_pair = (1 + C)/2 (Sec. V.A,
+  Table 5): deployed 7.3 km loop B = 5.1×10⁻² h^−α, α = 1.19, giving
+  F_pair(1 h) = 0.975 and F_pair(14 h) = 0.654; the lab spools stay above
+  0.996 at 14 h. For timing, RMS delay drift = σ₁ₕ t^β with the deployed loop
+  at 26.9 ps·t^0.31 (60 ps at 14 h) and, counter-intuitively, the 5 km lab
+  spool worst at 94.5 ps (163 ps at 14 h). Frequency: no measurable
+  propagation-induced shift. **Reading for Q7:** at OS-actionable lead times
+  (ms–s) a deployed buried link's polarization quality is essentially
+  persistent; the decorrelation that forces recompensation is an hours-scale
+  process. That argues against the "chasing a ghost" failure mode for
+  comparative routing on this route class. The authors' own caveats bind:
+  the deployed-loop α > 1 (accelerating decorrelation) rests on two
+  campaigns with limited full-route coincidence statistics and "calls for
+  confirmation"; parameters are "route-class specific rather than a
+  universal fiber-length law." **Rank-inversion, unlooked-for:** the paper's
+  headline is that impairment ordering is set by environmental exposure,
+  not length — the same three links rank differently by degree of freedom
+  (5 km spool most polarization-stable, least timing-stable; buried loop the
+  reverse). That is a *cross-sectional* rank observation across three
+  concurrently measured channels, but on lab-vs-deployed foils, not on
+  simultaneously available *paths* of one fabric, so Q2's spread threshold
+  is still not answered — mapping withdrawn as the sweep suspected.
+  **Maintenance economy:** the paper's stated deliverable is "the
+  recalibration rates that a deployed fiber used as quantum link demands"
+  (Eq. 7 resync rule; polarization-compensation update interval from
+  F_pair) — recalibration as a dimensioned, recurring cost, from the
+  hardware side. Citable for §maintenance as a link-budget framing. **Watch
+  item for the fence:** Appendix A.A names "the NeQOS (Networked Quantum
+  Operating System) software platform, which provides automated control,
+  monitoring, synchronization, and data acquisition" for the testbed, ref.
+  [29] "manuscript in preparation" (Caleffi & Cacciapuoti 2026). A Naples
+  "quantum operating system" paper is coming; when it appears it is a
+  mandatory fence read.
+
 ---
 
 ## Open (UNREAD)
@@ -965,56 +1083,3 @@ Discharged, no quantum state survives a scheduling decision. arXiv
 in this window's searches but was already checked and rejected by the
 2026-09-07 sweep; not re-litigated.*
 
-### arXiv 2609.11359 — Engineering Quantum Links: Noise and Quantum-State-Degradation Metrics over Metropolitan Fiber Network
-*Caleffi, d'Avossa, Cacciapuoti. Submitted 2026-09-10.*
-- **status:** UNREAD (abstract read 2026-09-14; the paper itself is the debt)
-- **touches:** Q7 — and *possibly* Q2
-- **would change:** This paper builds quantum-network analogs of classical
-  link-budget metrics (a photon-counting SINR and a BER) on a 7.3 km deployed
-  metropolitan fiber loop, and explicitly quantifies, for each of
-  polarization/time/frequency encodings, "the channel-induced degradation
-  and its drift over time." If the full paper's drift measurements yield an
-  autocorrelation time or comparable timescale, that is a direct,
-  hardware-measured answer to Q7's persistence-vs-lead-time threshold — from
-  a deployed link rather than a lab bench. *Possibly* Q2: the paper's stated
-  goal is a small set of measurable parameters that "turn quantum networking
-  over deployed fiber... into an engineering design problem," adjacent to
-  Q2's calibration-published-vs-true-fidelity gap, but the abstract
-  characterizes one link over time, not a cross-sectional spread across
-  simultaneously available paths, so a Q2 reading is inference.
-- **mapping note:** this is a single deployed link measured over time, not
-  multiple simultaneously available paths — the same distinction the queue
-  already draws for arXiv 2608.07163 between Q7's temporal-persistence
-  framing and Q2's instantaneous-spread framing. Whoever pays this debt
-  should check Q7 first.
-
-### arXiv 2604.21388 — Bayesian Phase Stabilization at the Shot-Noise Limit for Scalable Quantum Networks
-*Liu, Xue, Chen, Zheng, Yang, Li, Wang, Yang, Jiang, Wan, Wang, Chen, Zhang, Pan. Submitted 2026-04-23; revised (v2) 2026-09-09.*
-- **status:** UNREAD (abstract read 2026-09-14; the paper itself is the debt)
-- **touches:** Q6 — and *possibly* Q1
-- **would change:** Our Q6 threshold (does an actuation/reservation consume
-  ANY constrained resource at the relevant rate) is currently unanswered by
-  hardware data for any budgeted-resource class. This paper reports a
-  phase-stabilization protocol for trapped-ion memory nodes bounded to "a
-  duty cycle less than 6.5%" specifically "to avoid disturbing fragile
-  quantum states," and states the resulting memory-memory entanglement at
-  10 km "survives beyond the average time required to establish it." If the
-  full paper's duty-cycle bound is a hardware-imposed limit (not a chosen
-  operating point) that generalizes to other near-memory operations
-  including switch actuation, it would give Q6 its first real number for a
-  constrained-resource class of exactly the kind the question names
-  (duty-cycle limit tied to avoiding quantum-state disturbance). *Possibly*
-  Q1: the "survives beyond the average time required to establish it" claim
-  mirrors Q1's replenishment-vs-reserve-margin quantile ask — if the full
-  paper reports the actual generation-cadence distribution against memory
-  lifetime (not just one favorable comparison), it could supply a first
-  real number there too.
-- **mapping note:** the duty-cycle figure governs phase-stabilization probe
-  pulses on trapped-ion nodes, not photonic switch-fabric actuation — a
-  close analog to Q6's ask, not a verbatim answer, so Q6 is primary but not
-  yet a direct hit until the full paper is read for whether the constraint
-  generalizes. Q1 rests on one comparative sentence in the abstract, not a
-  reported cadence distribution, so it is marked possible. This is a v2
-  revision of an April 2026 submission (predating this project's question
-  list); it is queued now because the revision date falls in this sweep's
-  window and the paper was not previously discharged or queued.

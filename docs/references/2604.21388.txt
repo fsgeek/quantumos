@@ -1,0 +1,707 @@
+Bayesian Phase Stabilization at the Shot‑Noise Limit for Scalable Quantum Networks
+Guang-Cheng Liu,1, 2, 4 Chao-Hui Xue,1, 2, 3 Fa-Xi Chen,2, 3 Ming-Yang Zheng,2, 3 Yi
+Yang,1, 2, 3 Li-Bo Li,3 Bin Wang,3 Bo-Wen Yang,1, 2, 4 Hai-Feng Jiang,1, 2, 4 Yong
+Wan,1, 2, 4 Ye Wang,1, 2, 4 Jiu-Peng Chen,2, 3 Qiang Zhang,1, 2, 3, 4 and Jian-Wei Pan1, 2, 4
+1
+
+arXiv:2604.21388v2 [quant-ph] 9 Sep 2026
+
+Hefei National Research Center for Physical Sciences at the Microscale and School of Physical Sciences,
+University of Science and Technology of China, Hefei, Anhui 230026, China
+2
+Hefei National Laboratory, University of Science and Technology of China, Hefei, China
+3
+Jinan Institute of Quantum Technology and CAS Center for Excellence in Quantum Information and Quantum Physics,
+University of Science and Technology of China, Jinan 250101, China
+4
+Shanghai Research Center for Quantum Science and CAS Center
+for Excellence in Quantum Information and Quantum Physics,
+University of Science and Technology of China, Shanghai, China
+High-precision optical phase stabilization in quantum networks is fundamentally constrained by
+the strict photon-flux and duty-cycle limits required to avoid disturbing fragile quantum states.
+This challenge becomes especially critical when coordinating multiple independent light sources
+for multi-step quantum protocols. Here, we develop an integrated phase-stabilization framework
+that incorporates a Bayesian phase estimator to optimally extract information from sparse singlephoton detection events. This approach outperforms conventional maximum-likelihood estimation
+and achieves the shot-noise limit under minimal photon flux. The framework enables real-time
+correction of combined phase noise from both nodal lasers and transmission fibers, facilitating a
+two-step excitation protocol for heralded entanglement generation between separate trapped-ion
+nodes via single-photon interference. Operating with a detected photon rate of ∼1 MHz and a duty
+cycle ≤ 6.5%, the system maintains interferometric visibility > 97% over fiber links of 10 km and
+100 km. This phase control yields long-lived ion-ion entanglement with parity contrast exceeding
+85%, enabling device-independent quantum key distribution with finite-size security analysis over
+10 km and a positive asymptotic key-rate over 100 km. Moreover, the resulting memory-memory
+entanglement at 10 km survives beyond the average time required to establish it—a fundamental
+requirement for quantum repeaters. This work establishes a robust and scalable foundation for
+practical long-distance quantum networks.
+
+Introduction.— High-precision optical phase coherence
+between distant nodes is essential for large-scale quantum networks [1–3], as it enables high-visibility singlephoton interference for eﬀicient interconnection [4–6]. A
+prevailing strategy to establish and maintain such coherence involves interleaving faint reference pulses with
+quantum signals for active phase tracking [7–16]. This
+technique has substantially advanced all-optical quantum secure communication systems, notably achieving
+twin-field quantum key distribution [6] over distances exceeding 1000 km [17]. However, extending these methods to matter‑based nodes—such as trapped ions [18–20],
+single atoms [12, 21], atomic ensembles [11, 22], or solidstate defects [13, 23, 24]—presents unique challenges.
+Protocols employing matter nodes typically involve intricate pulse sequences for qubit manipulation, which
+severely restrict the optical duty cycle and force any
+interleaved reference pulses to be temporally sparse
+to avoid qubit decoherence [11–13, 15, 16]. Operating with these references at the single-photon level—
+a common practice in all-optical systems—imposes a
+stringent photon‑budget constraint on phase estimation. In such photon-starved regime, conventional maximum‑likelihood estimation (MLE) [25] faces a fundamental precision–delay trade‑off: rapid sampling is limited by shot noise, while extended integration accumu-
+
+lates unbounded phase diffusion from environmental disturbances. This challenge is acute in multi-step protocols [15, 26] that must track combined phase evolution from multiple independent lasers while preserving
+qubit coherence. As a result, current implementations
+involving matter nodes often resort to using bright classical references [11–13, 27]. Although this alleviates photon‑statistical limits, the requisite strong optical isolation introduces additional phase noise through auxiliary
+paths, ultimately limiting tracking accuracy and hindering overall scalability.
+In this work, we demonstrate an integrated phase
+stabilization framework that incorporates a Bayesian
+phase estimator. Our estimator optimally combines
+prior knowledge of phase-diffusion dynamics with sparse
+photon‑detection events, enhancing the effective Fisher
+information (FI) beyond that of conventional MLE.
+The framework actively corrects combined phase noise
+from both nodal lasers and transmission fibers, enabling
+a two-step excitation protocol for heralded entanglement generation between separate trapped-ion nodes
+via single-photon interference. Operating with weak
+phase‑reference probes (∼1 MHz photon flux) at low
+optical duty cycle (≤ 6.5%), the system maintains
+shot-noise limited performance with > 97% interferometric visibility over 10 km and 100 km fiber links.
+
+2
+This phase control yields deterministic ion-ion entanglement with parity contrast exceeding 85% at both distances, enabling device-independent quantum key distribution [15, 16, 19, 21, 28]. Moreover, the resulting
+memory-memory entanglement at 10 km persists longer
+than the average time required to establish it—a fundamental requirement for quantum repeaters [29].
+Bayesian Phase Estimation with FI Advantage.— We
+analyze phase tracking for a time-varying phase ϕ(τ ) in
+a Mach-Zehnder interferometer probed by weak coherent states. The mean photon counts at the output ports
+over integration time τ follow λ1,2 (ϕ) = N2 [1 ± V0 cos ϕ] ,
+where N = µτ is the mean photon number, µ is the photon flux, and V0 is the maximum interference visibility.
+Poisson-distributed counts λ1,2 yield classical FI:
+IF (ϕ) =
+
+N V02 sin2 ϕ
+.
+1 − V02 cos2 ϕ
+
+(1)
+
+At ϕ = π/2, IF = µV02 τ , setting the shot-noise limit
+(SNL) for static phase measurement.
+Phase diffusion, modeled as a Wiener process with
+⟨[δϕ(τ )]2 ⟩ = Dτ , fundamentally alters this scaling. Temporal averaging over τ reduces effective visibility to
+V (τ ) = V0 e−Dτ /2 . The average FI per measurement is
+then I¯F (τ ) = µV02 τ e−Dτ .
+Consequently, the estimation variance for conventional
+MLE is bounded by
+2
+σConv
+(τ ) ≳ eDτ /(µV02 τ ) + Dτ,
+
+(2)
+
+where the first term is the measurement error and the
+second is the diffusion-induced error. Minimizing over τ
+reveals an inescapable precision-delay trade-off.
+We overcome this limitation by incorporating prior
+knowledge within a recursive Bayesian framework. Under Gaussian assumptions for both prior and likelihood,
+the estimation variance evolves as [30]
+(
+)−1
+−2
+σk+1
+= σk2 + Dτ
++ Γτ e−Dτ ,
+(3)
+where the prior variance σk2 first degrades by diffusion
+and is then updated with the measurement FI. To ensure
+robustness against outliers, we implement a nonlinear innovation filter with a threshold multiplier κ, characterized by an eﬀiciency η(κ) ≈ 1 for typical κ ∈ [1, 1.5]. The
+steady-state variance then reaches the tracking SNL
+√
+)1/2
+(
+D
+D
+2
+σ∞ ≈
+.
+(4)
+=
+η(κ)Γ
+η(κ)µV02
+The prior-assisted FI, combining the stabilized prior
+2
+and new data, is IFprior = 1/(Dτ + σ∞
+). The corresponding estimation variance with prior assistance is bounded
+by
+2
+σBay
+(τ ) ≳
+
+1
+IFprior + I¯F
+
++ Dτ.
+
+Equation (5) reveals that persistent prior information
+breaks the conventional precision–delay trade-off. For
+the optimal choice of the shortest possible τ , the steady2
+state variance scales as σBay
+∝ µ−1/2 —the hallmark of
+2
+the SNL—in stark contrast to the σConv
+∝ µ−1 scaling of conventional MLE. While MLE variance diverges
+as τ → 0, the Bayesian estimator remains stable and
+achieves optimal SNL performance.
+As illustrated in Fig. 1, the Bayesian estimator
+achieves a lower phase variance than conventional
+MLE. This advantage is most pronounced in photon‑starved regimes where prior knowledge optimally
+supplements sparse measurement data. The recursive
+Bayesian estimator, stabilized by outlier rejection, maintains near‑optimal performance across operational bandwidths, enabling robust high‑fidelity phase stabilization
+(Supplemental Material [31] S1). Although our analysis assumes a Wiener diffusion model, the Bayesian
+framework extends naturally to power-law scaling noise
+while retaining its qualitative advantage over conventional MLE (Supplemental Material [31] S2.2).
+
+(5)
+
+FIG. 1. Phase stabilization performance comparison.
+Three‑dimensional representation of the residual phase variance as a function of measurement duration τ and photon
+flux µ for conventional MLE (pink surface) and prior‑assisted
+Bayesian estimation (blue surface). The orange dotted curve
+represents the phase‑diffusion noise floor (∝ Dτ ), and the
+pink dotted curve indicates the photon shot‑noise limit (∝
+(Γτ )−1 ), which sets the SNL for a static measurement. The
+black dashed curve shows the SNL for tracking a diffusing
+phase. The red solid line traces the minimum variance of conventional MLE, which scales as µ−1 and diverges as τ → 0.
+In contrast, the blue solid line traces the Bayesian estimator’s variance, which saturates at the SNL scaling µ−1/2 as
+τ → 0. The gray shaded region defines the FI-advantage
+regime, where Bayesian estimation outperforms conventional
+MLE, effectively mitigating the precision–delay trade‑off and
+enabling robust phase stabilization across operational bandwidths.
+
+Experiment.— The integrated phase-stabilization
+framework, as shown in Fig. 2a, features a dual-band architecture [32] incorporating two parallel Bayesian phase
+estimators to actively correct combined phase noise aris-
+
+3
+ing from both the nodal lasers and the long-haul transmission fibers. This architecture enables a two‑step excitation protocol for heralded entanglement generation
+via single‑photon interference [4, 5] between two independent trapped‑ion nodes (Alice and Bob). Each node
+traps a single 40 Ca+ ion in a blade trap, with a 3m free-space baseline between nodes. The 729-nm and
+854-nm qubit-control beams, together with the 527-nm
+frequency-conversion pump, are derived from common,
+ultra-stable laser sources with Hz-level linewidths. To
+emulate independent laser systems at the two nodes,
+these beams are delivered through separate 20-m fibers
+exposed to ambient acoustic and thermal fluctuations,
+which impart uncorrelated phase noise between the nodes
+(Supplemental Material [31] S2.6).
+The two‑step excitation protocol is executed synchronously at both nodes.
+Each cycle begins
+with extended Doppler and electromagnetically‑inducedtransparency cooling (>100 µs) to reduce atomic‑recoil
+errors, followed by optical pumping to initialize the ion
+in the |S1/2 , mJ = +1/2⟩ state. A resonant π‑pulse at
+729 nm then prepares the metastable |D5/2 , mJ = +5/2⟩
+state. A subsequent nanosecond pulse at 854 nm excites
+the ion to |P3/2 , mJ = +3/2⟩ with probability α. Spontaneous decay from the P3/2 state emits a 393 nm photon,
+generating an ion‑photon entangled state of the form [33]
+√
+√
+|Ψ⟩ = 1 − α|D, 0⟩ + αeiϕoper |S, 1⟩,
+(6)
+where ϕoper is the relative phase between the 729 nm and
+854 nm laser fields imprinted on the photon during the
+coherent excitation‑and‑decay process.
+The emitted 393‑nm photons are collected by
+high‑numerical‑aperture objectives(NA= 0.635), coupled
+into single‑mode fibers (SM300), and directed to a quantum‑frequency‑conversion (QFC) stage. There, the 393
+nm photons are converted to the telecom C‑band (1550
+nm) via difference‑frequency generation in a periodically‑poled lithium niobate (PPLN) waveguide, pumped
+by a 527 nm laser [34]. The telecom photons from
+both nodes are transmitted through variable‑length fiber
+spools (5 km or 50 km) to a central 50:50 fiber beam
+splitter at station Charlie. A successful Bell‑state measurement, identified by one and only one detection event
+across two complementary output ports using superconducting nanowire single‑photon detectors (SNSPDs),
+heralds entanglement between √
+the remote ions in the
+state |Ψ± ⟩ = (|DS⟩ ± eiθ |SD⟩)/ 2.
+The phase θ of the resulting entangled state is
+θ = ∆ϕoper + ∆ϕpaths .
+
+(7)
+
+B
+where ∆ϕoper = ϕA
+oper − ϕoper is the differential operational phase imprinted during the excitation pulses at
+Alice and Bob, and ∆ϕpaths = ∆ϕQFC + ∆ϕﬁber is the total path phase, comprising the phase difference of QFC
+pump (∆ϕQFC ) and the differential fiber propagation
+
+phase (∆ϕﬁber ). Simultaneous stabilization of both contributions is therefore essential for maintaining entanglement fidelity.
+The extended duration of the experimental sequence
+(Fig. 2b) creates a stringent phase‑stabilization challenge, manifesting as a precision–delay dilemma. To
+preserve the ions’ internal states, strong phase‑reference
+light cannot be injected during active qubit operations,
+restricting phase probes to experimental dead times (e.g.,
+during extended cooling). This constraint leads to competing noise sources: rapid sampling with a limited number of probe photons is shot‑noise limited, while extended
+integration times accumulate unbounded phase diffusion.
+This tension is further exacerbated by the need to track
+the combined phase evolution of the two independent
+laser fields (729 nm and 854 nm) used in the two‑step
+excitation process. To overcome this, we implement a
+dual-band stabilization architecture that targets distinct
+noise sources hierarchically using Bayesian estimators,
+which optimally extract phase information from scarce
+probe photons (Fig. 2a).
+For rapid fiber fluctuations, we inject a continuous‑wave 1548 nm auxiliary reference, attenuated to the
+single-photon level and multiplexed with the quantum
+channel via wavelength-division multiplexing (WDM).
+At Charlie, the reference is demultiplexed, polarizationpurified, and interfered at a dedicated 50:50 beam splitter, with detection by SNSPDs. To avoid injecting broadband noise into the quantum channel via nonlinear effects
+such as spontaneous Raman scattering [35], we maintain
+the reference photon flux at approximately 2 MHz per
+detector.
+For the overall residual phase (∆ϕoper + ∆ϕpaths ), we
+implement time‑division multiplexing (TDM) synchronized with the entanglement‑generation sequence. Weak
+393 nm phase‑probe pulses (duty cycle ≤ 6.5%) are interleaved during experimental dead times, particularly
+the extended cooling periods. Critically, these probes
+are generated via sum‑frequency generation in a PPLN
+waveguide using the identical 729 nm and 854 nm lasers
+employed for ion manipulation. They subsequently undergo identical QFC with the same 527 nm pump laser,
+ensuring the probes inherit the exact phase characteristics and noise properties of the quantum signals. At
+Charlie, the two optical fields are polarization-purified
+and interfered at a dedicated beam splitter, with detection by SNSPDs. Etalons placed in each output arm suppress nonlinear noise from the QFC process. To prevent
+re‑Rayleigh scattering from contaminating the quantum
+signals [36], we limit the probe photon flux to below 600
+kHz count rate per detector.
+Phase information from both the WDM and TDM
+channels is processed by an FPGA‑based servo controller executing our prior‑assisted Bayesian estimation
+(Fig. 2c). This system converts time‑stamped photon‑detection events into minimal‑variance phase esti-
+
+4
+
+(a)
+
+Ultra-stable lasers:
+729 nm, 854 nm, 527 nm
+
+20 m fiber
+
+Alice
+
+QFC pump
+
+TDM probe
+(729 nm & 854 nm on)
+40Ca+
+SFG
+729 nm
+
+393 nm 527 nm
+PPLN
+
+Charlie
+
+393 nm 854 nm
+
+D5/2
+
+1550 nm
+50:50 BS
+Etalon
+
+AOM 3
+
+527 nm
+393 nm
+PPLN
+
+fiber
+SNSPD
+
+WDM probe
+DWDM DWDM
+AOM 1
+(1548 nm)
+Frequency
+offset
+
+DWDM
+
+WDM probe
+(1548 nm)
+
+P3/2
+
+393 nm 854 nm
+
+50:50 BS
+Ultra-stable laser:
+1548 nm
+
+(b)
+
+TDM probe
+(729 nm & 854 nm on)
+SFG
+729 nm
+854 nm
+
+DWDM
+
+D5/2
+
+729 nm
+
+SNSPD
+1 m fiber
+
+40Ca+
+
+AOM 2
+
+1548 nm
+
+729 nm
+
+S1/2
+
+Bob
+
+QFC pump
+
+fiber
+
+854 nm
+P3/2
+
+20 m fiber
+
+S1/2
+
+1 m fiber
+
+(c)
+
+Bayesian
+PI
+estimator controller
+
+AOM 2
+(Fiber noise)
+
+WDM detections
+(1548 nm)
+
+FPGA
+
+TDM detections
+(1550 nm)
+Bayesian
+estimator
+
+PI
+controller
+
+AOM 3
+(Overall residual noise)
+
+FIG. 2. Experimental setup. (a) Optical layout. Two trapped-ion nodes (Alice and Bob) emit 393-nm photons that are
+collected by high-NA objectives, frequency-converted to 1550 nm via PPLN waveguides, and transmitted through fiber spools
+to a central beam splitter at Charlie, where single-photon interference heralds entanglement. Qubit-control light (729 nm and
+854 nm) and pump light (527 nm) are delivered to each node through separate 20-m fibers. A continuous 1548-nm reference,
+multiplexed with the quantum channel, stabilizes fiber-link phase fluctuations (WDM). Weak 393-nm pulses, generated via sumfrequency generation (SFG) from the same 729-nm and 854-nm lasers and interleaved during dead times, compensate residual
+phase noise (TDM). An etalon filters QFC noise; AOM 1 ensures identical optical frequencies for the 1548-nm references
+from both arms. AOM, acousto-optic modulator; DWDM, dense wavelength-division multiplexing; SNSPD, superconducting
+nanowire single-photon detector; QFC, quantum frequency conversion; PPLN, periodically poled lithium niobate. (b) Timing
+diagram. For 10-km (100-km) fiber links, the cycle duration is 500 µs (800 µs), with a 65-µs (95-µs) window for 393-nm
+TDM phase-probe pulses (100-ns period, 50% duty cycle). The 1548-nm WDM reference operates continuously. (c) Feedback
+architecture. Photon counts from WDM and TDM channels are processed by an FPGA executing Bayesian estimation and
+proportional-integral (PI) control. AOM 2 corrects fiber-induced phase fluctuations (WDM); AOM 3 corrects residual phase
+noise (TDM).
+
+mates and applies corrective feedback via AOMs placed
+in the interferometer arms. AOM 2, positioned in the
+common path before demultiplexing, provides rapid correction for fiber‑induced noise tracked by the WDM channel. AOM 3, placed in the quantum path after demultiplexing, corrects the overall phase offset between the two
+interferometer arms. A fixed‑frequency AOM 1 ensures
+the 1548 nm references from both arms arrive at Charlie
+with identical optical frequencies, maintaining a stable
+interference fringe for the WDM stabilization system.
+The core Bayesian estimator employs strong precharacterization probes to measure the system’s phasediffusion coeﬀicient D. It then models the diffusive phase
+noise as a Wiener process, wherein the phase increment
+over a measurement interval τ follows ∆ϕ ∼ N (0, Dτ ).
+This model implies a variance scaling σT2 = kDτ over a
+duration T = kτ , establishing the mathematical prior for
+optimal tracking. Subsequently, the estimator assesses
+
+the statistical consistency of each measurement innovation against this prior using a threshold multiplier κ.
+Results.— We characterize phase diffusion between
+nodes by measuring diffusion coeﬀicients Dl for individual fiber spans and Dr for total residual phase noise using
+continuous‑wave strong pre‑characterization probes, establishing Bayesian priors for subsequent experiments.
+Laboratory environmental fluctuations—predominantly
+acoustic and thermal coupling below 200 Hz—induce
+frequency deviations that accumulate over time. The
+measured phase variance scales as σT2 ∝ T 1.4 over extended durations T , deviating from the σT2 ∝ T scaling of a pure Wiener process and indicating correlated
+(non‑white) noise (Supplemental Material [31] S2.1).
+As shown in Fig. 3(a), the system maintains phase stability with interferometric visibility exceeding 97.7% over
+10‑km fiber links (500 µs experimental sequence, 32.5 µs
+probe duration at 393 nm) and 97% over 100‑km links
+
+5
+
+(a)
+
+(b)
+
+(c)
+
+FIG. 3. Experimental results. (a) Interferometric visibility (blue circles) and parity contrast (red triangles) versus fiber
+distance. The parity contrast is evaluated at the 10‑km and 100‑km links, while the visibility additionally includes a 50‑km
+intermediate point. The horizontal blue dashed line indicates the maximum achievable interferometric visibility (98.26%) of
+the system. Error bars represent ±1 standard deviation from multiple experimental realizations. (b) Residual phase variance
+(red circles) and interferometric visibility (blue circles) versus detected photon flux for the 10 km link. The residual variance
+follows the theoretical SNL prediction (red line), scaling as µ−1/2 , confirming quantum‑optimal tracking. (c) Interferometric
+visibility versus TDM duty cycle for the 10 km link, demonstrating robustness across operational parameters.
+
+(800 µs sequence, 47.5 µs probe duration) under realistic
+laboratory noise. This performance demonstrates SNL
+operation even under photon‑starved conditions. The
+high‑fidelity phase control enables deterministic ion–ion
+entanglement generation with a measured parity contrast exceeding 85% at an excitation probability α = 5%,
+meeting stringent requirements for scalable quantum repeaters.
+Fig. 3(b) shows phase tracking across varying photon flux over 10 km. The residual variance follows the
+theoretical SNL prediction, scaling as µ−1/2 , confirming
+quantum‑optimal tracking. Fig. 3(c) demonstrates phase
+tracking across varying duty cycles with TDM stabilization over 10 km. SNL performance is maintained down
+to a duty cycle of 2%, with phase‑unlocking events occurring only below 0.1% (where system noise dominates).
+This illustrates the framework’s robustness under different operational conditions and its ability to completely
+eliminate phase‑unlocking events that consistently occur
+with conventional MLE under identical noise conditions.
+Systematic limitations currently bound the maximum achievable visibility to 98.26% ± 1.58%, primarily due to electro-optic modulation distortion in the
+854-nm excitation system and nonlinear noise in the
+frequency-conversion references. The observed visibilities
+of 97.98% ± 0.31% (10 km) and 97.49% ± 0.66% (100 km)
+fall slightly below this limit owing to residual phasestabilization variance, imperfect temporal-mode matching, detector-eﬀiciency nonuniformity, and the finite
+servo bandwidth imposed by the low-duty-cycle TDM
+sequence. Dedicated calibration measurements confirm
+that careful optimization can recover the system-limited
+
+upper bound (Supplemental Material [31] S2.6).
+Discussion and Outlook.— We demonstrate shot-noise
+limited phase stabilization between separate trapped-ion
+nodes, enabling a two-step excitation protocol for heralded, high-fidelity memory-memory entanglement generation that satisfies the fundamental requirement for
+scalable quantum repeaters [15]. The Bayesian estimation framework minimizes the required photon budget
+and duty cycle of reference probes—a critical feature for
+preserving fragile quantum states in large-scale networks.
+Furthermore, the framework exhibits resilience to nonideal, correlated phase noise, underscoring its practical
+viability for real-world deployment.
+Future enhancements could involve integrating
+machine-learning techniques [37] to adapt the phasediffusion prior in real time, suppressing technical
+imperfections and extending robust operation to dynamic field environments. Beyond quantum networking,
+the framework’s photon eﬀiciency could lengthen observational baselines in astronomical interferometry
+for faint sources [38] and enhance phase tracking in
+precision metrology [39] under low-signal conditions.
+ACKNOWLEDGMENTS
+
+This work was supported by the Quantum Science and Technology-National Science and Technology Major Project (2024ZD0300202, 2021ZD0300802,
+2023ZD0300100), the National Natural Science Foundation of China (Grant Nos. T2125010, 12374470), the
+Chinese Academy of Sciences, the Key R&D Plan of
+Shandong Province (Grant No. 2023CXPT105), Shan-
+
+6
+dong provincial natural science foundation (Grant Nos.
+ZR2022LLZ006, ZR2022LLZ011). Q.Z. acknowledges
+support from the Taishan Scholar Program of Shandong
+Province and the XPLORER Prize from the New Cornerstone Science Foundation. M.Y.Z, F.X.C. and J.P.C.
+acknowledges support from the Young Expert Program
+of the Taishan Scholar Program of Shandong Province.
+Guang-Cheng Liu, Chao-Hui Xue, Fa-Xi Chen contributed equally to this work.
+
+[1] H Jeff Kimble.
+The quantum internet.
+Nature,
+453(7198):1023–1030, 2008.
+[2] L-M Duan and Christopher Monroe. Colloquium: Quantum networks with trapped ions. Reviews of Modern
+Physics, 82(2):1209–1224, 2010.
+[3] Koji Azuma, Sophia E Economou, David Elkouss, Paul
+Hilaire, Liang Jiang, Hoi-Kwong Lo, and Ilan Tzitrin. Quantum repeaters: From quantum networks
+to the quantum internet. Reviews of Modern Physics,
+95(4):045006, 2023.
+[4] Carlos Cabrillo, J Ignacio Cirac, Pablo GarciaFernandez, and Peter Zoller. Creation of entangled states
+of distant atoms by interference. Physical Review A,
+59(2):1025, 1999.
+[5] L-M Duan, Mikhail D Lukin, J Ignacio Cirac, and
+Peter Zoller. Long-distance quantum communication
+with atomic ensembles and linear optics.
+Nature,
+414(6862):413–418, 2001.
+[6] Marco Lucamarini, Zhiliang L Yuan, James F Dynes, and
+Andrew J Shields. Overcoming the rate–distance limit
+of quantum key distribution without quantum repeaters.
+Nature, 557(7705):400–403, 2018.
+[7] Mariella Minder, Mirko Pittaluga, George L Roberts,
+Marco Lucamarini, James F Dynes, Zhiliang L Yuan, and
+Andrew J Shields. Experimental quantum key distribution beyond the repeaterless secret key capacity. Nature
+Photonics, 13(5):334–338, 2019.
+[8] Shuang Wang, De-Yong He, Zhen-Qiang Yin, Feng-Yu
+Lu, Chao-Han Cui, Wei Chen, Zheng Zhou, Guang-Can
+Guo, and Zheng-Fu Han. Beating the fundamental ratedistance limit in a proof-of-principle quantum key distribution system. Physical Review X, 9(2):021046, 2019.
+[9] Yang Liu, Zong-Wen Yu, Weijun Zhang, Jian-Yu Guan,
+Jiu-Peng Chen, Chi Zhang, Xiao-Long Hu, Hao Li, Cong
+Jiang, Jin Lin, et al. Experimental twin-field quantum
+key distribution through sending or not sending. Physical
+Review Letters, 123(10):100505, 2019.
+[10] Xiao-Tian Fang, Pei Zeng, Hui Liu, Mi Zou, Weijie
+Wu, Yan-Lin Tang, Ying-Jie Sheng, Yao Xiang, Weijun Zhang, Hao Li, et al. Implementation of quantum
+key distribution surpassing the linear rate-transmittance
+bound. Nature Photonics, 14(7):422–425, jul 2020.
+[11] Yong Yu, Fei Ma, Xi-Yu Luo, Bo Jing, Peng-Fei Sun,
+Ren-Zhou Fang, Chao-Wei Yang, Hui Liu, Ming-Yang
+Zheng, Xiu-Ping Xie, et al. Entanglement of two quantum memories via fibres over dozens of kilometres. Nature, 578(7794):240–245, 2020.
+[12] Tim Van Leent, Matthias Bock, Florian Fertig, Robert
+Garthoff, Sebastian Eppelt, Yiru Zhou, Pooja Malik,
+
+Matthias Seubert, Tobias Bauer, Wenjamin Rosenfeld,
+et al. Entangling single atoms over 33 km telecom fibre.
+Nature, 607(7917):69–73, 2022.
+[13] Arian J Stolk, Kian L van der Enden, Marie-Christine
+Slater, Ingmar te Raa-Derckx, Pieter Botma, Joris
+Van Rantwijk, JJ Benjamin Biemond, Ronald AJ Hagen,
+Rodolf W Herfst, Wouter D Koek, et al. Metropolitanscale heralded entanglement of solid-state qubits. Science
+advances, 10(44):eadp6442, 2024.
+[14] MV Jabir, D Ahn, N Fajar R Annafianto, IA Burenkov,
+A Battou, and SV Polyakov. Enabling phase stabilization
+of quantum networks via displacement-enhanced photon
+counting. Optica, 12(5):570–576, 2025.
+[15] Wen-Zhao Liu, Ya-Bin Zhou, Jiu-Peng Chen, Bin Wang,
+Ao Teng, Xiao-Wen Han, Guang-Cheng Liu, Zhi-Jiong
+Zhang, Yi Yang, Feng-Guang Liu, et al. Long-lived
+remote ion-ion entanglement for scalable quantum repeaters. Nature, 652(8108):51–57, 2026.
+[16] Bo-Wei Lu, Chao-Wei Yang, Run-Qi Wang, Bo-Feng
+Gao, Yi-Zheng Zhen, Zhen-Gang Wang, Jia-Kai Shi,
+Zhong-Qi Ren, Thomas A Hahn, Ernest Y-Z Tan, et al.
+Device-independent quantum key distribution over 100
+km with single atoms. Science, 391(6785):592–597, 2026.
+[17] Yang Liu, Wei-Jun Zhang, Cong Jiang, Jiu-Peng Chen,
+Chi Zhang, Wen-Xin Pan, Di Ma, Hao Dong, Jia-Min
+Xiong, Cheng-Jun Zhang, et al. Experimental twin-field
+quantum key distribution over 1000 km fiber distance.
+Physical Review Letters, 130(21):210801, 2023.
+[18] L. J. Stephenson, D. P. Nadlinger, B. C. Nichol, S. An,
+P. Drmota, T. G. Ballance, K. Thirumalai, J. F. Goodwin, D. M. Lucas, and C. J. Ballance. High-rate, highfidelity entanglement of qubits across an elementary
+quantum network. Phys. Rev. Lett., 124:110501, Mar
+2020.
+[19] David P Nadlinger, Peter Drmota, Bethan C Nichol,
+Gabriel Araneda, Dougal Main, Raghavendra Srinivas,
+David M Lucas, Christopher J Ballance, Kirill Ivanov,
+EY-Z Tan, et al. Experimental quantum key distribution certified by bell’s theorem. Nature, 607(7920):682–
+686, 2022.
+[20] D Main, P Drmota, DP Nadlinger, EM Ainley,
+A Agrawal, BC Nichol, R Srinivas, G Araneda, and
+DM Lucas. Distributed quantum computing across an
+optical network link. Nature, 638(8050):383–388, 2025.
+[21] Wei Zhang, Tim van Leent, Kai Redeker, Robert
+Garthoff, René Schwonnek, Florian Fertig, Sebastian Eppelt, Wenjamin Rosenfeld, Valerio Scarani, Charles C-W
+Lim, et al. A device-independent quantum key distribution system for distant users. Nature, 607(7920):687–691,
+2022.
+[22] Jian-Long Liu, Xi-Yu Luo, Yong Yu, Chao-Yang Wang,
+Bin Wang, Yi Hu, Jun Li, Ming-Yang Zheng, Bo Yao,
+Zi Yan, et al. Creation of memory–memory entanglement in a metropolitan quantum network. Nature,
+629(8012):579–585, 2024.
+[23] Can M Knaut, Aziza Suleymanzade, Y-C Wei, Daniel R
+Assumpcao, P-J Stas, Yan Qi Huan, Bartholomeus
+Machielse, Erik N Knall, Madison Sutula, Gefen Baranes,
+et al. Entanglement of nanophotonic quantum memory
+nodes in a telecom network. Nature, 629(8012):573–578,
+2024.
+[24] SLN Hermans, Matteo Pompili, HKC Beukers, Simon
+Baier, Johannes Borregaard, and Ronald Hanson. Qubit
+teleportation between non-neighbouring nodes in a quan-
+
+7
+tum network. Nature, 605(7911):663–668, 2022.
+[25] Bastian Hacker, Kevin Günthner, Conrad Rößler, and
+Christoph Marquardt. Phase-locking an interferometer
+with single-photon detections. New Journal of Physics,
+25(11):113007, 2023.
+[26] Christian Maurer, Christoph Becher, Carlos Russo, Jürgen Eschner, and Rainer Blatt. A single-photon source
+based on a single ca+ ion. New journal of physics,
+6(1):94, 2004.
+[27] AJ Stolk, JJB Biemond, KL van der Enden, L van
+Dooren, EJ van Zwet, and R Hanson. Extendable optical phase synchronization of remote and independent
+quantum network nodes over deployed fibers. Physical
+Review Applied, 23(1):014077, 2025.
+[28] Wen-Zhao Liu, Yu-Zhe Zhang, Yi-Zheng Zhen, MingHan Li, Yang Liu, Jingyun Fan, Feihu Xu, Qiang Zhang,
+and Jian-Wei Pan. Toward a photonic demonstration of
+device-independent quantum key distribution. Physical
+Review Letters, 129(5):050502, 2022.
+[29] H-J Briegel, Wolfgang Dür, Juan I Cirac, and Peter
+Zoller. Quantum repeaters: the role of imperfect local
+operations in quantum communication. Physical Review
+Letters, 81(26):5932, 1998.
+[30] Mauro Valeri, Emanuele Polino, Davide Poderini, Ilaria
+Gianani, Giacomo Corrielli, Andrea Crespi, Roberto
+Osellame, Nicolò Spagnolo, and Fabio Sciarrino. Experimental adaptive bayesian estimation of multiple phases
+with limited data. npj Quantum Information, 6(1):92,
+2020.
+[31] See supplemental material at [url] for details of the
+fisher-information analysis,bayesian phase tracking, experimental setup, error budgets, and measurement procedures,which includes refs.[40-49].
+[32] Mirko Pittaluga, Mariella Minder, Marco Lucamarini,
+Mirko Sanzaro, Robert I Woodward, Ming-Jun Li, Zhiliang Yuan, and Andrew J Shields. 600 km repeater-like
+quantum communications with dual-band stabilisation.
+Nature Photonics, 15:530, 2021.
+[33] L. Slodička, G. Hétet, N. Röck, P. Schindler, M. Hennrich, and R. Blatt. Atom-atom entanglement by singlephoton detection. Physical Review Letters, 110:083603,
+Feb 2013.
+[34] Yi Yang, Bin Wang, Ji-Chao Lin, Yang Gao, Xin Li,
+Jiu-Peng Chen, Lei Hou, Ye Wang, Yong Wan, Xiu-Ping
+Xie, et al. High-performance quantum frequency conversion from ultraviolet to telecom band. arXiv preprint
+arXiv:2603.01745, 2026.
+[35] Liu-Jun Wang, Kai-Heng Zou, Wei Sun, Yingqiu Mao,
+Yi-Xiao Zhu, Hua-Lei Yin, Qing Chen, Yong Zhao, Fan
+Zhang, Teng-Yun Chen, et al. Long-distance copropagation of quantum key distribution and terabit classical
+optical data channels. Physical Review A, 95(1):012301,
+2017.
+[36] Jiu-Peng Chen, Chi Zhang, Yang Liu, Cong Jiang, Weijun Zhang, Xiao-Long Hu, Jian-Yu Guan, Zong-Wen Yu,
+Hai Xu, Jin Lin, Ming-Jun Li, Hao Chen, Hao Li, Lixing
+You, Zhen Wang, Xiang-Bin Wang, Qiang Zhang, and
+
+Jian-Wei Pan. Sending-or-not-sending with independent
+lasers: Secure twin-field quantum key distribution over
+509 km. Physical Review Letters, 124:070501, Feb 2020.
+[37] Samuel Nolan, Augusto Smerzi, and Luca Pezzè. A machine learning approach to bayesian parameter estimation. npj Quantum Information, 7(1):169, 2021.
+[38] Glenn de Vine, Brent Ware, Kirk McKenzie, Robert E.
+Spero, William M. Klipstein, and Daniel A. Shaddock.
+Experimental demonstration of time-delay interferometry for the laser interferometer space antenna. Physical
+Review Letters, 104:211103, May 2010.
+[39] Th Udem, Ronald Holzwarth, and Theodor W Hänsch.
+Optical frequency metrology. Nature, 416(6877):233–237,
+2002.
+[40] R. E. Kalman and R. S. Bucy. New results in linear filtering and prediction theory. Journal of Basic Engineering,
+83(1):95–108, 03 1961.
+[41] Mankei Tsang, Jeffrey H. Shapiro, and Seth Lloyd. Quantum theory of optical temporal phase and instantaneous
+frequency. ii. continuous-time limit and state-variable
+approach to phase-locked loop design. Phys. Rev. A,
+79:053843, May 2009.
+[42] William J. Riley, William J. Riley, and Joseph A. Barnes.
+Handbook of frequency stability analysis. 2008.
+[43] Kaushik P. Seshadreesan, Sejong Kim, Jonathan P.
+Dowling, and Hwang Lee. Phase estimation at the quantum cramér-rao bound via parity detection. Phys. Rev.
+A, 87:043833, Apr 2013.
+[44] Cass A Sackett, David Kielpinski, Brian E King, Christopher Langer, Volker Meyer, Christopher J Myatt, Mary
+Rowe, Quentin A Turchette, Wayne M Itano, David J
+Wineland, et al. Experimental entanglement of four particles. Nature, 404(6775):256–259, 2000.
+[45] Martin W. van Mourik, Pavel Hrmo, Lukas Gerster,
+Benjamin Wilhelm, Rainer Blatt, Philipp Schindler, and
+Thomas Monz. rf-induced heating dynamics of noncrystallized trapped ions. Phys. Rev. A, 105:033101, Mar
+2022.
+[46] Jan Apolín and David P Nadlinger. Recoil-induced errors
+and their correction in photon-mediated entanglement
+between atomic qubits. PRX Quantum, 7(1):010326,
+2026.
+[47] Sagnik Saha, Mikhail Shalaev, Jameson O’Reilly, Isabella
+Goetting, George Toh, Ashish Kalakuntla, Yichao Yu,
+and Christopher Monroe. High-fidelity remote entanglement of trapped atoms mediated by time-bin photons.
+Nature Communications, 16(1):2533, 2025.
+[48] L Slodička, G Hétet, N Röck, S Gerber, P Schindler,
+M Kumph, M Hennrich, and R Blatt. Interferometric
+thermometry of a single sub-doppler-cooled atom. Physical Review A—Atomic, Molecular, and Optical Physics,
+85(4):043401, 2012.
+[49] DP Nadlinger. Device-independent key distribution between trapped-ion quantum network nodes. PhD thesis,
+University of Oxford, 2022.
+
+

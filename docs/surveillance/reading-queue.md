@@ -808,25 +808,9 @@ McConnell, Chuang. Submitted 2026-07-20; revised (v2) 2026-07-30.*
   "quantum operating system" paper is coming; when it appears it is a
   mandatory fence read.
 
----
-
-## Open (UNREAD)
-
----
-
-*Debts raised by a first-hand read, not by a sweep (2026-09-18). While
-discharging arXiv 2608.20954 this thread found that the Arqon architecture
-carries a demand tuple with a coherence window, a session expiry and a
-service probability as separate fields. Whether those two dates are
-co-enforced at consumption with per-good custody, or folded at admission
-(the SeQUeNCe shape the matrix already fenced), decides fence item 3 and
-cannot be settled from 2608.20954. Abstracts read 2026-09-18 from
-arxiv.org/abs; the papers are the debt. Read together; Arqon builds on the
-Beauchamp architecture.*
-
 ### arXiv 2604.08692 — Arqon: A suite of control applications enabling a reliable quantum network
 *Gauthier, Beauchamp, Wehner. Submitted 2026-04-09.*
-- **status:** UNREAD (abstract read 2026-09-18; the paper itself is the debt)
+- **status:** READ 2026-09-19 (primary read by this thread: abstract, Secs. I–III, IV.i–IV.iii (Demand Manager, PGT creation, Admit Tasks entry), V (Theorem V.1, Lemma V.3) in full; Secs. VI–VIII and appendices not read; PDF + text in `docs/references/`)
 - **touches:** fence (item 3: two dates co-enforced; item 2: custody with
   cause-tagged terminals)
 - **would change:** The abstract claims admission control (O(k³) in
@@ -848,10 +832,52 @@ Beauchamp architecture.*
   across PGAs.
 - **mapping note:** static topologies only (abstract). Not a hardware
   paper; Q1–Q7 not mapped.
+- **disposition:** **Fence item 3 holds, with a sharper wording than
+  before: Arqon carries both dates and consumes both at admission.** The
+  raw demand is d = (p; t_minsep; t_expiry; N_inst) with p = (w, s, F), plus
+  ε_service (Defs. 2, 4). The physical date w is spent in Demand
+  Registration: for each candidate path a PGA duration E_γ and a packet
+  success probability p_packet are computed from the path's generation
+  rate so that s links land inside w with p_packet > 0 (Sec. IV.ii.b,
+  step 2). The institutional date t_expiry is spent in the same step: n_SI
+  = ⌈(t_expiry − t_start)/T_SI⌉ scheduling intervals, and the minimal
+  allocation N^SI is the binomial-tail count of PGAs per interval that
+  makes P[X < N_inst] < ε_service (Def. 4). What survives to runtime is a
+  PGT γ = (E_γ, N^SI, π_γ, t_minsep, t_expiry, t_start) and a service
+  agreement that promises *scheduling frequency*, not delivery: "in every
+  scheduling interval between t_start and the demand being terminated or
+  expiring, at least a minimal allocation will be scheduled" (Def. 3);
+  Theorem V.1 is deterministic about the schedule and Lemma V.3
+  probabilistic about the packets. Custody: none at the controller, by
+  design — "we do not assume that end-to-end entangled links can be stored
+  between any two scheduled periods of time" (Sec. III.ii), and the parent
+  architecture states the controller does not know whether any attempt
+  succeeded. So no good is held across PGAs, no exposure history exists
+  anywhere central, and w never meets t_expiry at a consumption decision;
+  they meet once, at admission, in the arithmetic of N^SI. That is the
+  SeQUeNCe shape one layer up: a window folded into allocation geometry,
+  plus a service probability. **Terminals, by cause, at the demand
+  level:** the status ledger (Sec. IV.ii.a) carries a demand from
+  unregistered through registered/accepted to rejected, expired,
+  terminated, or removed (path partition change), and a rejection message
+  distinguishes FAIL (registration) from REJECT (admission) with an error
+  code — two causes, demand-granular. Packet-level outcomes are
+  success/fail only; a link discarded for age is discarded locally and
+  unrecorded centrally. So fence item 2 (custody with cause-tagged
+  terminals per good) is untouched, and item 3 stands with this wording:
+  *Arqon represents both dates in one demand and enforces both, but at
+  admission into a periodic allocation; nothing is co-enforced at
+  consumption because nothing is held.* Cite it as the nearest occupant
+  and name it in §12 of both papers; the novelty sentence survives as
+  "co-enforced at consumption over a held good," not as "two dates."
+  **Unlooked-for:** the design lineage is stated outright — circuit
+  switching, Frame Relay, ATM traffic contracts (Sec. II) — which places
+  Arqon on the classical-reservation side of exactly the contrast the
+  HotOS paper draws. Q1–Q7: nothing (a control-plane paper).
 
 ### arXiv 2503.12582 — A Modular Quantum Network Architecture for Integrating Network Scheduling with Local Program Execution
 *Beauchamp, Jirovská, Gauthier, Wehner. Submitted 2025-03-16.*
-- **status:** UNREAD (abstract read 2026-09-18; the paper itself is the debt)
+- **status:** READ 2026-09-19 (primary read by this thread: abstract, Secs. I–III, IV.iii (window, packet, demand format), V.vi.a (SAC1/SAC2) in full; evaluation not read; PDF + text in `docs/references/`)
 - **touches:** fence (item 3), and the HotOS "typed offers" provocation
 - **would change:** Defines the *entanglement packet* "to meet application
   requirements on near-term quantum networks where the lifetimes of the
@@ -875,6 +901,46 @@ was stranded in an ephemeral cloud checkout with read-only credentials; these
 entries were rewritten locally from the arXiv abstracts read first-hand, not
 transcribed from the sweep's summary. Question mapping revised on the first
 entry — see note.*
+- **disposition:** **The packet is exactly (w, s, F_min); the "current
+  model" sentence is ratified with a citation. Fence item 3 stands for the
+  same reason as Arqon.** Def. IV.8: "A packet of entanglement… is the
+  tuple (w, s, F_min)" — window, count, minimum fidelity; no carrier, no
+  cardinality beyond count, no residue, no decay law (the window *is* the
+  decay law, collapsed to one number chosen at capability negotiation).
+  Def. IV.7 makes the window a local discard rule: "If a link has been in
+  memory for longer than the length of the window it is discarded" — a
+  physical-date terminal, enforced at the end node, cause not booked
+  anywhere the network can see. Demands may list several *suitable*
+  packets for one instance, e.g. "accepting links which are generated with
+  a lower expected fidelity and shortening the window to compensate"
+  (Sec. IV.iii) — a rate/fidelity/window trade expressed as alternative
+  offers, which is the one place this line brushes against typed offers,
+  and it does so with a single scalar quality. Admission (Sec. V.vi.a) is
+  a utilisation bound per resource (SAC1, U_r ≤ Û) and a schedule-
+  computation-time bound (SAC2); the controller "does not know whether or
+  not any given attempt to generate an entangled link succeeds or fails"
+  (Sec. III.i.c) — no custody by construction, generate-when-requested by
+  design. The two dates: w inside the packet, expiry on the demand,
+  consumed at admission and schedule construction as in Arqon. The
+  authors' own conclusion that "robust admission control is required to
+  maintain quality of service" is the field asking for the third leg of
+  the fence while explicitly declining the second. Q1–Q7: nothing.
+
+---
+
+## Open (UNREAD)
+
+---
+
+*Debts raised by a first-hand read, not by a sweep (2026-09-18). While
+discharging arXiv 2608.20954 this thread found that the Arqon architecture
+carries a demand tuple with a coherence window, a session expiry and a
+service probability as separate fields. Whether those two dates are
+co-enforced at consumption with per-good custody, or folded at admission
+(the SeQUeNCe shape the matrix already fenced), decides fence item 3 and
+cannot be settled from 2608.20954. Abstracts read 2026-09-18 from
+arxiv.org/abs; the papers are the debt. Read together; Arqon builds on the
+Beauchamp architecture.*
 
 ---
 

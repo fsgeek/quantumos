@@ -96,3 +96,33 @@ because a knob lied, but because an arm's diet was misdeclared.
   prediction if anyone wants it).
 - Re-audit the survival-channel prereg's arm classifications under the
   same information-diet rule.
+
+## Correction to the P-M3 score (2026-10-09; supersedes "FAILED as stated")
+
+The P-M3 verdict above scored the wrong text. Tony's frozen bet, verbatim
+in the prereg, is: "My bet: this is an experimental error, and we'll figure
+out what it was and fix it." The sentence that follows it in the prereg
+("I.e. ... a defect somewhere in the experimental pipeline (generator
+wiring, CSV production, or analysis script)") is the analyst's
+operationalization, not Tony's words, and the verdict adjudicated that gloss.
+Tony, the next session: "I don't recall saying I thought it was a code
+error... I just wasn't willing to bet on anything that clean surviving
+analysis."
+
+Scored against his sentence, P-M3 is a **partial win**. Something was wrong
+with the experiment: the arms' blindness was misdeclared in the 07-26 result
+doc. It was found, and it was fixed (the correction to 984f52e above, plus
+the information-diet rule). It is not a clean win because the pipeline code
+was sound and the 0.030 is a real authored property of the model, not an
+artifact. The paragraph above already gave "partial credit in spirit", but
+it reached that by grading the gloss.
+
+This correction was disclosed but held back in the 2026-09-30 consent reply
+to the governance calibration study
+(`docs/requests/2026-09-30-reply-to-governance-consent-request.md`, §1b).
+It is committed now as an append, so the study can see both the original
+score and this one.
+
+Lesson recorded for future preregs: freeze a claimant's bet verbatim. Either
+have the claimant own any operationalization before the read, or mark the
+gloss as the adjudicator's and score both texts at result time.

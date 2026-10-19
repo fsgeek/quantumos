@@ -930,6 +930,157 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2605.04047 — Sequential vs. Synchronized Entanglement Swapping: QKD Secret-Key Rate under Optimized Link-Layer Control
+*Srivastava, Sabavat, Jain, Scheller-Wolf, Tayur, Tipper, Krishnamurthy, Babay, Seshadreesan. Submitted 2026-05-05; revised (v2) 2026-10-13.*
+- **status:** UNREAD
+- **touches:** Q4
+- **would change:** Our Q4 regime question (the failed/in-place retry
+  threshold, and the retain-and-retry vs release-and-reacquire asymmetry
+  our simulator currently implements as a design choice rather than a
+  physics-earned one, per the 2608.20954 disposition) is open pending
+  hardware data. This paper simulates two swap-timing disciplines on a
+  four-hop repeater chain — sequential (swap-and-wait, storing partial
+  chains) vs synchronized (wait-and-swap) — under a Werner-noise decay
+  model, and reports that when stored pairs cannot retain enough fidelity
+  for one network time step, the retain-and-wait discipline yields
+  **zero** key while the release/resync discipline still yields a small
+  rate; once retain-and-wait becomes viable it outperforms by up to 19.1%,
+  with the advantage shrinking as memory lifetime grows. That is a second
+  modeled instance (after Arqon/2608.20954) of the retain-vs-release
+  choice being outcome-determining, and the first to show retain-and-wait
+  can be strictly worse (zero vs nonzero) rather than merely costlier. If
+  the full paper's closed-form viability condition is stated in terms that
+  generalize past six-state QKD swap scheduling to our round/herald
+  framing, it sharpens Q4's regime boundary with a second simulated data
+  point; if it rests on assumptions specific to this swap-scheduling
+  setting, Q4 stays exactly where it was. This is a simulation
+  (reinforcement-learned link controllers, idealized Werner-state noise),
+  not hardware, so it cannot discharge Q4 on its own — only narrow what
+  the eventual hardware number needs to settle.
+- **mapping note:** whoever pays this debt should check whether the
+  closed-form "preserve progress across time steps" condition (and the
+  one-slow-link result, where synchronized wins at long memory lifetime)
+  is expressed in quantities our Q4 threshold already names (failure-to-
+  next-attempt time vs deadline slack) or in QKD-specific quantities that
+  need translation. No Q1 reading is supported: swap-timing policy outcome
+  is not a switch-reconfiguration cadence measurement.
+
+### arXiv 2610.23827 — Quality-of-Transmission Estimation in Quantum Networks: Compute, Simulate, or Learn?
+*Bekri, Abane, Mai, Battou, Bensalem. Submitted 2026-10-16.*
+- **status:** UNREAD
+- **touches:** possibly Q2
+- **would change:** Q2's second admission rule (how the runtime can know a
+  field, and at what cost) got its first citable number from the
+  already-discharged arXiv 2608.09364, whose tomography sample complexity
+  "grows super-exponentially with network depth." This paper asks the
+  adjacent question directly: should a quantum network controller compute
+  end-to-end fidelity analytically, simulate it, or learn a surrogate? It
+  argues optical-network QoT methods only partly transfer because quantum
+  fidelity is a stochastic target shaped by probabilistic generation,
+  random memory wait times, and decoherence, and reports (in a
+  simulation-based proof of concept) that analytical composition suffices
+  in simple regimes, full simulation is needed once memory effects shape
+  the fidelity distribution, and learned surrogates trade accuracy for
+  runtime. If the full paper quantifies the actual runtime-vs-accuracy gap
+  between these three modes, it gives Q2's epistemic-cost question a
+  second, independent cost-of-knowing number from a different estimation
+  framework than 2608.09364's; if it only frames the problem and defers
+  numbers to its closing "open challenges," it stays a possible hit, not a
+  resolving one. Q2's actual hardware threshold (instantaneous
+  calibration-published-vs-true spread against scheduler resolution)
+  cannot be settled by this paper either way — it is a methods/framework
+  paper, not a hardware characterization.
+- **mapping note:** whoever pays this debt should check specifically for a
+  quantified runtime/accuracy number (a "cost of knowing" datum like
+  2608.09364's), not just the proof-of-concept framing. Not mapped to any
+  other question: no cross-sectional hardware spread, no custody, no
+  admission content.
+
+---
+
+*Sweep of 2026-10-19 (tenth scheduled run, catch-up after a gap). Window:
+submissions/revisions 2026-09-28 through 2026-10-19 — the last actual sweep
+ran 2026-09-28 and is sitting in open, unmerged PR #8 ("Literature
+surveillance: 1 new debt (2026-09-28 sweep)", one entry: arXiv 2609.29752,
+fence/possibly-Q2, plus documented non-hits); PR #7 ("2026-09-21 sweep",
+arXiv 2609.15689, Q5/possibly-Q1) is also still open and unmerged beneath
+it. This sweep does not re-litigate either PR's window or entries; it
+widened its own window to cover the full three-week gap since 2026-09-28
+rather than defaulting to 8 days, the same practice the 2026-08-17 sweep
+used for a 14-day gap. Direct `arxiv.org/abs/<id>` pages and
+`arxiv.org/search/?searchtype=all&query=...` both worked reliably. Query
+table run against quant-ph primarily, cs.NI/cs.OS/physics.optics secondary,
+using two-word term pairs per question (three- and four-word conjunctive
+queries continued to return zero results, confirming prior sweeps' note
+that arXiv's plain search ANDs every term across all fields). Two hits
+entered above (arXiv 2605.04047, Q4; arXiv 2610.23827, possibly Q2).
+Candidates checked and rejected as non-hits: arXiv 2610.23065
+("Synchronization over Resource-Causal Temporal Networks with Consumable
+Entanglement Links") reads as a hit by title but is a classical
+continuous-time synchronization/control-theory paper (Kuramoto and Lorenz
+oscillator simulations) that uses entanglement-consumption as motivating
+narrative for an abstract resource-constrained-edge synchronization result
+— no fidelity, no decay law, no custody record on an actual quantum
+resource; a new instance of the protocol's named vocabulary trap, this
+time in dynamical-systems rather than quantum-chemistry clothing. arXiv
+2610.07991 ("Entanglement Swapping Scheduling for Quantum Repeater Chains
+under Decoherence during Classical Communications") is an analytical
+single-chain model trading off repeater count against accumulated
+heralding-communication decoherence to find an optimal chain length — no
+multi-request admission and no hardware-measured distribution, too thin
+for Q1 or Q4. arXiv 2609.37206 ("Optimal Entanglement Routing in Quantum
+Repeater Chains: Beyond Fixed Operation Order and Purification Schedule")
+is a MILP/DP algorithm for purification-and-swap ordering on a single
+static linear chain — the same "algorithmic building block" shape as the
+already-discharged arXiv 2608.22766, not queued. arXiv 2610.04897 ("WLPA:
+A Network Management Framework for Allocating Scarce Quantum-Safe Link
+Postures under Weakest-Link Exposure") allocates classical-network
+QKD-hardware upgrade priority by weakest-link exposure — a classical
+crypto-deployment resource allocation problem with no perishable
+entanglement resource, no custody, no OS-scheduled decay; wrong domain.
+arXiv 2610.13135 ("Pulsed control of an entanglement-breaking index: thermal
+valleys, a certified valve, and its open-close asymmetry") uses
+"entanglement-breaking" and "switch" language that reads Q6-adjacent by
+keyword, but is single-qubit open-quantum-systems channel theory (a
+thermal collision model); no network, no scheduling decision survives —
+vocabulary trap. arXiv 2610.23540 ("Net-Zero Power UAVs: Facilitating
+Quantum HRLLC in Multi-Hop UAV Repeaters") is a design-optimization
+(genetic-algorithm) simulation for one two-UAV repeater pair reporting a
+"U-shaped" latency-distribution tradeoff, but it is a joint design
+optimization, not a measured hardware cadence distribution, and involves no
+multi-request admission — too thin for Q1 or Q5. arXiv 2609.37136
+("Arbitrary high-dimensional entanglement purification with the
+superposition of paths") is a component-technology purification-protocol
+paper with no networked scheduling or custody content. arXiv 2610.11477
+("Quantitative Rules for Parallel Calibration and Drift-Resilient
+Maintenance of Large-Scale Superconducting Quantum Processors") reports
+calibration-drift maintenance rules for compute-qubit gates and crosstalk
+on a QPU, not for quantum-network entanglement links — wrong layer for Q7.
+arXiv 2610.23536 ("Temperature dependence of a warm ensemble based memory
+on quantum communication rates") characterizes a warm-vapor memory's
+optical depth and efficiency versus temperature with no repeated-readout
+wear data, so it does not answer Q3. arXiv 2610.03351 ("Quantum Key
+Distribution with Entanglement-Swapped Photons from a Quantum Emitter") and
+arXiv 2610.20148 ("Loss-Tolerant Measurement-Device-Independent QKD over
+Untrusted Repeaters via High-Dimensional Time-Bin Multiplexing") are both
+the demarcation-foil shape already named in Discharged: entangled photons
+measured out immediately for key generation, no custody, no scheduling
+decision over a held resource. arXiv 2610.15879 ("End-to-End Fidelity and
+Rate Analysis for Zero-Added-Loss Multiplexing") is an analytical
+single-architecture loss/fidelity model (Shapiro) with no cross-sectional
+spread across simultaneously available paths and no custody or admission
+content. arXiv 2603.05836 ("Heterogeneous entanglement between a trapped
+ion and a solid-state quantum memory," revised into this window) is a
+single heterogeneous-link demonstration with no multiplexing/concurrency
+data for Q5. Searched directly and found nothing under that name or a
+recognizable synonym: the NeQOS ("Networked Quantum Operating System")
+manuscript flagged as a watch item in the 2609.11359 disposition and still
+pending in both PR #7 and PR #8 has not appeared in this window either.
+Not re-litigated, per PR #7's and PR #8's own practice for closed windows:
+arXiv 2609.11387 (flagged by PR #7, submission date falls in the
+2026-09-07–09-14 window) and arXiv 2609.21152 (flagged by PR #8, submission
+date falls in PR #7's 2026-09-14–09-21 window).*
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While

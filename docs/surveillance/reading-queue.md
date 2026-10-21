@@ -930,6 +930,49 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2609.29752 — One-shot Routing in Quantum Networks
+*Lavi, Gutman, Kaminer, Orda. Submitted 2026-09-24.*
+- **status:** UNREAD
+- **touches:** fence — and *possibly* Q2
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission), not a component of it. This paper
+  formulates one-shot routing over "a fixed, short-lived set of network
+  resources" — explicitly contrasted with rate-accumulated-over-time
+  resources — and shows that when multiple requests compete for the same
+  links, "coordination becomes a condition for feasibility" and "a shared
+  path budget controls the fidelity trade-off between them." Perishability
+  language and admission-under-contention language appear together in one
+  abstract, which is stronger than the flow-allocation foils already
+  discharged in this queue (2607.19849, 2608.22766, 2609.04920), none of
+  which named any short-livedness of the resource itself. If the full
+  paper's routing model holds an already-generated entangled resource across
+  the contention-resolution decision — rather than allocating path/spectrum
+  capacity before generation, as every prior routing-algorithm entry in this
+  queue has turned out to do — this would be the first occupant of the
+  fence's full three-part form found in this project's surveillance, and
+  the fence's "unoccupied" conclusion would need re-examining. As abstracted,
+  "short-lived" most plausibly names the ordinary generation-to-consumption
+  window every entanglement resource has (the same sense QUASAR and the WDM
+  paper used, both found memoryless on the full read), not a modeled
+  holding-with-decay — that is exactly what the full read must check.
+  *Possibly* Q2: the paper extends its model to "links whose fidelities are
+  known only as distributions, where uncertainty... limits the fidelity
+  delivered" — a calibration-uncertainty treatment adjacent to Q2's
+  calibration-published-vs-true-fidelity gap. This is a routing algorithm's
+  input model, not a hardware measurement, so it cannot supply Q2's
+  threshold number even on a full read; flagged as possible because it is
+  the first paper in this queue to carry fidelity uncertainty as a
+  first-class quantity in the routing decision itself.
+- **mapping note:** this is a one-shot combinatorial-optimization paper (the
+  FOLD heuristic), not a hardware characterization — it cannot answer any
+  Q1-Q7 hardware threshold directly, so Q2 is marked possible only.
+  Whoever pays this debt should check the fence first: specifically whether
+  "short-lived" resources are held in any state across the
+  contention-resolution step, or whether the one-shot framing assumes
+  generation is simultaneous with the routing decision (in which case
+  nothing is held and the fence stands, as in every prior routing/algorithm
+  entry in this queue).
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While
@@ -1148,4 +1191,70 @@ Discharged, no quantum state survives a scheduling decision. arXiv
 2609.02579 ("Long-lived telecom-heralded single-photon storage...") recurred
 in this window's searches but was already checked and rejected by the
 2026-09-07 sweep; not re-litigated.*
+
+---
+
+*Sweep of 2026-09-28 (ninth scheduled run). Window: submissions/revisions
+2026-09-21 through 2026-09-28 (last sweep was 2026-09-21, found in open,
+unmerged PR #7, "Literature surveillance: 1 new debt (2026-09-21 sweep)";
+this sweep does not re-litigate that window or PR #7's one entry
+(arXiv 2609.15689) or its four documented non-hits — it covers only the
+window after it). Direct `arxiv.org/abs/<id>` pages and the plain
+`arxiv.org/search/?searchtype=all&query=...&order=-submitted_date` endpoint
+both worked reliably and were used for the whole sweep. Query table run
+against quant-ph primarily, cs.NI/cs.OS/physics.optics secondary, using
+free-text term pairs per question (three- and four-word conjunctive queries
+were tried first and mostly returned zero results — arXiv's plain search
+ANDs every term across all fields — so two-word pairs were used for the
+working queries); the `arxiv.org/list/cs.NI/2026-09` category listing was
+also checked directly and turned up nothing new in-window beyond the term
+searches. One hit entered above (arXiv 2609.29752, fence/possibly-Q2).
+Candidates checked and rejected as non-hits: arXiv 2609.30157 ("Learning
+and interpreting policies for simultaneous entanglement requests in quantum
+networks," Rode/Khatri/Podder, submitted 2026-09-24) trains RL (DQN)
+policies for scheduling link-level entanglement generation across
+simultaneous multi-region tasks and reports success rate versus link
+activation probability; this is admission-shaped (simultaneous competing
+tasks) but the abstract gives no indication that any generated resource is
+held or ages across the scheduling decision — link activation probability
+is a generation-success parameter, not a custody or decay quantity — so it
+reads as a generation-time allocation problem in the same shape as the
+already-discharged 2607.15262 (memoryless), not queued. arXiv 2609.28881
+("Reconfigurable bus-based quantum router for modular superconducting
+processors," submitted 2026-09-24) demonstrates a bus-based coupler
+"supporting two disjoint controlled-Z gates in parallel" with parallel-gate
+errors ~10⁻³, but reports no reconfiguration latency, no switch radix, and
+no actuation-budget figure — a chip-scale gate-parallelism result, too thin
+for Q1/Q5/Q6. arXiv 2609.26889 ("Deterministic photon waveform adaptation
+for quantum connectivity," submitted 2026-09-22) demonstrates a photon
+temporal-mode converter/buffer spanning three orders of magnitude in pulse
+duration, but the abstract reports no holding time, no custody, no
+heralding-failure or scheduling content. arXiv 2609.25598 ("Efficient
+Ion-Photon Quantum Interface with Long-Working-Distance Exceeding 26 mm,"
+submitted 2026-09-22) is a single-channel photon-collection optics paper
+with no multiplexing, switching, or readout-wear content. arXiv 2609.25248
+("In-orbit operation of a programmable quantum photonic processor,"
+submitted 2026-09-21) demonstrates on-board non-classical light generation
+and processor programmability in orbit, but the abstract gives no
+reconfiguration timing, actuation budget, or topology/scheduling data.
+arXiv 2609.25795 ("An asymmetric atom-photon architecture for
+device-independent quantum key distribution over 25 km," submitted
+2026-09-22) is a single trapped-ion/single-photon DIQKD link over spooled
+fibre with no repeated-readout, custody, or multi-link content. arXiv
+2609.18899 ("Entanglement swapping across a five-node relay in a
+multiplexed quantum-classical network") recurred in this window's searches
+under its 2026-09-24 revision date but was already checked and rejected by
+the 2026-09-21 sweep (PR #7) under its 2026-09-16 submission date; not
+re-litigated. A near-miss noted for the record but not queued: arXiv
+2609.21152 ("ReFINE: Scheduling of Distillation and Coding for
+Rate-Fidelity Tradeoff in Quantum Networks," Alavisamani/Bloch/Qureshi)
+looks Q6/fence-adjacent by title but its submission date (2026-09-17) falls
+in PR #7's window and it does not appear among that PR's entries or
+documented rejects; flagged here rather than backfilled, since
+re-litigating a closed window is outside this sweep's mandate, same
+treatment PR #7 gave arXiv 2609.11387. The NeQOS watch item from
+2609.11359's disposition (a Naples "Networked Quantum Operating System"
+manuscript in preparation, Caleffi & Cacciapuoti) has still not appeared
+under that name or a recognizable synonym in this window's searches; still
+pending.*
 

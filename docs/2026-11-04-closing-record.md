@@ -60,5 +60,9 @@ These are small items, each a claim narrower than a paper:
 None of these was judged interesting enough to pursue as it stands. One exception is conditional.
 A storage-workshop paper on findability decay could be worth writing, if it finds a second corpus
 (n = 1 is fatal) and survives positioning against Agrawal, Bolosky, Douceur & Lorch, "A Five-Year
-Study of File-System Metadata" (FAST '07). A check of both was started on 2026-11-04. If either
-fails, the answer is no paper.
+Study of File-System Metadata" (FAST '07). Checked on 2026-11-04. **Positioning survives:** copy-reset creation
+times are prior art (Douceur & Bolosky, SIGMETRICS 1999; Agrawal et al., FAST '07), but bulk-rewrite
+days over 30 years, rate-driven findability decay and the recall deficit were not found. **Second
+corpus:** no public multi-decade personal dataset exists. The best candidate is the Microsoft
+2000–2004 metadata study on SNIA IOTTA (thousands of corporate desktops; behind a license and a
+browser check). Status: go only if that data can be obtained; otherwise no paper.

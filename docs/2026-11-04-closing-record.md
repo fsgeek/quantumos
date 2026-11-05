@@ -66,3 +66,17 @@ days over 30 years, rate-driven findability decay and the recall deficit were no
 corpus:** no public multi-decade personal dataset exists. The best candidate is the Microsoft
 2000–2004 metadata study on SNIA IOTTA (thousands of corporate desktops; behind a license and a
 browser check). Status: go only if that data can be obtained; otherwise no paper.
+
+## Addendum 2026-11-05: the workshop-paper leftover, tested
+
+The gate opened: Tony obtained the Microsoft 2000-2004 data (IOTTA, 92 GB). Our reading reproduced the
+paper's copied-file fraction (69-76% vs 66-76%). Across 63,582 file systems on 20,269 machines (4.3B
+files), the median file system holds 16-23% of its files, and 13-17% of its human-type files, on its
+single busiest modification day. Findability of 2-3-year-old human-type files fell from 0.70 to 0.64
+(2000-2004) as collections grew 2.75x. On the 30-year personal corpus, burst-dated files cluster by
+whole directories, and directories are nearly pure in composition. A facet derived from that locality
+looked worth ~3 bits. **Conditional on the cues a reader already gives (time band, type, size), it is
+worth 0.15 bits.** The "free latent facets" claim failed its own kill criterion. A paper remains
+possible only if a re-finding study shows that questions a reader can actually answer carry bits that
+metadata does not.
+

@@ -930,6 +930,105 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2610.29986 — Meter-scale quantum interconnects between large quantum processors
+*Sundaresan, Cotaj, Kandel, Lewandowski, Longton, Martin, Nah, Pooley,
+Sandberg, Scanlon, Xiong, Yanev, et al. (42 authors). Submitted 2026-10-21.*
+- **status:** UNREAD
+- **touches:** Q5 — and *possibly* Q2
+- **would change:** Our Q5 threshold (links-per-module = 1 vs > 1, which
+  decides whether replenishment and consumption can overlap at all) is
+  currently open, answered in this queue only by a projected architecture
+  (2607.18387) or spectral/WDM concurrency (2607.19849), never by a
+  demonstrated fixed-link module interconnect. This paper demonstrates four
+  superconducting "L-coupler" links between two 120-qubit IBM Nighthawk R1
+  processors and explicitly reports "simultaneous Bell pair generation using
+  two adjacent links" — a stated, not inferred, claim of links-per-module > 1
+  in operating hardware (fixed coaxial-cable couplers, not a reconfigurable
+  photonic switch fabric). If the full paper's four-link topology is read as
+  the module's actual concurrency ceiling, not an artifact of this one demo
+  choosing two of four, it gives Q5 a real hardware floor for simultaneous
+  links per module from a platform entirely outside this queue's existing
+  photonic-switch and spectral-WDM evidence. *Possibly* Q2: reported
+  fidelities across the four links are a real, simultaneously-available
+  cross-sectional spread — state-transfer mean 99.00%/best 99.29%,
+  distant-CZ mean 94.75%/best 96.42% (a 1.67-point spread) — but this is
+  fixed, individually-calibrated hardware rather than a dynamically varying
+  fabric, so whether the spread is OS-visible in Q2's sense (relative to
+  scheduler decision resolution, not just present) is inference pending the
+  full read.
+- **mapping note:** this paper's submission date (2026-10-21) falls inside
+  PR #10's window (2026-10-19 through 2026-10-26, still open/unmerged) but
+  does not appear among that sweep's queued hits or documented non-hits —
+  the same kind of boundary gap PR #10 itself flagged for arXiv 2610.26900.
+  Entered here rather than silently dropped; whoever reconciles PR #10 and
+  this branch should note it. Whoever pays this debt should check first
+  whether four links is the module's actual ceiling or an artifact of the
+  reported demo, then check the CZ-fidelity spread against Q2.
+
+---
+
+*Sweep of 2026-11-02 (this run). Window: submissions/revisions 2026-10-26
+through 2026-11-02 (default 8-day window; the last actual sweep, 2026-10-26,
+is PR #10, still open/unmerged, covering 2026-10-19 through 2026-10-26; PR #7
+("2026-09-21 sweep"), PR #8 ("2026-09-28 sweep") and PR #9 ("2026-10-19
+sweep") are also still open and unmerged beneath it. This sweep does not
+re-litigate any of those PRs' windows or entries.* Direct
+`export.arxiv.org/api/query` and `arxiv.org/abs/<id>` pages both worked
+reliably throughout this run; no 403/429 encountered, so no WebSearch
+fallback was needed. Query table run against quant-ph primarily, cs.NI/
+cs.OS/physics.optics secondary: a category-unfiltered "quantum network"
+sweep of quant-ph in-window, targeted term-pair queries per question (switch
+reconfiguration, heralding failure/attempt, QND readout, duty cycle,
+calibration drift, optical switch + quantum memory, fidelity + simultaneous
++ path, rank-inversion/path-quality), a cs.NI category check, and a cs.OS
+category check (nothing quantum since 2609.05814). One hit entered above
+(arXiv 2610.29986, Q5/possibly-Q2), found while checking for the same kind
+of sweep-boundary gap PR #10 itself documented for arXiv 2610.26900: its
+submission date falls inside PR #10's window but it is absent from that
+PR's hits and non-hits. Candidates checked and rejected as non-hits: arXiv
+2610.39476 ("SeQUeNCe.DQC") is a single-circuit compiler/execution-plan
+simulator for distributed quantum computing over an existing SeQUeNCe
+network backend — no multi-request admission, no competing holds, the same
+algorithmic-building-block shape already excluded for prior SeQUeNCe-family
+entries. arXiv 2610.38817 ("Memory-Induced Limits on Entanglement
+Distribution") derives an analytical quantum-capacity bound for repeated
+*channel* reuse (residual excitations in an untouched transmission chain),
+a different degradation mechanism from Q3's repeated-QND-readout-of-a-
+stored-qubit ask, with no hardware and no scheduling content — too thin for
+Q3. arXiv 2610.37204 ("QNETSIM") is a satellite/hybrid-network simulator
+with decoherence, memory and an SDN control plane, but no stated
+multi-request contention/admission claim — the same simulation-platform
+shape as the already-discharged QUASAR, thinner than QUASAR's own abstract.
+arXiv 2610.36391 ("Consensus and Information Redistribution in Quantum
+Networks") is qudit consensus/measurement theory under random unitaries —
+the protocol's named vocabulary trap, no networked resource surviving a
+scheduling decision. arXiv 2610.37268 (a deployed BBM92 QKD demo with a
+quantum-dot source) is the demarcation-foil shape already established for
+QKD demos in this queue: entangled photons measured out immediately for key
+generation. arXiv 2610.36423 ("Coherent Optical Control of a Single Donor
+Electron Spin") is single-emitter spin-control device physics, no network,
+no repeated-readout wear data. arXiv 2610.42150 (secret-shared teleportation
+of a two-qudit gate) and arXiv 2610.39360 (composable device-independent
+quantum digital signatures) are cryptographic protocol theory with
+entanglement consumed instantaneously and no custody or scheduling content.
+Arxiv 2610.41808 (a fidelity-bounding technique) and arXiv 2610.37854 (a
+Bell's-theorem topical review) carry no networked/custody/admission content
+or new measured data. arXiv 2610.35838 ("Network nonlocality with
+tripartite entangled sources") is a nonlocality-game "network" (a fixed
+graph of independent sources) — the same vocabulary trap already named for
+arXiv 2609.19310. An eight-paper physics.optics window pull (linear-optics
+GHZ measurement, topological wave localization, Krylov-geometry noise
+recovery, RIXS-generated entanglement, attosecond-field entanglement
+certification, SPDC OAM dimensionality, and a single-photon time-qubit
+arrow-of-time study) were all device/foundational photonics or
+quantum-information theory with no network, custody, or scheduling content.
+Targeted queries for duty-cycle, calibration-drift, heralding-attempt and
+rank-inversion language returned nothing new in-window, either zero results
+or results outside the window or on a keyword collision with unrelated
+classical-ML papers. No candidate this window addressed Q1, Q3 (on its own
+terms), Q4, Q6, or Q7 directly — no switch-actuation, heralding-failure-
+cost, duty-cycle, or calibration-drift/rank-persistence data appeared.*
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While

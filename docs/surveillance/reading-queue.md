@@ -930,6 +930,41 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2609.15689 — Distribution of light-matter quantum correlations with a temporally multiplexed solid-state quantum memory array
+*Mneimneh, Plascencia, Gundin, Hänni, Grandi, Teller, de Riedmatten. Submitted 2026-09-14.*
+- **status:** UNREAD
+- **touches:** Q5 — and *possibly* Q1
+- **would change:** Our Q5 threshold (links-per-module = 1 vs > 1, which
+  decides whether replenishment and consumption can overlap at all) is
+  currently open. This paper reports a single Pr³⁺:Y₂SiO₅ crystal memory
+  array storing telecom-heralded photons across up to ten memory cells
+  (spatial multiplexing) with on-demand AFC-protocol readout, demonstrating
+  quantum correlations across up to 60 combined spatio-temporal modes,
+  deployed with the heralding photon sent over 39.1 km of metro fibre in
+  Barcelona. If the full paper's ten cells are independently addressable
+  storage channels within one physical module — not ten separate modules
+  counted as one for convenience — this is direct hardware evidence for
+  links-per-module > 1 at the memory-array end of the link, pushing our
+  resource model toward the multi-link branch from the storage side, the
+  same direction the Knollmann trapped-ion entry (2607.18387) already
+  argues from the emitter side. *Possibly* Q1: the abstract states the
+  generation rate is "limited by the two-way communication time" and that
+  "up to 15% of the 393 μs round-trip communication time is filled with
+  communication trials" — a hardware-fixed cadence (the light-travel
+  round-trip) gating replenishment attempts. But this is the communication
+  round-trip for this specific 39.1 km deployment, not a switch-
+  reconfiguration interval, and no cadence distribution or variance is
+  reported, so a Q1 reading is inference pending the full read.
+- **mapping note:** whoever pays this debt should check first whether the
+  ten memory cells are read out independently/concurrently (which would
+  confirm Q5's links-per-module > 1 reading) or only ever accessed one at a
+  time despite being physically distinct cells (which would collapse the
+  reading back toward 1 with ten being a capacity figure, not a
+  concurrency figure). The 393 μs figure is a distance-determined
+  round-trip artifact of this deployment and should not be read as a
+  general Q1 cadence number without checking how/whether the full text
+  reports it scaling with link length.
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While
@@ -1148,4 +1183,57 @@ Discharged, no quantum state survives a scheduling decision. arXiv
 2609.02579 ("Long-lived telecom-heralded single-photon storage...") recurred
 in this window's searches but was already checked and rejected by the
 2026-09-07 sweep; not re-litigated.*
+
+---
+
+*Sweep of 2026-09-21 (eighth scheduled run). Window: submissions/revisions
+2026-09-14 through 2026-09-21 (last sweep was 2026-09-14). Direct
+`arxiv.org/abs/<id>` pages and the plain `arxiv.org/search/?searchtype=all&
+query=...&order=-submitted_date` endpoint both worked reliably and were used
+for the whole sweep. Query table run against quant-ph primarily, cs.NI/cs.OS/
+physics.optics secondary, using free-text term pairs per question; the
+`arxiv.org/list/cs.NI/2026-09` category listing was also checked directly and
+turned up nothing new in-window beyond what the term searches already found.
+One hit entered above (arXiv 2609.15689, Q5/possibly-Q1). Candidates checked
+and rejected as non-hits: arXiv 2609.19783 ("Scalable entanglement
+distribution using encoded hybrid repeater chains") is a Monte Carlo
+simulation study of a single hybrid repeater chain's encoded swap-as-soon-
+as-possible policy — one flow, no competing requests, no measured hardware
+distributions, so it answers none of Q1/Q3/Q5's hardware thresholds and does
+not occupy the fence's admission leg. arXiv 2609.18899 ("Entanglement
+swapping across a five-node quantum relay with coexisting classical
+traffic") demonstrates entanglement swapping over the same DWDM fibres as
+10 Gbps classical data and characterizes the fidelity/Raman-noise trade-off
+as a function of classical power, but this is a single sequential relay
+chain, not a cross-sectional fidelity measurement across simultaneously
+available paths, and carries no scheduling, custody, or admission content —
+too thin for Q2 and the fence alike, the same shape as the already-discharged
+quantum-classical-coexistence tomography entry (2608.09364). arXiv 2609.18570
+("Catalytic Activation of Genuine Multipartite Entanglement and
+Nonlocality") is a resource-theory catalysis result — the protocol's named
+entanglement vocabulary trap, no networked or scheduled resource. arXiv
+2609.19310 ("Quantum tree networks") bounds correlations in abstract
+quantum networks via C*-algebra and SDP hierarchies — "network" here means a
+fixed graph of independent sources for a nonlocality game, not a physical,
+scheduled entanglement-distribution network; a second instance of the
+vocabulary trap. arXiv 2609.18797 ("Reliability-guided Trusted Repeater
+Node selection for QKD-enabled optical networks") is classical trust-scored
+path selection for QKD key relay nodes — no perishable quantum good, no
+custody, no decay; a routing-layer foil. arXiv 2609.21613 ("hybrid
+digital-analog superconducting neural network interface") is unrelated
+classical neuromorphic hardware that surfaced on a switch/network query by
+keyword collision only, discarded on inspection. A near-miss noted for the
+record but not queued: arXiv 2609.11387 ("Entanglement Meets Reality: A
+Network Engineering Assessment and Forecast of Rackable Entanglement
+Sources," Caleffi group, submitted 2026-09-10) evaluates deployable
+entanglement-source hardware and derives quantum-memory coherence-time
+requirements for distillation — plausibly Q2/Q6-adjacent — but its
+submission date falls in the *previous* sweep's window (2026-09-07 through
+2026-09-14) and it does not appear in that sweep's entries or rejects; it is
+flagged here rather than backfilled, since re-litigating a closed window is
+outside this sweep's mandate. The watch item from 2609.11359's disposition
+(a Naples "NeQOS" quantum-operating-system manuscript in preparation,
+Caleffi & Cacciapuoti) has not yet appeared under that name or a
+recognizable synonym in this window's searches or in a direct author listing
+for Caleffi; still pending.*
 

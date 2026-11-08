@@ -930,6 +930,131 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2610.25875 — Online Scheduling and Distribution of Quantum Circuits over Quantum Networks
+*Yang, Gupta. Submitted 2026-10-19.*
+- **status:** UNREAD
+- **touches:** fence — and *possibly* Q5
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission), not a component of it. This paper's
+  scheduler treats circuits as a continuous online stream: at each arrival or
+  completion event it chooses which waiting circuits to start and how to place
+  their qubits, "accounting for congestion from running circuits and resource
+  constraints," under stated limits of "limited memory, probabilistic
+  entanglement generation, and decoherence." That is an online admission
+  decision (start now vs. wait) over a resource that decoheres (perishable)
+  and is held in memory while circuits run (custody-shaped). If the full
+  paper's admission step is actually adjudicating competing holds on a
+  decaying entanglement resource across multiple concurrent circuits — not a
+  single-circuit placement problem dressed in classical online-scheduling
+  theory — this would be a candidate occupant of the fence's full form and
+  the position paper's "unoccupied" conclusion would need re-examining. As
+  abstracted, it reads as a distributed-quantum-computing circuit scheduler
+  (which qubits/memory to allocate, in what order to minimize mean completion
+  time and makespan) rather than one that tracks the exposure or age of a
+  held entangled resource across a queue — exactly the distinction the full
+  read must settle, in the same shape as several papers already discharged
+  against the fence as "algorithmic building blocks." *Possibly* Q5:
+  "congestion from running circuits" against shared memory/network resources
+  is adjacent to Q5's links-per-module concurrency ask, but no switch radix or
+  reconfiguration-granularity claim appears in the abstract, so this is
+  inference.
+- **mapping note:** whoever pays this debt should also read the same
+  authors' companion paper submitted the same day, arXiv 2610.26099
+  ("Distributing Quantum Circuits Using Pre-Distributed Entanglement Pairs
+  over Quantum Networks") — it pre-distributes and holds entangled pairs in
+  memory under a fixed budget ahead of circuit execution, which is
+  custody-shaped but for one circuit's static allocation rather than a
+  multi-request admission queue. Check whether either paper, or the two
+  together, is the fuller fence occupant.
+
+### arXiv 2610.26900 — Concurrent Entanglement Purification Scheduling in Dynamic Quantum Networks
+*Ni, Ho. Submitted 2026-10-16.*
+- **status:** UNREAD
+- **touches:** fence — and *possibly* Q4, Q5
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission). This paper schedules concurrent
+  requests for entanglement purification in a time-slotted network with
+  heterogeneous links, where requests compete for link capacity and quantum
+  memory and may use multiple parallel paths; a MILP scheduler maximizes the
+  number of scheduled requests under max-min path allocation for fairness,
+  and RL schedulers (DQN/PPO/SAC) trade Bell-pair consumption against success
+  rate, deferring some requests when resources are contended. That is
+  concurrent demands contending for a held, purification-requiring (hence
+  quality-decaying) resource, adjudicated by a scheduling layer that accepts,
+  defers, or drops requests — on its face the closest simultaneous match to
+  all three fence elements seen in this project's surveillance to date. If
+  the full paper's model ages the held Bell pairs between scheduling slots
+  (so "Bell-pair consumption" tracks a decaying resource over time rather
+  than a point-in-time count) and the scheduler's defer/drop decisions are
+  recorded by cause, this would be the strongest fence occupant found so far
+  and the position paper's novelty claim would need direct comparison against
+  it. If instead "concurrent requests" means independent per-slot allocation
+  with nothing held across slots — the SeQUeNCe/Arqon shape the fence already
+  excludes — the fence holds with a sharper wording, as it has for every
+  close approach so far. *Possibly* Q4: RL schedulers penalizing "Bell-pair
+  consumption" could carry an implicit cost for a failed or wasted
+  purification attempt, adjacent to Q4's failed-heralding-cost ask, but the
+  abstract reports an aggregate consumption metric, not a per-attempt failure
+  cost, so this is inference. *Possibly* Q5: "multiple parallel paths" per
+  request is adjacent to Q5's links-per-module concurrency ask, but no switch
+  radix or reconfiguration-granularity claim is stated, so this is inference
+  too.
+- **mapping note:** this paper's submission date (2026-10-16) falls inside
+  the window the 2026-10-19 sweep (PR #9, still open/unmerged at the time of
+  this sweep) should have covered (2026-09-28 through 2026-10-19), but it
+  does not appear among that sweep's queued hits or its documented non-hits.
+  Entered here rather than left unqueued; whoever reconciles PR #9 and this
+  branch should note the gap. Whoever pays this debt should check first
+  whether the time-slotted model holds any resource across slots (the
+  fence's custody test) before checking Q4/Q5.
+
+---
+
+*Sweep of 2026-10-26 (this run). Window: submissions/revisions 2026-10-19
+through 2026-10-26 (default 8-day window; the last actual sweep, 2026-10-19,
+is PR #9, still open/unmerged, covering 2026-09-28 through 2026-10-19; PR #7
+("2026-09-21 sweep") and PR #8 ("2026-09-28 sweep") are also still open and
+unmerged beneath it). This sweep does not re-litigate those PRs' windows or
+entries. Direct `export.arxiv.org/api/query`, `arxiv.org/abs/<id>` pages and
+`arxiv.org/search/?searchtype=all&query=...` all worked reliably this run.
+Query table run against quant-ph primarily, cs.NI/cs.OS/physics.optics
+secondary, using two-word abstract term pairs per question plus a
+category-unfiltered `"quantum network"` sweep across quant-ph/cs.NI/cs.OS/
+physics.optics to catch anything the per-question queries missed; a cs.OS
+category-only listing for the window was also checked directly and returned
+only classical-systems papers (LLM-agent memory/caching, GPU memory, kernel
+concurrency fuzzing) with no quantum content at all. One entry (arXiv
+2610.26900) was found with a submission date inside the *previous* sweep's
+window and entered above rather than silently dropped — see its mapping
+note. Candidates checked and rejected as non-hits: arXiv 2610.26034 ("A
+Dual-Uplink Dual-Satellite Architecture for Entanglement Distribution") is a
+repeaterless link-budget analysis (success probability and fidelity vs.
+satellite altitude and ground-station separation) for a proposed two-satellite
+relay — no custody, no admission, no switch, the same demarcation-foil shape
+already named in Discharged. arXiv 2610.32049 ("Robustness of Quantum
+Correlations and Controlled Teleportation Fidelity under Noisy Channels")
+studies a three-qubit GHZ state's discord/concurrence/teleportation-fidelity
+degradation under Kraus-operator noise channels — a quantum-information
+noise-robustness study with no networked scheduling, custody, or admission
+content, excluded on the same principle as the protocol's named vocabulary
+trap even though "entanglement" and "fidelity" both appear. arXiv 2610.27540
+("Low-nonlinearity advantage of hollow-core fiber for wavelength multiplexing
+of quantum entanglement and classical DWDM signals") is a fibre-medium
+device/transmission experiment showing hollow-core fiber reduces classical-
+channel noise into a shared quantum channel — a single link's fidelity under
+classical coexistence, not a cross-sectional spread across simultaneously
+available paths, so it does not answer Q2's threshold; a component-technology
+foil in the same shape as the already-discharged 2608.09364 coexistence-
+tomography entry. arXiv 2610.25280 ("De Finetti Structures in Networks of
+Quantum Systems") and arXiv 2610.21420 ("Optimising multipartite entanglement
+manipulation in quantum networks") were checked against the fence and Q2/Q5
+given their titles; both are information-theoretic/resource-theoretic
+results about entanglement structure and manipulation with no scheduling,
+custody, or admission content and no hardware data — too thin to carry any
+question. No candidate this window addressed Q1, Q3, Q6, or Q7 directly; no
+switch-actuation, QND-readout-wear, or calibration-drift data was found in
+the window.*
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While

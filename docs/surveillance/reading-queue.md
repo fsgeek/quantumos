@@ -930,6 +930,84 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2611.06823 — Optimal Holding Times for Entanglement Swapping
+*Mai, La, Battou (NIST / University of Maryland). Submitted 2026-11-04.*
+- **status:** UNREAD
+- **touches:** fence — and *possibly* Q4
+- **would change:** The fence excludes work unless it occupies the full form
+  of perishable good + custody + admission, not a component. This paper
+  models a quantum-repeater node as a finite-capacity double-ended queue
+  holding entangled pairs from two heterogeneous links, each pair's fidelity
+  decaying continuously with decoherence while it waits in the buffer;
+  pairs are explicitly "admitted" to the queue (the paper tracks "a tagged
+  pair from its admission until it would be matched") and then matched for
+  swapping under FIFO/LIFO/RAND policies, or discarded on a
+  maximum-holding-time (MHT) cutoff optimized against strict, probabilistic,
+  or mean E2E-fidelity constraints. That is custody (aging pairs held in a
+  buffer, policy-selected for service), a perishable good (fidelity decaying
+  with holding time), and admission (the paper's own word) all present on
+  their face, in an analytical queueing model closer to this project's own
+  vocabulary than any flow-allocation simulator read so far. If the full
+  paper's "admission" is genuine accept/reject arbitration among competing
+  demands rather than queueing-theoretic queue-entry bookkeeping for one
+  commodity, and the MHT discard is recorded by cause rather than silently
+  reclaimed, this would be the strongest fence occupant found in this
+  project's surveillance to date and the "unoccupied" conclusion would need
+  re-examining directly against it. If "admission" is standard queueing
+  notation for queue entry (as in M/M/1-style models) and the MHT cutoff is
+  a parameter swept in isolation rather than enforced against a second,
+  institutional deadline, the fence holds with a sharper wording — that
+  distinction is exactly what the full read must settle. *Possibly* Q4: the
+  model's effective link-generation rate falls once a buffer fills
+  (λ*_i = (K_i − N_i)λ_i), i.e. a new entanglement-generation attempt is
+  rate-limited/blocked by a full buffer, an analog to Q4's blocked-slot
+  cost, but no failure-to-next-attempt cycle time is reported as such.
+- **mapping note:** single-commodity, two-link system (heterogeneous in
+  decoherence rate, memory capacity, attempt rate, success probability, and
+  classical latency — not in demand type); validated against the SeQUeNCe
+  simulator. No Q1/Q2/Q3/Q5/Q6/Q7 content (no switch, no cross-sectional
+  fidelity spread, no repeated-readout wear curve, no module/port topology,
+  no actuation budget, no rank-persistence data). Whoever pays this debt
+  should check first whether "admission" is OS-sense admission control or
+  queueing-theoretic queue entry, and whether the MHT discard is cause-tagged.
+
+### arXiv 2611.08298 — Beyond Quantum Messages: Toward Quantum-Native Network Functioning
+*Cacciapuoti, Illiano, De Risi, Caleffi (University of Naples Federico II). Submitted 2026-11-05.*
+- **status:** UNREAD
+- **touches:** fence
+- **would change:** This Perspective argues that entanglement is "a stateful
+  network resource whose operational condition is non-locally distributed...
+  evolves through manipulation or consumption, and degrades over time
+  through decoherence," and that this evolving state "must therefore remain
+  visible to the functionalities acting on it" — naming a scheduler, a
+  purification procedure, and a service-selection mechanism explicitly as
+  functionalities that would need that visibility. If the full paper goes
+  beyond naming this requirement and specifies how competing functionalities
+  (a scheduler among them) actually arbitrate admission against the
+  decaying resource's tracked state — not just argue that they should — it
+  would be a direct, same-vocabulary statement of this project's own fence
+  thesis from the group behind the previously-flagged NeQOS watch item, and
+  the position paper's novelty framing would need to engage it by name. As
+  summarized, it reads as agenda-setting (a "Perspective" proposing "Quantum
+  Addressing" as a transversal abstraction and naming routing/forwarding/
+  control/function-placement as a "coupled frontier," citing an existing
+  quantum-network OS and an NV-center repeater ISA as the current state of
+  node-level programmability) rather than a system that itself performs
+  admission over held, decaying resources — that framing is exactly what the
+  full read must check.
+- **mapping note:** this is *not* the NeQOS paper the arXiv 2609.11359 entry
+  flagged as a mandatory fence read (no "NeQOS" name appears in the visible
+  text; it cites a different, already-published quantum-network OS paper —
+  Delle Donne et al., Nature 639 (2025), "An operating system for executing
+  applications on quantum network nodes" — as related work, not as its own
+  contribution) — but it is from the same research group (Cacciapuoti,
+  Caleffi) and the same ERC grant (QNattyNet) named in that watch item,
+  arguing in prose the identical thesis (stateful, degrading resource that
+  must stay visible to network functions) that this project argues in its
+  own position paper. The watched NeQOS manuscript itself has still not
+  appeared. Q1-Q7 not mapped: no hardware data of any kind, purely
+  conceptual/architectural.
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While
@@ -1148,4 +1226,64 @@ Discharged, no quantum state survives a scheduling decision. arXiv
 2609.02579 ("Long-lived telecom-heralded single-photon storage...") recurred
 in this window's searches but was already checked and rejected by the
 2026-09-07 sweep; not re-litigated.*
+
+---
+
+*Sweep of 2026-11-09 (this run). Window: submissions/revisions 2026-11-02
+through 2026-11-09. **Backlog note:** five prior sweeps are sitting
+open/unmerged beneath this one — PR #7 (2026-09-21), PR #8 (2026-09-28),
+PR #9 (2026-10-19), PR #10 (2026-10-26), and PR #11 (2026-11-02, window
+2026-10-26 through 2026-11-02) — none re-litigated here. This sweep's
+window starts where PR #11's left off; PR #11 ran midday 2026-11-02, so
+same-day submissions from the afternoon/evening of 2026-11-02 onward are
+correctly in-window and not a boundary gap of the kind PR #10 and #11 each
+flagged for themselves. Direct arXiv access (export.arxiv.org API and
+arxiv.org/abs pages) worked throughout; no 403/429 encountered. Query table
+run against quant-ph primarily (a category-unfiltered "quantum network"
+sweep plus a term-filtered entanglement/quantum-memory/quantum-repeater/
+heralding/optical-switch sweep across quant-ph, cs.NI, cs.OS and
+physics.optics), cs.NI/cs.OS category checks for "quantum," and targeted
+term-pair queries for duty cycle, QND/nondemolition, reconfiguration,
+switching time, rank inversion, and calibration drift. Two hits entered
+above (arXiv 2611.06823, fence/possibly-Q4; arXiv 2611.08298, fence).
+Candidates checked and rejected as non-hits: arXiv 2611.05069 ("Operational
+Thresholds for Long-Range Entanglement in Quantum Networks") is a
+percolation-theory phase-boundary result for swapping/purification success
+rates on hierarchical flower networks — no time axis, no custody, no
+scheduling decision, a theoretical network-science foil. arXiv 2611.08396
+("Recalibration-Aware Optimization of ZEFOZ Operating Points...") optimizes
+Er:YSO memory operating points against Hamiltonian uncertainty via
+numerical recalibration, but reports no measured recalibration cadence or
+drift timescale, so it does not answer Q7's persistence-vs-lead-time
+threshold — a device-engineering foil. arXiv 2611.04526 ("Long-lived
+quantum memories with rare-earth ions doped in crystals") is a review
+article surveying storage-time records with no new characterization data,
+so it supplies no fresh evidence for Q3 or any other question. arXiv
+2611.04128 ("Entanglement Allocation for Quantum Integrated Sensing and
+Communication") is an RL-based allocation of Bell pairs between
+communication and sensing users under hardware/reliability constraints
+with memory decoherence in the model, but the abstract describes no
+custody/holding-across-time mechanism or explicit accept/reject admission
+of competing demands — too thin for the fence or Q5 absent the full read.
+arXiv 2611.07440 ("Information flow control in hybrid quantum networks") is
+a dynamical-systems control-theory result (linear-response/Lyapunov control
+of classical collective dynamics via distributed entanglement) with no
+scheduling, custody, or admission content. arXiv 2611.05497 ("Boosted
+Entanglement Swapping") is a single-shot linear-optics Bell-state-
+measurement efficiency improvement with a lab demonstration (confirmed via
+abstract: no custody, no admission, no retry/failure-cost data). arXiv
+2611.02913 ("Multipartite FSO/QKD with N-GHZ States for Scalable Secure
+Group Key Distribution") is a group-QKD demarcation foil in the same shape
+as prior QKD entries — GHZ states measured out for key bits; its TDMA
+scheme is classical slot-sharing, not entanglement custody. arXiv 2611.05597
+("Multipartite entanglement swapping with homodyne and single photon
+detection") is a single-heralded-event continuous-variable swapping scheme
+(confirmed via abstract: no memory/storage, one swapping operation
+analyzed, fixed interferometer, single PNR measurement, no actuation
+accounting). arXiv 2611.03788 ("Optimised finite key for satellite up-link
+entangled quantum key distribution") is a QEYSSat finite-key-statistics
+analysis; its only storage-like element is accumulating classical raw key
+material across overpasses before extraction, not holding quantum states —
+a QKD demarcation foil. No candidate this window addressed Q1, Q2, Q3 (on
+its own terms), Q5, or Q6 directly.*
 

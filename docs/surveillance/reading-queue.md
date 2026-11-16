@@ -930,6 +930,94 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2611.17865 — Starlight: Whittle-Driven Fidelity Rescue for Satellite-Terrestrial Quantum Networks
+*Shi, Zhao, Yuan. Submitted 2026-11-13.*
+- **status:** UNREAD
+- **touches:** fence — and *possibly* Q2, Q6, Q7
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission), not a component of it. This paper
+  defines an "Effective Age of State" that additively combines decoherence
+  and swapping-induced fidelity loss into one evolving per-connection
+  quantity (a candidate perishable good), models satellite rescue scheduling
+  as a Restless Multi-Armed Bandit with a Whittle-index approximation
+  selecting a top-K set under "constrained rescue capacity" (admission under
+  scarcity), and adds an asynchronous "dispatch-and-mask" pipeline stated to
+  "suppress redundant in-flight allocations" (plausibly a custody-like hold
+  preventing double-allocation of a connection while a rescue is pending,
+  though the abstract does not say so outright). If the full paper's
+  dispatch-and-mask mechanism turns out to be an actual reservation/hold on a
+  decaying resource, adjudicated against competing rescue candidates with
+  some record of why a hold was released — not just a dedup filter over
+  independently-scheduled, non-competing decisions — this would be a new
+  candidate for the fence's full form, and would need to be compared directly
+  against 2608.24152 and 2609.04920 (both already read and found wanting:
+  full control-plane machinery over a non-perishable good, and a routing
+  heuristic over independent runs, respectively). As abstracted, custody is
+  inferred from "suppress redundant...allocations," not stated as a held,
+  exposure-tracked resource — that is exactly what the full read must check
+  first.
+- **mapping note:** *possibly* Q2 — connections are ranked at one instant by
+  the evolving Effective Age of State across what the abstract implies are
+  multiple simultaneously available terrestrial connections, but no
+  fidelity-spread or uncertainty number is reported; inference. *Possibly*
+  Q6 — "constrained rescue capacity" rations a satellite/relay resource, but
+  this is satellite relay scarcity, not photonic switch actuation, and no
+  duty-cycle or budget figure is given; inference, thin. *Possibly* Q7 — the
+  two-timescale control plane and bandit-index approach implies rankings are
+  re-decided over time, but the abstract reports no rank-inversion rate or
+  autocorrelation timescale, only a sub-0.5 ms orchestration-latency figure
+  (compute speed, not rank stability); inference, thin. Whoever pays this
+  debt should check the fence first — the custody question (does
+  dispatch-and-mask hold a reservation across time, with any
+  exposure/cause-tagged release) is the load-bearing one; Q2/Q6/Q7 are
+  secondary and may not survive the full read.
+
+---
+
+*Sweep of 2026-11-16 (this run). Window: submissions/revisions 2026-11-08
+through 2026-11-16 (the queue's last recorded scheduled sweep was
+2026-09-14; the gap between then and now was not re-swept — per protocol,
+zero-hit weeks leave no trace in this file, and this sweep cannot
+distinguish "no sweep ran" from "ran and found nothing" for that interval —
+so per the protocol's own instruction this run defaulted to the standard
+8-day window rather than attempting to backfill two months). Direct arXiv
+access worked throughout (arxiv.org/abs pages and arxiv.org/list/<category>/recent
+for quant-ph, cs.NI, cs.OS, physics.optics, read first-hand via WebFetch);
+free-text arxiv.org/search queries built from the protocol's query table
+returned no in-window results for any of the seven questions (the search
+engine's relevance ranking buries date-filtered multi-term queries), so the
+sweep fell back to reading the full recent-submissions listing for each of
+the four categories end-to-end and filtering by keyword, which is slower but
+complete for the window. Candidates checked and rejected as non-hits: arXiv
+2611.15374 ("Full Mesh Dynamic Four-User Entanglement-based Switched QKD
+Network Integrated with SD-KMS") reports a reconfigurable optical-switched
+QKD mesh with a software-defined key-management system, but the abstract
+gives no switch reconfiguration latency, duty-cycle, or custody data, and
+the delivered output is classical key material — the same memoryless-QKD
+shape as 2607.15262 already in Discharged; thin even for Q1. arXiv
+2611.14623 ("Towards Distributed Quantum Computing: Quantum Gate Teleportation
+via Satellite-Distributed Entanglement under Atmospheric Depolarization") models
+fidelity for one satellite-to-two-ground-stations link under varying
+atmospheric parameters, not a cross-sectional spread across simultaneously
+available paths — does not answer Q2's instantaneous-spread threshold. arXiv
+2611.17265 ("A deployed four-city entanglement-based QKD network with
+real-time key delivery...") passively routes polarization-entangled photons
+by wavelength to a detect-and-discard QKD receiver chain delivering classical
+keys via ETSI GS QKD 014 — no quantum memory or buffering mentioned, the
+same demarcation-foil shape as the molten-salt entry: measurement precedes
+any scheduling decision. arXiv 2611.16349 ("An optical-frequency-comb-enabled
+unified infrastructure for quantum networks") unifies timing, classical data
+and CV-QKD over one shared fibre link with sub-femtosecond timing stability,
+but reports no switching, reconfiguration, or scheduling content against any
+question. arXiv 2611.13625 ("Packet-wise multi-hop quantum routing of hybrid
+quantum-classical packets") is a hardware demonstration of double-hop BB84
+routing through cascaded optical routers to three receivers — no buffering,
+no admission among competing requests, no switch-granularity data. arXiv
+2611.10119 ("Entanglement percolation enhanced by the power of choice") is a
+purely theoretical percolation-transition result (Phys. Rev. A 114, 042452)
+on reducing the entanglement resources needed to reach a percolation
+transition — no hardware, switch, or scheduling content.*
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While

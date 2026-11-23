@@ -930,6 +930,184 @@ entry — see note.*
 
 ## Open (UNREAD)
 
+### arXiv 2611.21481 — Quantum Networks with Realistic Photonic Memories
+*Tissot, Simon, Sørensen. Submitted 2026-11-16.*
+- **status:** UNREAD
+- **touches:** Q5 — and *possibly* Q1, Q3
+- **would change:** Q5's concern includes whether nominally identical offers
+  are actually fungible across a module's links. This paper models networks
+  of *non-identical* ensemble-based photonic memories paired with photon-pair
+  sources and finds that strategically assigning memories to nodes and
+  individually tuning emission probability to each memory's efficiency can
+  largely mitigate the fidelity/duration degradation that device variation
+  would otherwise cause; it extends the result to memories whose efficiency
+  decays as a function of storage duration, where the mitigation still helps.
+  If the full paper's "strategic distribution" amounts to a placement/
+  scheduling policy that treats memory heterogeneity as a first-class,
+  OS-visible field rather than a static calibration constant folded into
+  source selection at design time, this would be a second instance — after
+  the WDM-source heterogeneity already in Discharged (arXiv 2607.19849) — of
+  "equal nominal offer, different actual quality," this time from memory
+  nodes rather than sources, strengthening the typed-offer argument for
+  exactly the layer Q5 asks about. *Possibly* Q1: the storage-duration decay
+  extension is adjacent to our wear/cadence framing but is a parametrized
+  decay model applied analytically, not a measured cadence distribution.
+  *Possibly* Q3: "efficiency decays as a function of storage duration" reads
+  as a presence/duration decay (the loop-buffer axis already in Discharged,
+  arXiv 2608.04093), not a repeated-QND-readout wear law — this mapping is
+  likely wrong-axis and should be checked, not assumed, on the full read.
+- **mapping note:** this is a theoretical/numerical mitigation-strategy
+  paper, not a hardware characterization — none of Q1-Q7's measured
+  thresholds can be settled by it directly. It is queued because the
+  heterogeneity-mitigation framing bears on whether our object model needs
+  to expose per-node memory quality as a scheduled field. Whoever pays this
+  debt should check whether "memory efficiency" is treated as static
+  (known at design time) or as a runtime-visible, possibly drifting
+  quantity (Q7-adjacent, not claimed above).
+
+### arXiv 2611.26436 — When lies look like noise: certifying untrusted entanglement swapping
+*Gragera Garces, Heunen, Marina. Submitted 2026-11-19.*
+- **status:** UNREAD
+- **touches:** fence
+- **would change:** The fence excludes work unless it occupies the full form
+  (perishable good + custody + admission), not a component of it. This paper
+  studies entanglement swapping where intermediate repeater nodes perform
+  the quantum operations faithfully but may misreport the classical outcome
+  end users rely on; it proves the fully-trusted ideal functionality cannot
+  be realized, and proposes a cut-and-choose protocol that tests a random
+  subsample of a *held* collection of entangled pairs (sized at 10^5-10^6
+  pairs "at once" in their worked example) to certify the rest against a
+  pre-agreed noise/misreport threshold. This yields an explicit QoS
+  guarantee in which "a failure witnesses that the node did not deliver as
+  agreed" — a cause-tagged terminal — and the paper reports a direct
+  custody-cost/rate tradeoff: verifying and releasing pairs in blocks "ties
+  the memory to the block size at the cost of a weaker rate." If the full
+  paper's protocol genuinely holds a finite collection of nonidentical pairs
+  in custody, decides which pairs are released or discarded based on the
+  verification outcome (not just independent per-pair accept/reject), and
+  records why a pair was rejected, this would be a new occupant-candidate
+  for the fence's full form alongside Arqon and the Beauchamp architecture
+  already in Discharged — and unlike those two control-plane papers, this
+  one ties custody explicitly to a quantified per-pair memory cost, which
+  could sharpen or contradict the "nothing is held across periods" reading
+  the fence currently rests on. As abstracted, the mechanism reads as
+  verification/certification over one requester's batch, not admission among
+  multiple competing requesters — that distinction is exactly what the full
+  read must settle.
+- **mapping note:** no Q1-Q7 hardware thresholds are claimed (a protocol/
+  security-proof paper, not a measurement); fence is the only mapping.
+  Whoever pays this debt should check first whether "the untested pairs
+  remain available for use" describes a held inventory with exposure
+  tracking, or only an accounting abstraction with no physical holding
+  implied beyond the memory-count argument already in the abstract.
+
+### arXiv 2611.24603 — No-Go Theorems for Ordered Universal Entanglement Purification
+*C. L. Liu. Submitted 2026-11-18.*
+- **status:** UNREAD
+- **touches:** possibly Q2
+- **would change:** Q2 asks whether the instantaneous fidelity spread across
+  simultaneously available offers is large enough, and visible enough, to be
+  worth carrying as an OS field once a calibration-published ordering is
+  known. This paper proves that for separable operations, no non-trivial
+  "universal" n-to-1 purification protocol can take a fidelity-*ordered* but
+  otherwise uncharacterized collection of pairs — the authors' own framing:
+  "limited memory, probabilistic entanglement generation, and unequal
+  storage times... leave a finite collection of nonidentical pairs" whose
+  "fidelity ordering" is established by "calibrated preparation and storage
+  records" — and strictly improve the best pair's fidelity without
+  preserving it exactly. If this generalizes to the operational setting Q2
+  cares about, it argues that a scheduler's calibration-published *ranking*
+  buys nothing for fidelity improvement beyond selection (pick the best;
+  attempting to purify blind on order alone cannot help) — narrowing, not
+  enlarging, what a carried ordering field is good for. This is a pure LOCC
+  no-go theorem, not a hardware measurement, so it cannot answer Q2's
+  "is the spread OS-visible" threshold directly; it is queued because its
+  framing of "calibrated... records establish fidelity ordering" over a
+  finite held collection sits close enough to this project's custody/
+  typed-offer vocabulary that the full read should check whether the
+  authors' "ordering only" setting matches what our calibration-published
+  field actually carries, or whether our field is richer (values, not just
+  order) in a way that evades the no-go.
+- **mapping note:** possible and thin. The paper is motivated by networked
+  quantum repeaters but contains no hardware data and no claim bearing on
+  Q1, Q3-Q7; fence not touched (no admission or scheduling content — a
+  purification-protocol existence question only). Whoever pays this debt
+  should check it against Q2's exact threshold wording before treating it
+  as settling anything.
+
+---
+
+*Sweep of 2026-11-23 (this run). **Backlog note:** this queue's last
+scheduled-sweep entries merged to main are dated 2026-09-14 (PR #6), but
+seven further scheduled sweeps ran and sit open, unmerged, on GitHub:
+PRs #7 (2026-09-21) through #13 (2026-11-16), each appending its own
+UNREAD entries on its own branch off main. This run does not re-litigate
+any of those windows or re-check their candidates; all arXiv ids newly
+queued or rejected across those seven open PRs were enumerated from their
+branch diffs before this sweep ran, specifically to avoid duplication, and
+none overlap the three entries below. Flagged for the maintainer:
+something in the merge path for this routine's PRs appears stuck — this is
+an operational issue, not a literature-triage one, and is reported rather
+than fixed here. **Window:** submissions/revisions 2026-11-17 through
+2026-11-23 (the day after PR #13's stated window ends, through today;
+arXiv announces no new quant-ph listings for Sat/Sun, so the five
+announcement days Tue 17 - Mon 23 Nov are the full window). **Access
+note:** `arxiv.org/abs/<id>` pages and `arxiv.org/list/<category>/recent`
+listings were reachable throughout via direct fetch and were used for
+full-listing keyword scans of quant-ph, cs.NI, cs.OS and physics.optics
+(the "recent" view conveniently spans exactly five announcement days,
+Tue-Mon, matching this window); `export.arxiv.org`'s API returned HTTP 429
+("Rate exceeded") on most attempts this run even at several-minute
+spacing, so the query-table keyword searches that did complete against it
+are reported as a secondary cross-check, not the primary method — the
+category-listing scan was exhaustive for the window and is the primary
+source of record. Candidates checked and rejected as non-hits: arXiv
+2611.21855 ("Shortest-path percolation and structural robustness of
+quantum internet networks") is a graph-theoretic percolation/robustness
+result on spatial networks modeling fiber quantum internets — topology at
+the wrong grain for Q5 (no switch radix or reconfiguration-granularity
+content, the same shape as the already-rejected free-space backbone
+placement paper, arXiv 2608.12636). arXiv 2611.26537 ("On the design of
+sequential quantum repeaters with error detection") and its companion
+2611.26925 ("Benchmarking Quantum Key Distribution Hardware Across
+Operating Conditions") were both checked closely for Q1/Q4/Q6/Q7; the
+first is a code-choice/architecture design-space study under near-term
+hardware *assumptions* rather than measured cadence or failure-cost data,
+and the second characterizes a single link's noise-normalised key rate
+across *attenuation* settings (42,115 lab/production measurements, real
+hardware) but never across time or across simultaneously available paths,
+so it answers neither Q2's spread nor Q7's persistence framing — a
+metrics-standardization paper in the same shape as the already-rejected
+arXiv 2607.28572. arXiv 2611.24411 ("Long-distance continuous variable
+entanglement distribution over deployed fibre") certifies CV entanglement
+over deployed metro fibre at one operating point with no drift-over-time
+data, so it does not answer Q7. arXiv 2611.24054 ("Reliability of quantum
+communication over erasure channels") is an information-theoretic
+reliability-exponent result for erasure channels in the abstract
+communication-theory sense, not heralding-failure cost in a physical
+network — too thin for Q4. arXiv 2611.24255 ("In-memory
+measurement-device-independent quantum key distribution") proposes a
+memory-assisted MDI-QKD architecture with no reported memory-wear or
+module-concurrency data against Q3 or Q5. arXiv 2611.21582 ("Modular
+Programmable Photonics with Unitary Tiles") studies port-count-vs-depth
+scaling of a *classical* programmable photonic processor with no
+quantum/entanglement content and no reconfiguration-latency distribution —
+a component-technology foil for Q5, the same shape as prior sweeps'
+rejected classical-switch candidates. arXiv 2611.24928 ("Residual Allan
+Stability under Periodic Auxiliary Ramsey Sampling") is a generic
+estimation-theory result on periodic-vs-continuous sampling of an
+Ornstein-Uhlenbeck drift, illustrated on clock metrology, with no
+quantum-network link-quality content — too far from Q7's framing to carry.
+arXiv 2611.26816 ("Frequency-bin-encoded quantum secret sharing with fast
+basis switching") demonstrates 20 MHz basis switching, but this is
+measurement-basis selection at the transceiver for a QKD/QSS protocol
+delivering classical key, not a photonic fabric reconfiguring routing
+between held resources — thin for Q1, same memoryless-QKD shape as
+arXiv 2607.15262 already in Discharged. No cs.NI or cs.OS candidate in the
+window carried quantum-networking content; the category listings were
+scanned in full (54 and 20 entries respectively) rather than by keyword,
+since both are low-volume.*
+
 ---
 
 *Debts raised by a first-hand read, not by a sweep (2026-09-18). While
